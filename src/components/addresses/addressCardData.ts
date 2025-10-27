@@ -116,13 +116,14 @@ export const mockAddressCards: AddressCardData[] = [
     subtitle: 'м. Львів, Галицький район',
     badges: [
       { label: 'Зробити основною', variant: 'outline', icon: Star },
-      { label: '4 лічильники', variant: 'muted' },
+      { label: '5 лічильників', variant: 'muted' },
     ],
     services: [
       { label: 'Електроенергія' },
       { label: 'Газ' },
       { label: 'Холодна вода' },
       { label: 'Гаряча вода' },
+      { label: 'Опалення' },
     ],
   },
   {

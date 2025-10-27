@@ -5,6 +5,7 @@ import {
   Gauge,
   Pencil,
   Thermometer,
+  Waves,
   Zap,
   type LucideIcon,
 } from 'lucide-react'
@@ -92,7 +93,7 @@ export function AddressCard({
         {services.map((service) => (
           <span
             key={service.label}
-            className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800"
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getServiceColorClasses(service.label)}`}
           >
             {getServiceIcon(service.label, service.icon)}
             {service.label}
@@ -109,6 +110,7 @@ function getServiceIcon(label: string, customIcon?: LucideIcon) {
     Газ: Flame,
     'Холодна вода': Droplets,
     'Гаряча вода': Thermometer,
+    Опалення: Waves,
   }
 
   const Icon = customIcon ?? iconMap[label]
@@ -117,7 +119,19 @@ function getServiceIcon(label: string, customIcon?: LucideIcon) {
     return null
   }
 
-  return <Icon className="h-3.5 w-3.5 fill-current [&_path]:stroke-0 [&_path]:fill-current" />
+  return <Icon className="h-3.5 w-3.5" />
+}
+
+function getServiceColorClasses(label: string): string {
+  const colorMap: Record<string, string> = {
+    Електроенергія: 'bg-cyan-100 text-cyan-800',
+    Газ: 'bg-yellow-100 text-yellow-800',
+    'Холодна вода': 'bg-blue-100 text-blue-800',
+    'Гаряча вода': 'bg-red-100 text-red-800',
+    Опалення: 'bg-orange-100 text-orange-800',
+  }
+
+  return colorMap[label] ?? 'bg-gray-100 text-gray-800'
 }
 
 function Badge({
