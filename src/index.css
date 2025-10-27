@@ -6,6 +6,7 @@
   --color-primary: #FFD700;
   --color-primary-dark: #FFC700;
   --color-primary-light: #FFE44D;
+  --color-primary-bg: #FFF0A0;
 
   --color-secondary: #8b5cf6;
   --color-secondary-dark: #7c3aed;
@@ -43,6 +44,7 @@
   --color-text-primary: #111827;
   --color-text-secondary: #6b7280;
   --color-text-tertiary: #9ca3af;
+  --color-text-dark: #333333;
 
   /* Border Colors */
   --color-border-primary: #e5e7eb;

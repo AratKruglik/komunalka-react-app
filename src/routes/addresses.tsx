@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout'
+import { AddressesListSection } from '../components/addresses/AddressesListSection'
 
 export const Route = createFileRoute('/addresses')({
   component: Addresses,
@@ -7,11 +8,12 @@ export const Route = createFileRoute('/addresses')({
 
 function Addresses() {
   return (
-    <AuthenticatedLayout>
-      <div>
-        <h1 className="text-3xl font-bold text-[#333333] mb-4">Мої адреси</h1>
-        <p className="text-gray-600">Тут буде список ваших адрес та лічильників.</p>
-      </div>
+    <AuthenticatedLayout
+      pageTitle="Мої адреси"
+      pageSubtitle="Керуйте адресами для комунальних послуг"
+      notificationsCount={3}
+    >
+      <AddressesListSection />
     </AuthenticatedLayout>
   )
 }

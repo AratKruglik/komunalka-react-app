@@ -54,6 +54,17 @@ npm run preview
 - React 19 with latest features (no legacy ReactDOM.render)
 - ESLint configured for React hooks and React Refresh
 
+## Development Workflow
+
+**IMPORTANT: All frontend development tasks must be handled by the senior-frontend-engineer agent.**
+
+When working on this project:
+- **Always** use the `senior-frontend-engineer` agent for any frontend-related tasks
+- This includes: component creation, styling, refactoring, bug fixes, feature implementation, layout changes, etc.
+- The agent has deep expertise in React, TypeScript, and modern frontend practices
+- Do not implement frontend changes directly - delegate all frontend work to the agent
+- The agent will ensure consistency with the project's architecture and best practices
+
 ## Feature Requirements
 
 The application should implement:

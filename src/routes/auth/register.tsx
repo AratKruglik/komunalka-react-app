@@ -1,7 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { RegisterForm } from '../../components/auth/RegisterForm'
 import { GuestLayout } from '../../components/layout/GuestLayout'
-import { Logo } from '../../components/common/Logo'
 
 export const Route = createFileRoute('/auth/register')({
   component: RegisterPage,

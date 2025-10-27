@@ -1,56 +1,68 @@
-import { ReactNode } from 'react'
-import { Link } from '@tanstack/react-router'
-import { Logo } from '../common/Logo'
+import type { ReactNode } from 'react'
+import {
+  AuthenticatedSidebar,
+  type SidebarSection,
+} from '../navigation/AuthenticatedSidebar'
+import {
+  AuthenticatedTopbar,
+  type TopbarUser,
+} from '../navigation/AuthenticatedTopbar'
 
 interface AuthenticatedLayoutProps {
   children: ReactNode
+  pageTitle?: string
+  pageSubtitle?: string
+  notificationsCount?: number
+  sidebarSections?: SidebarSection[]
+  user?: TopbarUser
 }
 
-export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
+const defaultUser: TopbarUser = {
+  name: 'Олена Петренко',
+  email: 'olena@example.com',
+}
+
+export function AuthenticatedLayout({
+  children,
+  pageTitle = 'Мої адреси',
+  pageSubtitle,
+  notificationsCount = 0,
+  sidebarSections,
+  user = defaultUser,
+}: AuthenticatedLayoutProps) {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header/Navigation */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="hover:opacity-80 transition-opacity">
-              <Logo size="sm" />
-            </Link>
+    <div className="flex min-h-screen bg-[#F5F6FA] text-[#333333]">
+      <AuthenticatedSidebar sections={sidebarSections} />
 
-            {/* Navigation */}
-            <nav className="flex items-center gap-6">
-              <Link
-                to="/"
-                className="text-gray-700 hover:text-[#333333] font-medium transition-colors [&.active]:text-[#333333] [&.active]:font-semibold"
-              >
-                Головна
-              </Link>
-              <Link
-                to="/addresses"
-                className="text-gray-700 hover:text-[#333333] font-medium transition-colors [&.active]:text-[#333333] [&.active]:font-semibold"
-              >
-                Адреси
-              </Link>
-            </nav>
+      <div className="flex flex-1 flex-col">
+        <AuthenticatedTopbar
+          title={pageTitle}
+          subtitle={pageSubtitle}
+          notificationsCount={notificationsCount}
+          user={user}
+        />
 
-            {/* User Menu */}
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                <span className="text-sm font-medium text-gray-700">Профіль</span>
-              </button>
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-[1184px] px-4 py-6">{children}</div>
+        </main>
+
+        <footer className="border-t border-gray-200 bg-white">
+          <div className="mx-auto flex w-full max-w-[1184px] flex-col gap-2 px-6 py-4 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+            <p>© 2024 Комуналка. Всі права захищені.</p>
+            <div className="flex flex-wrap gap-4">
+              <a href="#" className="transition-colors hover:text-[#333333]">
+                Умови використання
+              </a>
+              <a href="#" className="transition-colors hover:text-[#333333]">
+                Політика конфіденційності
+              </a>
+              <a href="#" className="transition-colors hover:text-[#333333]">
+                Контакти
+              </a>
             </div>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+        </footer>
+      </div>
     </div>
   )
 }
