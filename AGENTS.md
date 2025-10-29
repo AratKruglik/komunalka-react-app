@@ -1,30 +1,51 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/main.tsx` wires React 19, the TanStack router, and global providers; use it for app-level configuration only.
-- `src/routes` follows file-based routing (`auth/login.tsx`, `addresses.tsx`). Co-locate loaders/actions beside the screen component and keep cross-route helpers in `src/components`.
-- `src/components` contains reusable UI grouped by domain (`auth`, `layout`, `common`); new shared widgets should land here with matching Storybook notes if you add stories later.
-- Static media belong in `src/assets`; anything that must be served verbatim (favicons, manifest) stays in `public/`.
-- Build and lint settings live in `vite.config.ts`, `tsconfig*.json`, and `eslint.config.js`; the generated router map `src/routeTree.gen.ts` is tracked—regenerate it only via the TanStack router plugin.
+
+This project uses a **module-based architecture** where code is organized by feature/domain:
+
+### Module Organization Logic
+
+**`src/modules/`** - Feature-based modules
+- Each module is a self-contained feature (e.g., `auth`, `addresses`, `meters`, `readings`)
+- Module structure includes: `components/`, `pages/`, `hooks/`, `types/`, `api/`, `utils/`
+- Keep module dependencies minimal; prefer importing from `shared/` over cross-module imports
+- New features should create a new module directory with relevant subdirectories as needed
+
+**`src/shared/`** - Shared code across modules
+- `components/` - Reusable UI components (layouts, navigation)
+- `ui/` - Design system primitives (buttons, inputs, cards)
+- `hooks/`, `utils/`, `types/`, `constants/` - Shared logic and definitions
+- Add code here when it's used by 2+ modules or is a fundamental UI primitive
+
+**Routing & Entry Points**
+- `src/App.tsx` defines all React Router v7 routes; update this file when adding new pages
+- `src/main.tsx` wires React 19 and global providers; use it for app-level configuration only
+- Routes are defined declaratively in `App.tsx`, not file-based
+
+**Configuration & Assets**
+- Static media belong in `src/assets`; public assets (favicons, manifest) stay in `public/`
+- Build and lint settings live in `vite.config.ts`, `tsconfig*.json`, and `eslint.config.js`
 
 ## Build, Test & Development Commands
 ```bash
-npm install           # bootstrap dependencies
-npm run dev           # start Vite dev server with fast refresh
-npm run build         # type-check (tsc -b) and emit production bundle
-npm run preview       # serve the build locally
-npm run lint          # run ESLint across TS/TSX sources
+pnpm install          # bootstrap dependencies
+pnpm run dev          # start Vite dev server with fast refresh
+pnpm run build        # type-check (tsc -b) and emit production bundle
+pnpm run preview      # serve the build locally
+pnpm run lint         # run ESLint across TS/TSX sources
 ```
-Run commands from the repository root; prefer Node 18+ to match Vite’s expectations.
+Run commands from the repository root; prefer Node 20.19+ or 22.12+ to match Vite's expectations.
+This project uses **pnpm** as the package manager.
 
 ## Coding Style & Naming Conventions
 - TypeScript is mandatory; new files should be `.ts`/`.tsx` with explicit types at module boundaries.
 - Indent with two spaces; keep JSX props on new lines when they wrap.
 - Components and hooks use PascalCase (`GuestLayout`) and camelCase (`useAuthRedirect`). Match Tailwind utility strings to the design tokens defined in `src/index.css`.
-- Rely on ESLint’s recommended + TypeScript rules; fix issues with `npm run lint -- --fix` before submitting.
+- Rely on ESLint's recommended + TypeScript rules; fix issues with `pnpm run lint -- --fix` before submitting.
 
 ## Testing Expectations
-- A formal test runner is not configured yet; when contributing logic-heavy features, add Vitest + React Testing Library alongside your change and expose it via a new `npm run test` script.
+- A formal test runner is not configured yet; when contributing logic-heavy features, add Vitest + React Testing Library alongside your change and expose it via a new `pnpm run test` script.
 - Place specs beside the code (`Component.test.tsx`) or under `src/__tests__`. Cover edge cases around routing guards and form validation at minimum.
 - Document any new mocks or fixtures in the PR so future agents can reuse them.
 

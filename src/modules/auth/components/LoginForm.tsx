@@ -92,7 +92,7 @@ export function LoginForm() {
               Пароль
             </label>
             <a
-              href="/auth/forgot-password"
+              href="/forgot-password"
               className="text-xs text-[#DAA520] hover:text-[#B8860B] transition-colors"
             >
               Забули пароль?

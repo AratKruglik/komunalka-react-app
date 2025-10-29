@@ -1,11 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { AuthenticatedLayout } from '../components/layout/AuthenticatedLayout'
+import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
 
-export const Route = createFileRoute('/')({
-  component: Index,
-})
-
-function Index() {
+export default function HomePage() {
   return (
     <AuthenticatedLayout
       pageTitle="Головна панель"

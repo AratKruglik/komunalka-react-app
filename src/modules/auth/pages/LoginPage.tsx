@@ -1,13 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { LoginForm } from '../../components/auth/LoginForm'
-import { GuestLayout } from '../../components/layout/GuestLayout'
-import { Logo } from '../../components/common/Logo'
+import { Link } from 'react-router'
+import { LoginForm } from '../components/LoginForm'
+import { GuestLayout } from '../../../shared/components/layout/GuestLayout'
+import { Logo } from '../../../shared/ui/Logo'
 
-export const Route = createFileRoute('/auth/login')({
-  component: LoginPage,
-})
-
-function LoginPage() {
+export default function LoginPage() {
   return (
     <GuestLayout>
       <div className="w-full max-w-[448px]">
@@ -28,7 +24,7 @@ function LoginPage() {
               Вхід
             </button>
             <Link
-              to="/auth/register"
+              to="/register"
               className="flex-1 px-4 py-3 text-base font-medium text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors text-center"
             >
               Реєстрація

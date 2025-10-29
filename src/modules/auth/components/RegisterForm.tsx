@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Eye, EyeOff, Circle, CheckCircle2, Calculator, TrendingUp, Bell, BarChart3, Shield } from 'lucide-react'
-import { Logo } from '../common/Logo'
+import { Logo } from '../../../shared/ui/Logo'
 import * as React from "react";
 
 type PasswordStrength = 'none' | 'weak' | 'medium' | 'strong'
@@ -528,7 +528,7 @@ export function RegisterForm() {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Вже маєте акаунт?{' '}
-            <a href="/auth/login" className="font-medium text-[#DAA520] hover:underline">
+            <a href="/login" className="font-medium text-[#DAA520] hover:underline">
               Увійти
             </a>
           </p>

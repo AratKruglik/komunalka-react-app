@@ -1,12 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { RegisterForm } from '../../components/auth/RegisterForm'
-import { GuestLayout } from '../../components/layout/GuestLayout'
+import { RegisterForm } from '../components/RegisterForm'
+import { GuestLayout } from '../../../shared/components/layout/GuestLayout'
 
-export const Route = createFileRoute('/auth/register')({
-  component: RegisterPage,
-})
-
-function RegisterPage() {
+export default function RegisterPage() {
   return (
     <GuestLayout>
       <div className="w-[896px]">

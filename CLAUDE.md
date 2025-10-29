@@ -19,33 +19,76 @@ This is a React web application for tracking utility meter readings (komunalka =
 
 ```bash
 # Start development server with HMR
-npm run dev
+pnpm run dev
 
 # Build for production (TypeScript compilation + Vite build)
-npm run build
+pnpm run build
 
 # Lint code
-npm run lint
+pnpm run lint
 
 # Preview production build
-npm run preview
+pnpm run preview
 ```
+
+**Note:** This project uses `pnpm` as the package manager.
 
 ## Tech Stack
 
 - **Frontend Framework:** React 19.1.1 with TypeScript
+- **Routing:** React Router v7
 - **Build Tool:** Vite 7.1.7
 - **Language:** TypeScript 5.9.3
+- **Styling:** Tailwind CSS
+- **Package Manager:** pnpm
 - **Linting:** ESLint 9.36.0 with TypeScript and React plugins
 
 ## Project Structure
 
-- `src/App.tsx` - Main application component
+This project follows a **module-based architecture** that organizes code by feature/domain rather than by technical role.
+
+### Directory Organization Logic
+
+**`src/modules/`** - Feature modules (UI and business logic grouped by domain)
+- Each module represents a distinct feature or business domain (e.g., `auth`, `addresses`, `meters`, `readings`)
+- Module structure:
+  - `components/` - Components specific to this module
+  - `pages/` - Page components that represent routes
+  - `hooks/` - Custom hooks used within this module
+  - `types/` - TypeScript types specific to this module
+  - `api/` - API calls related to this module
+  - `utils/` - Utility functions specific to this module
+- Modules should be self-contained and minimize dependencies on other modules
+- Import from other modules sparingly; prefer importing from `shared/`
+
+**`src/shared/`** - Shared code used across multiple modules
+- `components/` - Reusable UI components (layouts, navigation)
+- `ui/` - Design system primitives (buttons, inputs, cards)
+- `hooks/` - Shared custom hooks
+- `utils/` - Common utility functions
+- `types/` - Shared TypeScript types
+- `constants/` - Application-wide constants
+
+**Key Files:**
+- `src/App.tsx` - React Router configuration and route definitions
 - `src/main.tsx` - Application entry point with React 19 createRoot
-- `vite.config.ts` - Vite configuration with React plugin
-- `tsconfig.json` - TypeScript configuration (references app and node configs)
-- `tsconfig.app.json` - Application TypeScript settings
-- `tsconfig.node.json` - Node/build TypeScript settings
+- `vite.config.ts` - Vite configuration
+- `tsconfig.json` - TypeScript configuration
+
+### When to Create a New Module
+
+Create a new module when:
+- You're adding a new feature with its own pages and components
+- The feature has distinct business logic separate from existing modules
+- The feature will likely grow and benefit from isolation
+
+### When to Add to Shared
+
+Add to `shared/` when:
+- The component/hook/utility is used by 2+ modules
+- It's a fundamental UI primitive (button, input, modal)
+- It's part of the layout or navigation system
+- It contains application-wide logic or constants
 
 ## Key Architecture Notes
 

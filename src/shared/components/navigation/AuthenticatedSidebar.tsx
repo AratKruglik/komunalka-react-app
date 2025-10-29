@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { NavLink } from 'react-router'
 import {
   BarChart3,
   CreditCard,
@@ -8,7 +8,7 @@ import {
   MapPin,
   Settings,
 } from 'lucide-react'
-import { Logo } from '../common/Logo'
+import { Logo } from '../../ui/Logo'
 import type { LucideIcon } from 'lucide-react'
 
 export interface SidebarItem {
@@ -110,7 +110,7 @@ function SidebarNavLink({ item }: { item: SidebarItem }) {
   const Icon = item.icon
 
   return (
-    <Link to={item.to} activeOptions={{ exact: item.exact }} preload="intent" className="block">
+    <NavLink to={item.to} end={item.exact} className="block">
       {({ isActive }) => (
         <div
           className={`flex h-12 items-center gap-3 px-4 text-base transition-colors ${
@@ -134,6 +134,6 @@ function SidebarNavLink({ item }: { item: SidebarItem }) {
           ) : null}
         </div>
       )}
-    </Link>
+    </NavLink>
   )
 }
