@@ -34,10 +34,15 @@ const defaultSections: SidebarSection[] = [
     heading: 'Головне меню',
     items: [
       {
-        label: 'Головна панель',
+        label: 'Дашборд',
         to: '/',
         icon: LayoutDashboard,
         exact: true,
+      },
+      {
+        label: 'Мої адреси',
+        to: '/addresses',
+        icon: MapPin,
       },
       {
         label: 'Мої рахунки',
@@ -48,11 +53,6 @@ const defaultSections: SidebarSection[] = [
         label: 'Аналітика',
         to: '/analytics',
         icon: BarChart3,
-      },
-      {
-        label: 'Мої адреси',
-        to: '/addresses',
-        icon: MapPin,
       },
       {
         label: 'Платежі',

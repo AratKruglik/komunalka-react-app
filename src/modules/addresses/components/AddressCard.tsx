@@ -1,14 +1,13 @@
 import {
-  Droplets,
   EllipsisVertical,
-  Flame,
   Gauge,
   Pencil,
-  Thermometer,
-  Waves,
-  Zap,
   type LucideIcon,
 } from 'lucide-react'
+import {
+  getServiceIcon,
+  getServiceTagClasses,
+} from '../../../shared/constants/services'
 
 export type AddressBadgeVariant = 'primary' | 'muted' | 'outline'
 
@@ -90,49 +89,23 @@ export function AddressCard({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {services.map((service) => (
-          <span
-            key={service.label}
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getServiceColorClasses(service.label)}`}
-          >
-            {getServiceIcon(service.label, service.icon)}
-            {service.label}
-          </span>
-        ))}
+        {services.map((service) => {
+          const Icon = service.icon || getServiceIcon(service.label)
+          return (
+            <span
+              key={service.label}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getServiceTagClasses(service.label)}`}
+            >
+              {Icon && <Icon className="h-3.5 w-3.5" />}
+              {service.label}
+            </span>
+          )
+        })}
       </div>
     </article>
   )
 }
 
-function getServiceIcon(label: string, customIcon?: LucideIcon) {
-  const iconMap: Record<string, LucideIcon> = {
-    Електроенергія: Zap,
-    Газ: Flame,
-    'Холодна вода': Droplets,
-    'Гаряча вода': Thermometer,
-    Опалення: Waves,
-  }
-
-  const Icon = customIcon ?? iconMap[label]
-
-  if (!Icon) {
-    return null
-  }
-
-  return <Icon className="h-3.5 w-3.5" />
-}
-
-function getServiceColorClasses(label: string): string {
-  const colorMap: Record<string, string> = {
-    Електроенергія: 'bg-cyan-100 text-cyan-800',
-    Газ: 'bg-yellow-100 text-yellow-800',
-    'Холодна вода': 'bg-blue-100 text-blue-800',
-    'Гаряча вода': 'bg-red-100 text-red-800',
-    Опалення: 'bg-orange-100 text-orange-800',
-  }
-
-  return colorMap[label] ?? 'bg-gray-100 text-gray-800'
-}
 
 function Badge({
   badge,
