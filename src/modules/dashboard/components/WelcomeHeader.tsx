@@ -1,4 +1,5 @@
 import { Plus } from 'lucide-react'
+import { Button } from '../../../shared/components/ui'
 
 interface WelcomeHeaderProps {
   userName?: string
@@ -27,14 +28,10 @@ export function WelcomeHeader({ userName = 'Олена' }: WelcomeHeaderProps) {
           </p>
         </div>
 
-        <button
-          onClick={handleAddReading}
-          type="button"
-          className="inline-flex shrink-0 items-center gap-2 rounded bg-primary px-5 py-2.5 text-sm font-semibold text-text-dark transition-colors hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
+        <Button onClick={handleAddReading} type="button" size="lg" className="shrink-0 px-5">
           <Plus className="h-5 w-5" strokeWidth={2.2} />
           Додати показання
-        </button>
+        </Button>
       </div>
     </section>
   )

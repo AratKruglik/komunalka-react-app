@@ -8,7 +8,7 @@ import {
   MapPin,
   Settings,
 } from 'lucide-react'
-import { Logo } from '../../ui/Logo'
+import { Logo } from '../ui'
 import type { LucideIcon } from 'lucide-react'
 
 export interface SidebarItem {

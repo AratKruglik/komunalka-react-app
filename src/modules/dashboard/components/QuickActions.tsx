@@ -1,32 +1,53 @@
 import { Plus, Home, Receipt } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { Button } from '../../../shared/components/ui'
+import type { ButtonProps } from '../../../shared/components/ui'
 
 export function QuickActions() {
   const navigate = useNavigate()
 
-  const actions = [
+  const actions: Array<{
+    id: string
+    icon: LucideIcon
+    label: string
+    onClick: () => void
+    buttonProps?: Partial<ButtonProps>
+  }> = [
     {
       id: '1',
       icon: Plus,
       label: 'Додати показання',
-      surfaceClasses:
-        'border border-primary/40 bg-primary text-text-dark shadow-lg hover:bg-primary-dark',
+      buttonProps: {
+        variant: 'solid',
+        tone: 'primary',
+        size: 'lg',
+        className: 'h-14 rounded-xl px-5 text-sm shadow-lg',
+      },
       onClick: () => console.log('Add reading'),
     },
     {
       id: '2',
       icon: Home,
       label: 'Додати адресу',
-      surfaceClasses:
-        'border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100',
+      buttonProps: {
+        variant: 'outline',
+        tone: 'neutral',
+        size: 'lg',
+        className: 'h-14 rounded-xl px-5 text-sm',
+      },
       onClick: () => navigate('/addresses'),
     },
     {
       id: '3',
       icon: Receipt,
       label: 'Переглянути тарифи',
-      surfaceClasses:
-        'border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100',
+      buttonProps: {
+        variant: 'outline',
+        tone: 'neutral',
+        size: 'lg',
+        className: 'h-14 rounded-xl px-5 text-sm',
+      },
       onClick: () => console.log('View rates'),
     },
   ]
@@ -43,15 +64,15 @@ export function QuickActions() {
         {actions.map((action) => {
           const Icon = action.icon
           return (
-            <button
+            <Button
               key={action.id}
               onClick={action.onClick}
               type="button"
-              className={`flex h-14 items-center justify-center gap-3 rounded-xl px-5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${action.surfaceClasses}`}
+              {...action.buttonProps}
             >
               <Icon className="h-5 w-5" />
               <span>{action.label}</span>
-            </button>
+            </Button>
           )
         })}
       </div>

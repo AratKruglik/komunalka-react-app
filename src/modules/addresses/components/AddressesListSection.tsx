@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react'
 import { AddressCard } from './AddressCard'
 import { mockAddressCards, type AddressCardData } from './addressCardData'
+import { Button } from '../../../shared/components/ui'
 
 interface AddressesListSectionProps {
   addresses?: AddressCardData[]
@@ -22,14 +23,15 @@ export function AddressesListSection({
             Керуйте адресами для комунальних послуг
           </p>
         </div>
-        <button
+        <Button
           type="button"
+          size="md"
+          className="min-w-[166px]"
           onClick={onAddAddress}
-          className="inline-flex h-[40px] min-w-[166px] items-center justify-center gap-2 rounded bg-primary px-4 text-[16px] font-medium text-text-dark transition-colors hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <Plus className="h-4 w-4" />
           <span>Додати адресу</span>
-        </button>
+        </Button>
       </div>
 
       <div className="grid gap-6 px-6 pb-6 md:grid-cols-2 xl:grid-cols-3">

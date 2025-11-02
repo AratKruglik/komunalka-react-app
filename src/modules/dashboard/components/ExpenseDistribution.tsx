@@ -1,3 +1,4 @@
+import type { PieLabelRenderProps } from 'recharts'
 import {
   PieChart,
   Pie,
@@ -43,9 +44,15 @@ export function ExpenseDistribution({ data }: ExpenseDistributionProps) {
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, value }: ExpenseData) =>
-                `${name}: ${((Number(value) / totalExpenses) * 100).toFixed(0)}%`
-              }
+              label={({ name, value }: PieLabelRenderProps) => {
+                const labelName = typeof name === 'string' ? name : String(name ?? '')
+                const numericValue = typeof value === 'number' ? value : Number(value ?? 0)
+                if (!totalExpenses) {
+                  return labelName
+                }
+                const percentage = ((numericValue / totalExpenses) * 100).toFixed(0)
+                return `${labelName}: ${percentage}%`
+              }}
               outerRadius={90}
               dataKey="value"
             >

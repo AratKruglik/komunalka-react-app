@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Eye, EyeOff, Circle, CheckCircle2, Calculator, TrendingUp, Bell, BarChart3, Shield } from 'lucide-react'
-import { Logo } from '../../../shared/ui/Logo'
+import { Logo, Button } from '../../../shared/components/ui'
 import * as React from "react";
 
 type PasswordStrength = 'none' | 'weak' | 'medium' | 'strong'
@@ -516,13 +516,16 @@ export function RegisterForm() {
         </div>
 
         {/* Submit Button */}
-        <button
+        <Button
           type="submit"
-          disabled={isLoading}
-          className="w-full py-3 px-4 rounded-md font-bold text-base text-[#333333] bg-primary hover:bg-primary-dark active:bg-[#FFB700] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+          loading={isLoading}
+          loadingText="Створення акаунту..."
+          fullWidth
+          size="lg"
+          className="font-bold"
         >
-          {isLoading ? 'Створення акаунту...' : 'Створити акаунт'}
-        </button>
+          Створити акаунт
+        </Button>
 
         {/* Already have account */}
         <div className="text-center">

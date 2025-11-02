@@ -1,6 +1,7 @@
 import { Calendar, AlertCircle, Clock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { SERVICE_CONFIG, type ServiceType } from '../../../shared/constants/services'
+import { Button } from '../../../shared/components/ui'
 import type { PaymentReminder } from '../types'
 
 interface PaymentRemindersProps {
@@ -67,12 +68,9 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
         <h2 className="text-lg font-semibold leading-7 text-neutral-900">
           Нагадування про оплату
         </h2>
-        <button
-          type="button"
-          className="text-sm font-semibold leading-5 text-primary transition-colors hover:text-primary-dark"
-        >
+        <Button type="button" variant="link" tone="primary" className="leading-5">
           Переглянути всі
-        </button>
+        </Button>
       </header>
 
       <div className="space-y-3">
@@ -118,12 +116,13 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                     maximumFractionDigits: 2,
                   })}
                 </p>
-                <button
+                <Button
                   type="button"
-                  className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-wide text-text-dark transition-colors hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  size="sm"
+                  className="px-4 text-xs uppercase tracking-wide"
                 >
                   Оплатити
-                </button>
+                </Button>
               </div>
             </div>
           )

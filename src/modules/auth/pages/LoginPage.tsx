@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
-import { LoginForm } from '../components/LoginForm'
 import { GuestLayout } from '../../../shared/components/layout/GuestLayout'
-import { Logo } from '../../../shared/ui/Logo'
+import { Logo } from '../../../shared/components/ui'
+import { LoginForm } from '../components/LoginForm'
 
 export default function LoginPage() {
   return (
