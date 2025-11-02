@@ -47,3 +47,14 @@ export interface ChartDataPoint {
 }
 
 export type PeriodFilter = '3months' | '6months' | '1year'
+
+export interface ExpenseDistributionItem {
+  name: string
+  value: number
+  color: string
+}
+
+export type ExpenseDistributionByPeriod = Record<
+  PeriodFilter,
+  ExpenseDistributionItem[]
+>

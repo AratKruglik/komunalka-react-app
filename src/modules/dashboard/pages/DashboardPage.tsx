@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
 import { WelcomeHeader } from '../components/WelcomeHeader'
 import { ServiceCard } from '../components/ServiceCard'
@@ -9,12 +10,17 @@ import { QuickActions } from '../components/QuickActions'
 import {
   mockServices,
   mockChartData,
-  mockExpenseDistribution,
+  mockExpenseDistributionByPeriod,
   mockRecentReadings,
   mockPaymentReminders,
+  mockDashboardAddresses,
 } from '../data/mockData'
 
 export default function DashboardPage() {
+  const [selectedAddressId, setSelectedAddressId] = useState(
+    mockDashboardAddresses[0]?.id ?? ''
+  )
+
   return (
     <AuthenticatedLayout
       pageTitle="Головна"
@@ -23,7 +29,12 @@ export default function DashboardPage() {
     >
       <div className="space-y-6">
         {/* Welcome Header */}
-        <WelcomeHeader userName="Олена" />
+        <WelcomeHeader
+          userName="Олена"
+          addresses={mockDashboardAddresses}
+          selectedAddressId={selectedAddressId}
+          onAddressChange={setSelectedAddressId}
+        />
 
         {/* Current Month Expenses - Service Cards */}
         <section>
@@ -38,14 +49,10 @@ export default function DashboardPage() {
         </section>
 
         {/* Charts Section */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <ConsumptionChart data={mockChartData} />
-          </div>
-          <div className="lg:col-span-1">
-            <ExpenseDistribution data={mockExpenseDistribution} />
-          </div>
-        </div>
+        <section className="space-y-6">
+          <ConsumptionChart data={mockChartData} />
+          <ExpenseDistribution dataByPeriod={mockExpenseDistributionByPeriod} />
+        </section>
 
         {/* Recent Readings and Payment Reminders */}
         <div className="grid gap-6 lg:grid-cols-2">

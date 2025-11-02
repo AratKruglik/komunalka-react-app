@@ -10,6 +10,8 @@ import {
   Legend,
 } from 'recharts'
 import type { ChartDataPoint, PeriodFilter } from '../types'
+import { Button } from '../../../shared/components/ui'
+import { SERVICE_CONFIG } from '../../../shared/constants/services'
 
 interface ConsumptionChartProps {
   data: ChartDataPoint[]
@@ -20,6 +22,14 @@ const periodOptions: { value: PeriodFilter; label: string }[] = [
   { value: '6months', label: 'За 6 місяців' },
   { value: '3months', label: 'За 3 місяці' },
 ]
+
+const chartColors = {
+  electricity: SERVICE_CONFIG['Електроенергія'].chartColor,
+  gas: SERVICE_CONFIG['Газ'].chartColor,
+  hotWater: SERVICE_CONFIG['Гаряча вода'].chartColor,
+  coldWater: SERVICE_CONFIG['Холодна вода'].chartColor,
+  heating: SERVICE_CONFIG['Опалення'].chartColor,
+}
 
 export function ConsumptionChart({ data }: ConsumptionChartProps) {
   const [selectedPeriod, setSelectedPeriod] =
@@ -47,20 +57,22 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
         </h2>
 
         <div className="flex flex-wrap gap-2">
-          {periodOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => setSelectedPeriod(option.value)}
-              type="button"
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                selectedPeriod === option.value
-                  ? 'bg-primary text-neutral-900 shadow-sm'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
+          {periodOptions.map((option) => {
+            const isSelected = selectedPeriod === option.value
+            return (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={isSelected ? 'solid' : 'outline'}
+                tone={isSelected ? 'primary' : 'neutral'}
+                className="px-4"
+                onClick={() => setSelectedPeriod(option.value)}
+              >
+                {option.label}
+              </Button>
+            )
+          })}
         </div>
       </div>
 
@@ -90,46 +102,46 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
             type="monotone"
             dataKey="electricity"
             name="Електроенергія"
-            stroke="#FCD34D"
-            strokeWidth={2}
-            dot={{ fill: '#FCD34D', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke={chartColors.electricity}
+            strokeWidth={3}
+            dot={{ fill: chartColors.electricity, stroke: chartColors.electricity, strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7 }}
           />
           <Line
             type="monotone"
             dataKey="gas"
             name="Газ"
-            stroke="#60A5FA"
-            strokeWidth={2}
-            dot={{ fill: '#60A5FA', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke={chartColors.gas}
+            strokeWidth={3}
+            dot={{ fill: chartColors.gas, stroke: chartColors.gas, strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7 }}
           />
           <Line
             type="monotone"
             dataKey="hotWater"
             name="Гаряча вода"
-            stroke="#F87171"
-            strokeWidth={2}
-            dot={{ fill: '#F87171', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke={chartColors.hotWater}
+            strokeWidth={3}
+            dot={{ fill: chartColors.hotWater, stroke: chartColors.hotWater, strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7 }}
           />
           <Line
             type="monotone"
             dataKey="coldWater"
             name="Холодна вода"
-            stroke="#22D3EE"
-            strokeWidth={2}
-            dot={{ fill: '#22D3EE', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke={chartColors.coldWater}
+            strokeWidth={3}
+            dot={{ fill: chartColors.coldWater, stroke: chartColors.coldWater, strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7 }}
           />
           <Line
             type="monotone"
             dataKey="heating"
             name="Опалення"
-            stroke="#FB923C"
-            strokeWidth={2}
-            dot={{ fill: '#FB923C', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke={chartColors.heating}
+            strokeWidth={3}
+            dot={{ fill: chartColors.heating, stroke: chartColors.heating, strokeWidth: 2, r: 5 }}
+            activeDot={{ r: 7 }}
           />
         </LineChart>
       </ResponsiveContainer>

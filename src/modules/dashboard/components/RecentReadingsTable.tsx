@@ -1,3 +1,4 @@
+import { Button } from '../../../shared/components/ui'
 import type { Reading } from '../types'
 
 interface RecentReadingsTableProps {
@@ -20,12 +21,9 @@ export function RecentReadingsTable({ readings }: RecentReadingsTableProps) {
         <h2 className="text-lg font-semibold leading-7 text-neutral-900">
           Останні показання
         </h2>
-        <button
-          type="button"
-          className="text-sm font-semibold leading-5 text-primary transition-colors hover:text-primary-dark"
-        >
+        <Button type="button" variant="link" tone="primary">
           Переглянути всі
-        </button>
+        </Button>
       </header>
 
       <div className="overflow-x-auto">

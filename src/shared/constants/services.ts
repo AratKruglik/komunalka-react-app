@@ -15,6 +15,7 @@ export interface ServiceConfig {
   iconColor: string
   tagBg: string
   tagText: string
+  chartColor: string
 }
 
 /**
@@ -28,6 +29,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     iconColor: 'text-sky-600',
     tagBg: 'bg-sky-100',
     tagText: 'text-sky-800',
+    chartColor: '#7DD3FC',
   },
   Газ: {
     icon: Flame,
@@ -35,6 +37,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     iconColor: 'text-amber-600',
     tagBg: 'bg-amber-100',
     tagText: 'text-amber-800',
+    chartColor: '#FBBF24',
   },
   'Холодна вода': {
     icon: Droplets,
@@ -42,6 +45,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     iconColor: 'text-blue-600',
     tagBg: 'bg-blue-100',
     tagText: 'text-blue-800',
+    chartColor: '#93C5FD',
   },
   'Гаряча вода': {
     icon: Thermometer,
@@ -49,6 +53,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     iconColor: 'text-rose-600',
     tagBg: 'bg-rose-100',
     tagText: 'text-rose-800',
+    chartColor: '#F9A8D4',
   },
   Водопостачання: {
     icon: Droplets,
@@ -56,6 +61,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     iconColor: 'text-cyan-600',
     tagBg: 'bg-cyan-100',
     tagText: 'text-cyan-800',
+    chartColor: '#67E8F9',
   },
   Опалення: {
     icon: Waves,
@@ -63,6 +69,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     iconColor: 'text-orange-600',
     tagBg: 'bg-orange-100',
     tagText: 'text-orange-800',
+    chartColor: '#FDBA74',
   },
 }
 

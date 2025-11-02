@@ -1,102 +1,195 @@
+import { useMemo, useState } from 'react'
 import type { PieLabelRenderProps } from 'recharts'
 import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
-  Legend,
   Tooltip,
+  Label,
 } from 'recharts'
+import { Button } from '../../../shared/components/ui'
+import type {
+  ExpenseDistributionByPeriod,
+  ExpenseDistributionItem,
+  PeriodFilter,
+} from '../types'
 
-interface ExpenseData {
-  name: string
-  value: number
-  color: string
-  [key: string]: string | number
-}
+const periodOptions: { value: PeriodFilter; label: string }[] = [
+  { value: '1year', label: 'За рік' },
+  { value: '6months', label: 'За 6 місяців' },
+  { value: '3months', label: 'За 3 місяці' },
+]
 
 interface ExpenseDistributionProps {
-  data: ExpenseData[]
+  dataByPeriod: ExpenseDistributionByPeriod
 }
 
-export function ExpenseDistribution({ data }: ExpenseDistributionProps) {
-  const totalExpenses = data.reduce((sum, item) => sum + item.value, 0)
+export function ExpenseDistribution({ dataByPeriod }: ExpenseDistributionProps) {
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>('1year')
+
+  const currentData = useMemo<ExpenseDistributionItem[]>(() => {
+    return dataByPeriod[selectedPeriod] ?? []
+  }, [dataByPeriod, selectedPeriod])
+
+  const totalExpenses = useMemo(() => {
+    return currentData.reduce((sum, item) => sum + item.value, 0)
+  }, [currentData])
+  const formatCurrency = (value: number) => {
+    const numericValue = Number.isFinite(value) ? value : 0
+    return `₴${numericValue.toLocaleString('uk-UA')}`
+  }
+
+  const renderLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+    name,
+  }: PieLabelRenderProps) => {
+    if (!percent || !totalExpenses || percent < 0.06) {
+      return null
+    }
+
+    const RADIAN = Math.PI / 180
+    const startRadius = innerRadius ?? 0
+    const endRadius = outerRadius ?? startRadius
+    const labelRadius = startRadius + (endRadius - startRadius) * 1.2
+    const centerX = cx ?? 0
+    const centerY = cy ?? 0
+    const x = centerX + labelRadius * Math.cos(-midAngle * RADIAN)
+    const y = centerY + labelRadius * Math.sin(-midAngle * RADIAN)
+
+    const labelName = typeof name === 'string' ? name : String(name ?? '')
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#1F2937"
+        fontSize={12}
+        textAnchor={x > centerX ? 'start' : 'end'}
+        dominantBaseline="central"
+      >
+        <tspan fontWeight={600}>{`${(percent * 100).toFixed(0)}%`}</tspan>
+        <tspan x={x} dy={14} fontSize={11} fill="#4B5563">
+          {labelName}
+        </tspan>
+      </text>
+    )
+  }
 
   return (
     <section className="flex h-full flex-col rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
-      <header className="mb-6">
-        <h2 className="text-lg font-semibold leading-7 text-neutral-900">
-          Розподіл витрат
-        </h2>
-        <p className="mt-1 text-sm text-neutral-500">
-          Загалом:{' '}
-          <span className="font-semibold text-neutral-900">
-            ₴{totalExpenses.toLocaleString('uk-UA')}
-          </span>
-        </p>
+      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-lg font-semibold leading-7 text-neutral-900">
+            Розподіл витрат
+          </h2>
+          <p className="mt-1 text-sm text-neutral-500">
+            Загалом:{' '}
+            <span className="font-semibold text-neutral-900">
+              {formatCurrency(totalExpenses)}
+            </span>
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {periodOptions.map((option) => {
+            const isSelected = selectedPeriod === option.value
+            return (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={isSelected ? 'solid' : 'outline'}
+                tone={isSelected ? 'primary' : 'neutral'}
+                className="px-4"
+                onClick={() => setSelectedPeriod(option.value)}
+              >
+                {option.label}
+              </Button>
+            )
+          })}
+        </div>
       </header>
 
-      <div className="flex flex-1 flex-col">
-        <ResponsiveContainer width="100%" height={220}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, value }: PieLabelRenderProps) => {
-                const labelName = typeof name === 'string' ? name : String(name ?? '')
-                const numericValue = typeof value === 'number' ? value : Number(value ?? 0)
-                if (!totalExpenses) {
-                  return labelName
-                }
-                const percentage = ((numericValue / totalExpenses) * 100).toFixed(0)
-                return `${labelName}: ${percentage}%`
-              }}
-              outerRadius={90}
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #E5E7EB',
-                borderRadius: '8px',
-                fontSize: '12px',
-              }}
-              formatter={(value: number) => [`₴${value}`, 'Сума']}
-            />
-            <Legend
-              verticalAlign="bottom"
-              height={36}
-              iconType="circle"
-              wrapperStyle={{ fontSize: '12px' }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+      <div className="flex flex-1 flex-col gap-6">
+        <div className="flex w-full items-center justify-center">
+          <div className="w-full max-w-[320px]">
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
+                <Pie
+                  data={currentData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderLabel}
+                  innerRadius={60}
+                  outerRadius={94}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {currentData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                  <Label
+                    position="center"
+                    content={({ viewBox }) => {
+                      if (!viewBox || typeof viewBox.cx !== 'number' || typeof viewBox.cy !== 'number') {
+                        return null
+                      }
 
-      <div className="mt-4 space-y-3">
-        {data.map((item) => (
-          <div
-            key={item.name}
-            className="flex items-center justify-between text-sm text-neutral-600"
-          >
-            <span className="inline-flex items-center gap-2">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              {item.name}
-            </span>
-            <span className="font-semibold text-neutral-900">
-              ₴{item.value.toLocaleString('uk-UA')}
-            </span>
+                      const { cx, cy } = viewBox
+
+                      return (
+                        <text x={cx} y={cy} fill="#374151" textAnchor="middle">
+                          <tspan fontSize={12} fontWeight={600} dy={-6}>
+                            Загалом
+                          </tspan>
+                          <tspan x={cx} dy={16} fontSize={14} fontWeight={600}>
+                            {formatCurrency(totalExpenses)}
+                          </tspan>
+                        </text>
+                      )
+                    }}
+                  />
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                  formatter={(value) => [formatCurrency(Number(value)), 'Сума']}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        ))}
+        </div>
+
+        <div className="flex w-full flex-col justify-center space-y-3 text-sm text-neutral-600">
+          {currentData.map((item) => (
+            <div
+              key={item.name}
+              className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2"
+            >
+              <span className="inline-flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                {item.name}
+              </span>
+              <span className="font-semibold text-neutral-900">
+                {formatCurrency(item.value)}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

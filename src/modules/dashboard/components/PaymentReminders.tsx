@@ -1,6 +1,10 @@
 import { Calendar, AlertCircle, Clock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { SERVICE_CONFIG, type ServiceType } from '../../../shared/constants/services'
+import {
+  SERVICE_CONFIG,
+  type ServiceType,
+  getServiceIcon,
+} from '../../../shared/constants/services'
 import { Button } from '../../../shared/components/ui'
 import type { PaymentReminder } from '../types'
 
@@ -68,7 +72,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
         <h2 className="text-lg font-semibold leading-7 text-neutral-900">
           Нагадування про оплату
         </h2>
-        <Button type="button" variant="link" tone="primary" className="leading-5">
+        <Button type="button" variant="link" tone="primary">
           Переглянути всі
         </Button>
       </header>
@@ -76,7 +80,9 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
       <div className="space-y-3">
         {reminders.map((reminder) => {
           const styles = getServiceStyles(reminder.serviceName)
-          const Icon = getUrgencyIcon(reminder.urgency)
+          const ServiceIcon =
+            getServiceIcon(reminder.serviceName) ?? AlertCircle
+          const UrgencyIcon = getUrgencyIcon(reminder.urgency)
 
           return (
             <div
@@ -87,7 +93,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                 <div
                   className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${styles.iconBg}`}
                 >
-                  <Icon className={`h-5 w-5 ${styles.iconColor}`} />
+                  <ServiceIcon className={`h-5 w-5 ${styles.iconColor}`} />
                 </div>
 
                 <div>
@@ -96,16 +102,26 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                   >
                     {reminder.serviceName}
                   </h3>
-                  <p className="mt-1 text-xs font-medium leading-4 text-text-secondary">
-                    Термін оплати: {formatDate(reminder.dueDate)} (через{' '}
-                    {reminder.daysUntilDue}{' '}
-                    {reminder.daysUntilDue === 1
-                      ? 'день'
-                      : reminder.daysUntilDue < 5
-                        ? 'дні'
-                        : 'днів'}
-                    )
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                      <UrgencyIcon className="h-3 w-3" />
+                      {reminder.urgency === 'high'
+                        ? 'Терміново'
+                        : reminder.urgency === 'medium'
+                          ? 'Скоро'
+                          : 'Планово'}
+                    </span>
+                    <p className="text-xs font-medium leading-4 text-text-secondary">
+                      Термін оплати: {formatDate(reminder.dueDate)} (через{' '}
+                      {reminder.daysUntilDue}{' '}
+                      {reminder.daysUntilDue === 1
+                        ? 'день'
+                        : reminder.daysUntilDue < 5
+                          ? 'дні'
+                          : 'днів'}
+                      )
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -119,7 +135,8 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                 <Button
                   type="button"
                   size="sm"
-                  className="px-4 text-xs uppercase tracking-wide"
+                  tone="primary"
+                  className="px-4 text-sm"
                 >
                   Оплатити
                 </Button>

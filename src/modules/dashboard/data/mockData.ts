@@ -4,6 +4,8 @@ import type {
   Reading,
   PaymentReminder,
   ChartDataPoint,
+  ExpenseDistributionByPeriod,
+  DashboardAddressOption,
 } from '../types'
 
 export const mockServices: ServiceData[] = [
@@ -162,6 +164,24 @@ export const mockPaymentReminders: PaymentReminder[] = [
   },
 ]
 
+export const mockDashboardAddresses: DashboardAddressOption[] = [
+  {
+    id: 'khreshchatyk',
+    label: 'вул. Хрещатик, 22, кв. 15',
+    description: 'м. Київ, Шевченківський район',
+  },
+  {
+    id: 'darnytska',
+    label: 'вул. Дарницька, 5, кв. 42',
+    description: 'м. Київ, Дарницький район',
+  },
+  {
+    id: 'nezalezhnosti',
+    label: 'вул. Незалежності, 10, кв. 7',
+    description: 'м. Львів, Шевченківський район',
+  },
+]
+
 export const mockChartData: ChartDataPoint[] = [
   {
     month: 'Трав',
@@ -219,11 +239,86 @@ export const mockChartData: ChartDataPoint[] = [
   },
 ]
 
-export const mockExpenseDistribution = [
-  { name: 'Електроенергія', value: 1250, color: '#FCD34D' },
-  { name: 'Газ', value: 890, color: '#60A5FA' },
-  { name: 'Водопостачання', value: 456, color: '#22D3EE' },
-  { name: 'Гаряча вода', value: 780, color: '#F87171' },
-  { name: 'Холодна вода', value: 324, color: '#93C5FD' },
-  { name: 'Опалення', value: 1200, color: '#FB923C' },
-]
+export const mockExpenseDistributionByPeriod: ExpenseDistributionByPeriod = {
+  '1year': [
+    {
+      name: 'Електроенергія',
+      value: 1250,
+      color: SERVICE_CONFIG['Електроенергія'].chartColor,
+    },
+    {
+      name: 'Газ',
+      value: 890,
+      color: SERVICE_CONFIG['Газ'].chartColor,
+    },
+    {
+      name: 'Гаряча вода',
+      value: 780,
+      color: SERVICE_CONFIG['Гаряча вода'].chartColor,
+    },
+    {
+      name: 'Холодна вода',
+      value: 324,
+      color: SERVICE_CONFIG['Холодна вода'].chartColor,
+    },
+    {
+      name: 'Опалення',
+      value: 1200,
+      color: SERVICE_CONFIG['Опалення'].chartColor,
+    },
+  ],
+  '6months': [
+    {
+      name: 'Електроенергія',
+      value: 720,
+      color: SERVICE_CONFIG['Електроенергія'].chartColor,
+    },
+    {
+      name: 'Газ',
+      value: 540,
+      color: SERVICE_CONFIG['Газ'].chartColor,
+    },
+    {
+      name: 'Гаряча вода',
+      value: 480,
+      color: SERVICE_CONFIG['Гаряча вода'].chartColor,
+    },
+    {
+      name: 'Холодна вода',
+      value: 210,
+      color: SERVICE_CONFIG['Холодна вода'].chartColor,
+    },
+    {
+      name: 'Опалення',
+      value: 680,
+      color: SERVICE_CONFIG['Опалення'].chartColor,
+    },
+  ],
+  '3months': [
+    {
+      name: 'Електроенергія',
+      value: 360,
+      color: SERVICE_CONFIG['Електроенергія'].chartColor,
+    },
+    {
+      name: 'Газ',
+      value: 260,
+      color: SERVICE_CONFIG['Газ'].chartColor,
+    },
+    {
+      name: 'Гаряча вода',
+      value: 220,
+      color: SERVICE_CONFIG['Гаряча вода'].chartColor,
+    },
+    {
+      name: 'Холодна вода',
+      value: 120,
+      color: SERVICE_CONFIG['Холодна вода'].chartColor,
+    },
+    {
+      name: 'Опалення',
+      value: 310,
+      color: SERVICE_CONFIG['Опалення'].chartColor,
+    },
+  ],
+}

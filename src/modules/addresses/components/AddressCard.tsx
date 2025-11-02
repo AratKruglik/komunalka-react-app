@@ -8,6 +8,7 @@ import {
   getServiceIcon,
   getServiceTagClasses,
 } from '../../../shared/constants/services'
+import { Button } from '../../../shared/components/ui'
 
 export type AddressBadgeVariant = 'primary' | 'muted' | 'outline'
 
@@ -68,14 +69,17 @@ export function AddressCard({
           {(actions.length ? actions : defaultActions).map((action) => {
             const Icon = action.icon
             return (
-              <button
+              <Button
                 key={action.label}
                 type="button"
                 aria-label={action.label}
-                className="grid h-9 w-9 place-items-center rounded-full border border-gray-200 bg-white text-gray-600 transition-colors hover:text-text-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                variant="outline"
+                tone="neutral"
+                size="icon"
+                className="text-gray-600"
               >
                 <Icon className="h-4 w-4" />
-              </button>
+              </Button>
             )
           })}
         </div>

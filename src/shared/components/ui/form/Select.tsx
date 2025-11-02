@@ -10,7 +10,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   ref,
 ) {
   const baseClasses =
-    'w-full appearance-none rounded-md border-[0.5px] border-gray-300 bg-white px-4 py-2.5 text-base text-[#333333] transition-colors focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary'
+    'w-full appearance-none rounded-md border border-[var(--color-neutral-200)] bg-white px-4 py-2.5 text-base text-[var(--color-text-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]'
 
   const invalidClasses =
     'border-[var(--color-error)] focus:ring-[var(--color-error)] focus:border-[var(--color-error)]'
@@ -22,7 +22,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
         className={[
           baseClasses,
           isInvalid ? invalidClasses : '',
-          'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400',
+          'disabled:cursor-not-allowed disabled:bg-[var(--color-neutral-100)] disabled:text-[var(--color-neutral-400)]',
           'pr-10',
           className,
         ]

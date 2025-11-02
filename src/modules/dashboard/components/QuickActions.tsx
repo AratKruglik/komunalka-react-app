@@ -2,7 +2,6 @@ import { Plus, Home, Receipt } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { Button } from '../../../shared/components/ui'
-import type { ButtonProps } from '../../../shared/components/ui'
 
 export function QuickActions() {
   const navigate = useNavigate()
@@ -12,42 +11,27 @@ export function QuickActions() {
     icon: LucideIcon
     label: string
     onClick: () => void
-    buttonProps?: Partial<ButtonProps>
+    variant?: 'solid' | 'outline'
   }> = [
     {
       id: '1',
       icon: Plus,
       label: 'Додати показання',
-      buttonProps: {
-        variant: 'solid',
-        tone: 'primary',
-        size: 'lg',
-        className: 'h-14 rounded-xl px-5 text-sm shadow-lg',
-      },
+      variant: 'solid',
       onClick: () => console.log('Add reading'),
     },
     {
       id: '2',
       icon: Home,
       label: 'Додати адресу',
-      buttonProps: {
-        variant: 'outline',
-        tone: 'neutral',
-        size: 'lg',
-        className: 'h-14 rounded-xl px-5 text-sm',
-      },
+      variant: 'outline',
       onClick: () => navigate('/addresses'),
     },
     {
       id: '3',
       icon: Receipt,
       label: 'Переглянути тарифи',
-      buttonProps: {
-        variant: 'outline',
-        tone: 'neutral',
-        size: 'lg',
-        className: 'h-14 rounded-xl px-5 text-sm',
-      },
+      variant: 'outline',
       onClick: () => console.log('View rates'),
     },
   ]
@@ -68,7 +52,10 @@ export function QuickActions() {
               key={action.id}
               onClick={action.onClick}
               type="button"
-              {...action.buttonProps}
+              variant={action.variant ?? 'solid'}
+              tone={action.variant === 'outline' ? 'neutral' : 'primary'}
+              size="lg"
+              className="h-12 w-full justify-center gap-2 px-5 text-sm"
             >
               <Icon className="h-5 w-5" />
               <span>{action.label}</span>
