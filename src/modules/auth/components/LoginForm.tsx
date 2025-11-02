@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { AppleIcon, FacebookIcon, GoogleIcon } from '../../../shared/components/ui'
+import * as React from "react";
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
