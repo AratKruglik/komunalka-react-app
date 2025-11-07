@@ -23,10 +23,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const hasEndAdornment = Boolean(endAdornment)
 
   const baseClasses =
-    'w-full py-2.5 rounded-md border border-[var(--color-neutral-200)] text-base text-[var(--color-text-dark)] placeholder:text-[#adaebc] bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]'
+    'w-full py-2.5 rounded-md border border-neutral-200 text-base text-dark placeholder:text-[#adaebc] bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
 
   const invalidClasses =
-    'border-[var(--color-error)] focus:ring-[var(--color-error)] focus:border-[var(--color-error)]'
+    'border-error focus:ring-error focus:border-error'
 
   return (
     <div className={['relative', wrapperClassName].filter(Boolean).join(' ')}>
@@ -42,7 +42,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           isInvalid ? invalidClasses : '',
           hasLeadingIcon ? 'pl-11' : 'pl-4',
           hasEndAdornment ? 'pr-12' : 'pr-4',
-          'disabled:cursor-not-allowed disabled:bg-[var(--color-neutral-100)] disabled:text-[var(--color-neutral-400)]',
+          'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
           className,
         ]
           .filter(Boolean)

@@ -1,0 +1,54 @@
+import { ChevronRight } from 'lucide-react'
+import { Link, useNavigate } from 'react-router'
+import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
+import { AddAddressForm } from '../components/AddAddressForm'
+
+const breadcrumbs = [
+  { label: 'Головна', href: '/' },
+  { label: 'Мої адреси', href: '/addresses' },
+  { label: 'Додати адресу' },
+]
+
+export default function AddAddressPage() {
+  const navigate = useNavigate()
+
+  return (
+    <AuthenticatedLayout
+      pageTitle="Додати адресу"
+      pageSubtitle="Створіть нову адресу для обліку комунальних послуг"
+    >
+      <div className="space-y-6">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center gap-2 text-sm text-gray-500"
+        >
+          {breadcrumbs.map((breadcrumb, index) => {
+            const isLast = index === breadcrumbs.length - 1
+
+            return (
+              <span key={breadcrumb.label} className="flex items-center gap-2">
+                {breadcrumb.href && !isLast ? (
+                  <Link
+                    to={breadcrumb.href}
+                    className="transition-colors hover:text-gray-700"
+                  >
+                    {breadcrumb.label}
+                  </Link>
+                ) : (
+                  <span
+                    className={isLast ? 'font-medium text-gray-700' : undefined}
+                  >
+                    {breadcrumb.label}
+                  </span>
+                )}
+                {!isLast ? <ChevronRight className="h-4 w-4" /> : null}
+              </span>
+            )
+          })}
+        </nav>
+
+        <AddAddressForm onCancel={() => navigate('/addresses')} />
+      </div>
+    </AuthenticatedLayout>
+  )
+}
