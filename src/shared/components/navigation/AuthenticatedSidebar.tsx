@@ -100,55 +100,62 @@ export function AuthenticatedSidebar({
 }: AuthenticatedSidebarProps) {
   const isMobile = variant === 'mobile'
 
-  const containerClasses =
-    variant === 'mobile'
-      ? 'flex h-full w-full flex-col border-r border-gray-200 bg-white shadow-2xl'
-      : 'sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-gray-200 bg-white lg:flex'
+  const containerClasses = isMobile
+    ? 'flex h-full w-full'
+    : 'relative hidden w-64 shrink-0 lg:flex'
+
+  const innerClasses = `flex h-full w-full flex-col border-r border-gray-200 bg-white ${
+    isMobile ? 'shadow-2xl' : 'sticky top-0 min-h-full'
+  }`
 
   return (
     <aside className={containerClasses}>
-      {/* Header with Logo - Responsive height */}
-      <div className="flex h-14 items-center gap-3 border-b border-gray-200 px-3 sm:h-16 sm:px-4 lg:h-[65px]">
-        <Logo size="md" />
-        {isMobile ? (
-          <button
-            type="button"
-            onClick={onClose}
-            className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-[#333333] active:bg-gray-100 sm:h-9 sm:w-9"
-            aria-label="Закрити меню"
-          >
-            <X className="h-4 w-4 sm:h-5 sm:w-5" />
-          </button>
+      <div className={innerClasses}>
+        {/* Header with Logo - Responsive height */}
+        <div className="flex h-14 items-center gap-3 border-b border-gray-200 px-3 sm:h-16 sm:px-4 lg:h-[65px]">
+          <Logo size="md" />
+          {isMobile ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-[#333333] active:bg-gray-100 sm:h-9 sm:w-9"
+              aria-label="Закрити меню"
+            >
+              <X className="h-4 w-4 sm:h-5 sm:w-5" />
+            </button>
+          ) : null}
+        </div>
+
+        {/* Navigation - Scrollable with responsive padding */}
+        <nav
+          className={`flex-1 space-y-5 overflow-y-auto py-4 sm:space-y-6 sm:py-6 ${
+            isMobile ? 'px-2' : 'px-0'
+          }`}
+        >
+          {sections.map((section) => (
+            <div key={section.heading} className="space-y-2 sm:space-y-3">
+              <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400 sm:px-4 sm:text-xs">
+                {section.heading}
+              </p>
+
+              <div className="space-y-0.5 sm:space-y-1">
+                {section.items.map((item) => (
+                  <SidebarNavLink
+                    key={item.label}
+                    item={item}
+                    onNavigate={onNavigate}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* User section - Only visible on mobile (< 768px) */}
+        {user && isMobile ? (
+          <MobileUserSection user={user} onNavigate={onNavigate} />
         ) : null}
       </div>
-
-      {/* Navigation - Scrollable with responsive padding */}
-      <nav
-        className={`flex-1 space-y-5 overflow-y-auto py-4 sm:space-y-6 sm:py-6 ${isMobile ? 'px-2' : 'px-0'}`}
-      >
-        {sections.map((section) => (
-          <div key={section.heading} className="space-y-2 sm:space-y-3">
-            <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400 sm:px-4 sm:text-xs">
-              {section.heading}
-            </p>
-
-            <div className="space-y-0.5 sm:space-y-1">
-              {section.items.map((item) => (
-                <SidebarNavLink
-                  key={item.label}
-                  item={item}
-                  onNavigate={onNavigate}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-      </nav>
-
-      {/* User section - Only visible on mobile (< 768px) */}
-      {user && isMobile ? (
-        <MobileUserSection user={user} onNavigate={onNavigate} />
-      ) : null}
     </aside>
   )
 }
