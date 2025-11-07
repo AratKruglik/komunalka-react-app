@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Eye, EyeOff, Circle, CheckCircle2, Calculator, TrendingUp, Bell, BarChart3, Shield } from 'lucide-react'
 import { Logo, Button } from '../../../shared/components/ui'
-import * as React from "react";
 
 type PasswordStrength = 'none' | 'weak' | 'medium' | 'strong'
 
@@ -89,8 +88,8 @@ export function RegisterForm() {
 
   const passwordStrength = getPasswordStrength(formData.password)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setErrors({})
     setIsLoading(true)
 
@@ -156,25 +155,29 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="flex overflow-hidden bg-white">
-      {/* Left side - Form */}
-      <div className="w-[522.656px] h-[1470px] overflow-hidden">
-        {/* Header with Logo */}
-        <div className="px-8 pt-8 pb-3">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Logo size="sm" />
+    <div className="flex flex-col overflow-hidden rounded-xl bg-white shadow-xl sm:rounded-2xl lg:flex-row">
+      {/* Left side - Form - Responsive width and padding */}
+      <div className="w-full border-b border-gray-100 lg:w-3/5 lg:border-b-0 lg:border-r">
+        <div className="px-4 py-5 sm:px-8 sm:py-6 lg:px-10 lg:py-8 xl:px-12">
+          {/* Header with Logo - responsive sizing */}
+          <div className="pb-3 text-center sm:pb-4">
+            <div className="mb-2 flex items-center justify-center gap-2 sm:mb-3">
+              <Logo size="sm" />
+            </div>
+            <h1 className="text-xl font-bold text-black sm:text-2xl lg:text-3xl">
+              Створити акаунт
+            </h1>
+            <p className="mt-1 text-xs text-gray-600 sm:text-sm">
+              Керуйте всіма комунальними послугами в одному кабінеті
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-black text-center mb-6">
-            Створити акаунт
-          </h1>
-        </div>
 
-        {/* Social Buttons */}
-        <div className="space-y-3 px-8">
-        <button
+          {/* Social Buttons - responsive sizing and spacing */}
+          <div className="space-y-2 sm:space-y-3">
+            <button
           type="button"
           onClick={() => handleSocialRegister('google')}
-          className="w-full py-2.5 px-4 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors text-base font-normal text-black flex items-center justify-center gap-3"
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-black transition-colors hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           disabled={isLoading}
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -196,24 +199,24 @@ export function RegisterForm() {
             />
           </svg>
           Зареєструватися через Google
-        </button>
+            </button>
 
-        <button
+            <button
           type="button"
           onClick={() => handleSocialRegister('facebook')}
-          className="w-full py-2.5 px-4 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors text-base font-normal text-black flex items-center justify-center gap-3"
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-black transition-colors hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           disabled={isLoading}
         >
           <svg className="w-4 h-4" fill="#1877F2" viewBox="0 0 24 24">
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
           Зареєструватися через Facebook
-        </button>
+            </button>
 
-        <button
+            <button
           type="button"
           onClick={() => handleSocialRegister('apple')}
-          className="w-full py-2.5 px-4 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors text-base font-normal text-black flex items-center justify-center gap-3"
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-black transition-colors hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           disabled={isLoading}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -223,29 +226,31 @@ export function RegisterForm() {
             />
           </svg>
           Зареєструватися через Apple
-        </button>
-      </div>
+            </button>
+          </div>
 
-      {/* Divider - 24px from buttons (top: 342px vs 318px = 24px gap) */}
-      <div className="relative my-4 px-8">
-        <div className="absolute inset-0 flex items-center left-8 right-8">
-          <div className="w-full border-t border-gray-300"></div>
-        </div>
-        <div className="relative flex justify-center">
-          <span className="px-2 bg-white text-sm text-gray-500">АБО</span>
-        </div>
-      </div>
+          {/* Divider */}
+          <div className="relative my-4 sm:my-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500 sm:px-3 sm:text-xs sm:tracking-[0.3em]">
+                Або
+              </span>
+            </div>
+          </div>
 
-      {/* Registration Form */}
-      <form onSubmit={handleSubmit} className="space-y-4 px-8 pb-6">
+          {/* Registration Form - responsive spacing */}
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         {/* Personal Information Section */}
-        <div className="space-y-0">
-          <h3 className="text-lg font-medium text-black mb-3">Особиста інформація</h3>
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium text-black">Особиста інформація</h3>
 
-          {/* First Name & Last Name - gap is 16px in Figma */}
-          <div className="grid grid-cols-2 gap-4 mb-[16px]">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1.5">
+          {/* First Name & Last Name */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                 Ім'я <span className="text-red-500">*</span>
               </label>
               <input
@@ -261,8 +266,8 @@ export function RegisterForm() {
               )}
             </div>
 
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1.5">
+            <div className="space-y-1.5">
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
                 Прізвище <span className="text-red-500">*</span>
               </label>
               <input
@@ -279,9 +284,9 @@ export function RegisterForm() {
             </div>
           </div>
 
-          {/* Email - 16px gap from previous */}
-          <div className="mb-[16px]">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+          {/* Email */}
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Електронна пошта <span className="text-red-500">*</span>
             </label>
             <input
@@ -296,9 +301,9 @@ export function RegisterForm() {
             {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
           </div>
 
-          {/* Phone - 16px gap */}
-          <div className="mb-[16px]">
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+          {/* Phone */}
+          <div className="space-y-1.5">
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
               Номер телефону <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -538,17 +543,18 @@ export function RegisterForm() {
         </div>
       </form>
       </div>
+      </div>
 
-      {/* Right side - Benefits */}
-      <div className="w-[373.328px] h-[1470px] bg-[#fff2b2] px-8 py-8 flex items-center">
-        <div className="w-[309.328px]">
-          <h2 className="text-2xl font-bold text-[#333333] leading-8 mb-24">
+      {/* Right side - Benefits - Responsive padding and spacing */}
+      <div className="w-full bg-[#fff2b2] px-4 py-6 sm:px-8 sm:py-8 lg:w-2/5 lg:px-10 lg:py-12">
+        <div className="mx-auto flex h-full max-w-md flex-col justify-center gap-6 sm:gap-8 lg:gap-10">
+          <h2 className="text-xl font-bold leading-7 text-[#333333] sm:text-2xl sm:leading-8 lg:text-3xl">
             Чому варто приєднатися?
           </h2>
 
-          <ul className="space-y-6">
+          <ul className="space-y-4 sm:space-y-5 lg:space-y-6">
             <li className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-[gold] rounded-full flex items-center justify-center mt-1">
+              <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[gold]">
                 <Calculator className="w-4 h-4 text-[#333333]" />
               </div>
               <div>
@@ -562,7 +568,7 @@ export function RegisterForm() {
             </li>
 
             <li className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-[gold] rounded-full flex items-center justify-center mt-1">
+              <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[gold]">
                 <TrendingUp className="w-4 h-4 text-[#333333]" />
               </div>
               <div>
@@ -576,7 +582,7 @@ export function RegisterForm() {
             </li>
 
             <li className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-[gold] rounded-full flex items-center justify-center mt-1">
+              <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[gold]">
                 <Bell className="w-4 h-4 text-[#333333]" />
               </div>
               <div>
@@ -590,7 +596,7 @@ export function RegisterForm() {
             </li>
 
             <li className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-[gold] rounded-full flex items-center justify-center mt-1">
+              <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[gold]">
                 <BarChart3 className="w-4 h-4 text-[#333333]" />
               </div>
               <div>
@@ -604,7 +610,7 @@ export function RegisterForm() {
             </li>
 
             <li className="flex gap-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-[gold] rounded-full flex items-center justify-center mt-1">
+              <div className="mt-1 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[gold]">
                 <Shield className="w-4 h-4 text-[#333333]" />
               </div>
               <div>

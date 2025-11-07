@@ -51,8 +51,8 @@ export function LoginForm() {
   }
 
   return (
-    <div className="px-6 py-6">
-      <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         {/* Email Field */}
         <div>
           <label
@@ -163,19 +163,19 @@ export function LoginForm() {
       </form>
 
       {/* Divider */}
-      <div className="relative my-5">
+      <div className="relative my-4 sm:my-5">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-300" />
         </div>
-        <div className="relative flex justify-center text-sm">
+        <div className="relative flex justify-center text-xs sm:text-sm">
           <span className="bg-white px-2 text-gray-500">
             Увійти через соцмережі
           </span>
         </div>
       </div>
 
-      {/* Social Login Buttons */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Social Login Buttons - responsive grid */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <button
           type="button"
           className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50"

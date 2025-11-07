@@ -32,34 +32,38 @@ export function ServiceCard({ service }: ServiceCardProps) {
   })()
 
   return (
-    <article className="flex flex-col gap-5 rounded-xl border border-neutral-200 bg-white p-5 shadow-lg">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
+    <article className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg transition-shadow hover:shadow-xl sm:gap-5 sm:p-4 lg:p-5">
+      {/* Header: Icon + Name + Change badge */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
           <div
-            className={`grid h-10 w-10 place-items-center rounded-full ${service.iconBg}`}
+            className={`grid h-9 w-9 flex-shrink-0 place-items-center rounded-full sm:h-10 sm:w-10 ${service.iconBg}`}
           >
-            <Icon className={`h-5 w-5 ${service.iconColor}`} />
+            <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${service.iconColor}`} />
           </div>
-          <h3 className="text-sm font-semibold leading-5 text-neutral-800">
+          <h3 className="min-w-0 truncate text-sm font-semibold leading-5 text-neutral-800 sm:text-base">
             {service.name}
           </h3>
         </div>
 
+        {/* Change badge - responsive size */}
         <div
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${changeBadgeClasses}`}
+          className={`inline-flex flex-shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold sm:gap-1.5 sm:px-3 sm:py-1 sm:text-xs ${changeBadgeClasses}`}
         >
           {ChangeIcon ? (
-            <ChangeIcon className="h-3 w-3" strokeWidth={2.5} />
+            <ChangeIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={2.5} />
           ) : null}
           <span>{service.change > 0 ? `+${service.change}` : service.change}%</span>
         </div>
       </div>
 
-      <p className="text-2xl font-semibold leading-8 text-neutral-900">
+      {/* Cost - larger on bigger screens */}
+      <p className="text-lg font-semibold leading-6 text-neutral-900 sm:text-xl sm:leading-7 lg:text-2xl lg:leading-8">
         ₴{formatCost(service.cost)}
       </p>
 
-      <p className="text-xs font-medium text-neutral-500">
+      {/* Details - consumption and rate */}
+      <p className="text-xs font-medium text-neutral-500 sm:text-sm">
         {service.consumption} {service.unit} · ₴{formatRate(service.rate)}/{service.unit}
       </p>
     </article>

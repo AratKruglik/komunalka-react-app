@@ -207,7 +207,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
               </p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {propertyTypeOptions.map((option) => (
                 <button
                   key={option.value}
@@ -263,7 +263,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
             className="space-y-6 [&:disabled]:opacity-60"
             aria-disabled={!isPropertyTypeSelected}
           >
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-2">
               <FormField
                 id="region"
                 label="Область"
@@ -309,7 +309,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
               </FormField>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-2">
               <FormField
                 id="street"
                 label="Вулиця"
@@ -347,7 +347,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
               </FormField>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-2">
               <FormField
                 id="unitNumber"
                 label="Номер квартири/офісу"
@@ -432,7 +432,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
           ) : null}
         </CardContent>
 
-        <CardFooter className="flex justify-end gap-3">
+        <CardFooter className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
@@ -487,7 +487,10 @@ function FormStepper({ steps }: FormStepperProps) {
 
   return (
     <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <ol className="grid items-center gap-4" style={{ gridTemplateColumns: columnTemplate }}>
+      <ol
+        className="flex flex-col gap-4 md:grid md:items-center md:gap-4"
+        style={{ gridTemplateColumns: columnTemplate }}
+      >
         {steps.map((step, index) => {
           const Icon = step.icon
           const statusClasses = getStatusClasses(step.status)
@@ -495,7 +498,7 @@ function FormStepper({ steps }: FormStepperProps) {
 
           return (
             <Fragment key={step.id}>
-              <li className="flex flex-col items-center gap-2 text-center justify-self-center">
+              <li className="flex flex-col items-center gap-2 text-center md:justify-self-center">
                 <span
                   className={[
                     'flex size-12 items-center justify-center rounded-full border-2',
@@ -509,10 +512,13 @@ function FormStepper({ steps }: FormStepperProps) {
                 </p>
               </li>
               {index < steps.length - 1 ? (
-                <div
-                  aria-hidden
-                  className={['h-1 w-full rounded-full', getConnectorClass(step.status, nextStatus)].join(' ')}
-                />
+                <Fragment>
+                  <div
+                    aria-hidden
+                    className={['hidden h-1 w-full rounded-full md:block', getConnectorClass(step.status, nextStatus)].join(' ')}
+                  />
+                  <div className="mx-auto block h-6 w-px rounded-full bg-gray-200 md:hidden" aria-hidden />
+                </Fragment>
               ) : null}
             </Fragment>
           )

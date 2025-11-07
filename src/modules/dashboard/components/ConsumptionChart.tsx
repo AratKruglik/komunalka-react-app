@@ -50,13 +50,15 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
   })()
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold leading-7 text-neutral-900">
+    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg sm:p-5 lg:p-6">
+      {/* Header with responsive layout */}
+      <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between lg:mb-6">
+        <h2 className="text-base font-semibold leading-6 text-neutral-900 sm:text-lg sm:leading-7 lg:text-xl">
           Графік споживання
         </h2>
 
-        <div className="flex flex-wrap gap-2">
+        {/* Period selector buttons - responsive */}
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {periodOptions.map((option) => {
             const isSelected = selectedPeriod === option.value
             return (
@@ -66,7 +68,7 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
                 size="sm"
                 variant={isSelected ? 'solid' : 'outline'}
                 tone={isSelected ? 'primary' : 'neutral'}
-                className="px-4"
+                className="px-3 text-xs sm:px-4 sm:text-sm"
                 onClick={() => setSelectedPeriod(option.value)}
               >
                 {option.label}
@@ -76,7 +78,8 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={350}>
+      {/* Responsive chart height: 280px mobile, 320px tablet, 350px desktop */}
+      <ResponsiveContainer width="100%" height={280} className="sm:!h-[320px] lg:!h-[350px]">
         <LineChart data={filteredData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
           <XAxis

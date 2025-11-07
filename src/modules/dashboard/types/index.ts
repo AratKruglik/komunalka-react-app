@@ -52,9 +52,16 @@ export interface ExpenseDistributionItem {
   name: string
   value: number
   color: string
+  [key: string]: string | number
 }
 
 export type ExpenseDistributionByPeriod = Record<
   PeriodFilter,
   ExpenseDistributionItem[]
 >
+
+export interface DashboardAddressOption {
+  id: string
+  label: string
+  description?: string
+}

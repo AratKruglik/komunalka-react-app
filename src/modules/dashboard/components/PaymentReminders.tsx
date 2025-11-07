@@ -67,17 +67,18 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
   }
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
-      <header className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-semibold leading-7 text-neutral-900">
+    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg sm:p-5 lg:p-6">
+      {/* Header with responsive layout */}
+      <header className="mb-4 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base font-semibold leading-6 text-neutral-900 sm:text-lg sm:leading-7 lg:text-xl">
           Нагадування про оплату
         </h2>
-        <Button type="button" variant="link" tone="primary">
+        <Button type="button" variant="link" tone="primary" className="self-start text-sm sm:text-base">
           Переглянути всі
         </Button>
       </header>
 
-      <div className="space-y-3">
+      <div className="space-y-3 sm:space-y-3">
         {reminders.map((reminder) => {
           const styles = getServiceStyles(reminder.serviceName)
           const ServiceIcon =
@@ -87,7 +88,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
           return (
             <div
               key={reminder.id}
-              className={`flex flex-col gap-4 rounded-xl border border-neutral-200/60 ${styles.bg} p-4 sm:flex-row sm:items-center sm:justify-between`}
+              className={`flex flex-col gap-3.5 rounded-xl border border-neutral-200/60 ${styles.bg} p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4`}
             >
               <div className="flex items-start gap-3">
                 <div
@@ -96,13 +97,13 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                   <ServiceIcon className={`h-5 w-5 ${styles.iconColor}`} />
                 </div>
 
-                <div>
+                <div className="flex-1 min-w-0">
                   <h3
                     className={`text-sm font-semibold leading-5 ${styles.textColor}`}
                   >
                     {reminder.serviceName}
                   </h3>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
                       <UrgencyIcon className="h-3 w-3" />
                       {reminder.urgency === 'high'
@@ -111,8 +112,8 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                           ? 'Скоро'
                           : 'Планово'}
                     </span>
-                    <p className="text-xs font-medium leading-4 text-text-secondary">
-                      Термін оплати: {formatDate(reminder.dueDate)} (через{' '}
+                    <p className="text-xs font-medium leading-4 text-neutral-600">
+                      {formatDate(reminder.dueDate)} (через{' '}
                       {reminder.daysUntilDue}{' '}
                       {reminder.daysUntilDue === 1
                         ? 'день'
@@ -125,8 +126,8 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3 sm:justify-end">
-                <p className="text-sm font-bold leading-5 text-neutral-900">
+              <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
+                <p className="text-base font-bold leading-5 text-neutral-900 sm:text-sm">
                   ₴{reminder.amount.toLocaleString('uk-UA', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -136,7 +137,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                   type="button"
                   size="sm"
                   tone="primary"
-                  className="px-4 text-sm"
+                  className="min-h-[44px] min-w-[120px] px-4 text-sm sm:min-h-0 sm:min-w-0"
                 >
                   Оплатити
                 </Button>

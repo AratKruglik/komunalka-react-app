@@ -27,7 +27,7 @@ export default function DashboardPage() {
       pageSubtitle="Огляд комунальних послуг"
       notificationsCount={3}
     >
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-5 lg:space-y-6">
         {/* Welcome Header */}
         <WelcomeHeader
           userName="Олена"
@@ -37,11 +37,12 @@ export default function DashboardPage() {
         />
 
         {/* Current Month Expenses - Service Cards */}
-        <section>
-          <h2 className="mb-4 text-lg font-semibold leading-7 text-neutral-800">
+        {/* Mobile: 1 col, Tablet: 2 cols, Desktop: 3 cols, Wide: 4 cols */}
+        <section className="space-y-3 sm:space-y-4">
+          <h2 className="text-base font-semibold leading-6 text-neutral-800 sm:text-lg sm:leading-7 lg:text-xl">
             Витрати цього місяця
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-5 xl:grid-cols-3 2xl:grid-cols-4">
             {mockServices.map((service) => (
               <ServiceCard key={service.id} service={service} />
             ))}
@@ -49,13 +50,14 @@ export default function DashboardPage() {
         </section>
 
         {/* Charts Section */}
-        <section className="space-y-6">
+        <section className="space-y-4 sm:space-y-5 lg:space-y-6">
           <ConsumptionChart data={mockChartData} />
           <ExpenseDistribution dataByPeriod={mockExpenseDistributionByPeriod} />
         </section>
 
         {/* Recent Readings and Payment Reminders */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        {/* Mobile: stack, Desktop: 2 columns */}
+        <div className="grid gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
           <RecentReadingsTable readings={mockRecentReadings} />
           <PaymentReminders reminders={mockPaymentReminders} />
         </div>

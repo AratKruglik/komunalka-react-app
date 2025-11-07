@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, ChevronDown } from 'lucide-react'
+import { Bell, ChevronDown, Menu } from 'lucide-react'
 
 export interface TopbarUser {
   name: string
@@ -12,6 +12,8 @@ interface AuthenticatedTopbarProps {
   subtitle?: string
   notificationsCount?: number
   user: TopbarUser
+  onMenuToggle?: () => void
+  isSidebarOpen?: boolean
 }
 
 export function AuthenticatedTopbar({
@@ -19,43 +21,69 @@ export function AuthenticatedTopbar({
   subtitle,
   notificationsCount = 0,
   user,
+  onMenuToggle,
+  isSidebarOpen,
 }: AuthenticatedTopbarProps) {
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
-      <div className="flex h-[60px] w-full items-center gap-6 px-6">
-        <div className="flex flex-col leading-tight">
-          <h1 className="text-[20px] font-semibold text-[#333333]">
-            {title}
-          </h1>
-          {subtitle ? (
-            <p className="mt-1 text-[14px] font-medium text-gray-500">
-              {subtitle}
-            </p>
+    <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      {/* Mobile: column layout, Tablet+: row layout with space-between */}
+      <div className="flex w-full flex-col gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3 md:flex-row md:items-center md:justify-between md:px-6 md:py-4">
+        {/* Left side: Menu button + Title */}
+        <div className="flex items-start gap-2 sm:gap-3">
+          {onMenuToggle ? (
+            <button
+              type="button"
+              onClick={onMenuToggle}
+              className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 hover:text-[#333333] active:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD700] sm:h-10 sm:w-10 lg:hidden"
+              aria-label="Відкрити меню"
+              aria-expanded={isSidebarOpen}
+            >
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+            </button>
           ) : null}
+
+          <div className="min-w-0 flex-1 leading-tight">
+            <h1 className="text-lg font-semibold text-[#333333] sm:text-xl md:text-[22px]">
+              {title}
+            </h1>
+            {subtitle ? (
+              <p className="mt-0.5 text-xs font-medium text-gray-500 sm:mt-1 sm:text-sm md:text-[15px]">
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
         </div>
 
-        <div className="ml-auto flex items-center gap-6">
+        {/* Right side: Notifications + User menu (hidden on mobile < 768px) */}
+        <div className="flex items-center justify-end gap-2 sm:gap-3">
           <button
             type="button"
-            className="relative inline-flex h-9 w-9 items-center justify-center text-gray-500 transition-colors hover:text-[#333333] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD700]"
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-[#333333] active:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD700] sm:h-10 sm:w-10"
             aria-label="Повідомлення"
           >
-            <Bell className="h-5 w-5" strokeWidth={1.6} />
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.6} />
             {notificationsCount > 0 ? (
-              <span className="absolute right-0.5 top-0.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[#FF4D4F] px-1 text-[10px] font-semibold leading-none text-white">
-                {notificationsCount}
+              <span className="absolute right-0 top-0 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[#FF4D4F] px-1 text-[10px] font-semibold leading-none text-white sm:right-0.5 sm:top-0.5">
+                {notificationsCount > 9 ? '9+' : notificationsCount}
               </span>
             ) : null}
           </button>
 
-          <UserMenu user={user} />
+          {/* User menu - hidden on mobile (< 768px), shown on tablet+ (≥ 768px) */}
+          <UserMenu user={user} className="hidden md:block" />
         </div>
       </div>
     </header>
   )
 }
 
-function UserMenu({ user }: { user: TopbarUser }) {
+interface UserMenuProps {
+  user: TopbarUser
+  variant?: 'default' | 'compact'
+  className?: string
+}
+
+function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -94,16 +122,26 @@ function UserMenu({ user }: { user: TopbarUser }) {
     { id: 'logout', label: 'Вийти', tone: 'danger' },
   ]
 
+  const isCompact = variant === 'compact'
+
   return (
-    <div className="relative" ref={menuRef}>
+    <div className={`relative ${className ?? ''}`} ref={menuRef}>
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="inline-flex items-center gap-3 rounded-full bg-white px-3 py-1.5 text-left shadow-sm transition-colors hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD700]"
+        className={`${
+          isCompact
+            ? 'grid h-10 w-10 place-items-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm hover:shadow'
+            : 'inline-flex items-center gap-3 rounded-full bg-white px-3 py-1.5 text-left shadow-sm transition-colors hover:shadow-md'
+        } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FFD700]`}
       >
-        <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-gray-200 text-xs font-semibold text-[#333333]">
+        <span
+          className={`grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-gray-200 text-xs font-semibold text-[#333333] ${
+            isCompact ? 'h-9 w-9' : ''
+          }`}
+        >
           {user.avatarUrl ? (
             <img
               src={user.avatarUrl}
@@ -114,17 +152,23 @@ function UserMenu({ user }: { user: TopbarUser }) {
             getInitials(user.name)
           )}
         </span>
-        <span className="flex max-w-[140px] flex-col">
-          <span className="truncate text-sm font-medium text-[#333333]">
-            {user.name}
-          </span>
-          <span className="truncate text-xs text-gray-500">{user.email}</span>
-        </span>
-        <ChevronDown
-          className={`h-4 w-4 text-gray-400 transition-transform ${
-            open ? '-scale-y-100' : ''
-          }`}
-        />
+        {!isCompact ? (
+          <>
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium text-[#333333]">
+                {user.name}
+              </span>
+              <span className="hidden truncate text-xs text-gray-500 sm:inline">
+                {user.email}
+              </span>
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 text-gray-400 transition-transform ${
+                open ? '-scale-y-100' : ''
+              }`}
+            />
+          </>
+        ) : null}
       </button>
 
       {open ? (

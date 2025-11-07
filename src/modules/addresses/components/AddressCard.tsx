@@ -56,16 +56,17 @@ export function AddressCard({
 
   return (
     <article
-      className={`flex flex-col gap-5 rounded-lg ${surfaceClasses} p-6 transition-shadow`}
+      className={`relative flex h-full flex-col gap-4 rounded-lg ${surfaceClasses} p-4 transition-shadow hover:shadow-md sm:gap-5 sm:p-5 lg:p-6`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
+      {/* Badges and action buttons - responsive layout */}
+      <div className="flex flex-wrap items-start justify-between gap-3 pr-20 sm:pr-24">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {badges.map((badge) => (
             <Badge key={badge.label} badge={badge} isPrimary={isPrimary} />
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="absolute right-4 top-4 flex items-center gap-1.5 sm:right-5 sm:top-5 lg:right-6">
           {(actions.length ? actions : defaultActions).map((action) => {
             const Icon = action.icon
             return (
@@ -76,31 +77,33 @@ export function AddressCard({
                 variant="outline"
                 tone="neutral"
                 size="icon"
-                className="text-gray-600"
+                className="h-8 w-8 text-gray-600 sm:h-9 sm:w-9"
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
             )
           })}
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <h3 className="text-[18px] font-bold leading-7 text-text-dark">
+      {/* Title and subtitle */}
+      <div className="space-y-1 sm:space-y-1.5">
+        <h3 className="text-base font-bold leading-6 text-text-dark sm:text-lg sm:leading-7 lg:text-[18px]">
           {title}
         </h3>
-        <p className="text-sm text-gray-600">{subtitle}</p>
+        <p className="text-xs text-gray-600 sm:text-sm">{subtitle}</p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      {/* Service tags - responsive sizing */}
+      <div className="flex flex-wrap gap-1.5 sm:gap-2">
         {services.map((service) => {
           const Icon = service.icon || getServiceIcon(service.label)
           return (
             <span
               key={service.label}
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium ${getServiceTagClasses(service.label)}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium sm:gap-2 sm:px-3 sm:py-1 sm:text-xs ${getServiceTagClasses(service.label)}`}
             >
-              {Icon && <Icon className="h-3.5 w-3.5" />}
+              {Icon && <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
               {service.label}
             </span>
           )

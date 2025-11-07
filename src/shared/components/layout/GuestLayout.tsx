@@ -6,8 +6,8 @@ interface GuestLayoutProps {
 
 export function GuestLayout({ children }: GuestLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#f7f7f7] flex items-center justify-center px-4 py-12">
-      {children}
+    <div className="min-h-screen bg-[#f7f7f7] px-4 py-10 sm:flex sm:items-center sm:justify-center sm:py-12">
+      <div className="mx-auto w-full max-w-[1100px]">{children}</div>
     </div>
   )
 }

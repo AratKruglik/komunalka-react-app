@@ -64,24 +64,26 @@ export function WelcomeHeader({
   }
 
   return (
-    <section className="rounded-xl border border-neutral-200/80 bg-white px-6 py-6 shadow-lg">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-3">
-          <h1 className="text-2xl font-bold text-text-dark">
+    <section className="rounded-xl border border-neutral-200/80 bg-white px-3.5 py-4 shadow-lg sm:px-5 sm:py-5 lg:px-6 lg:py-6">
+      {/* Mobile: stack, Desktop: row with space-between */}
+      <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
+        {/* Left side: Welcome text and address selector */}
+        <div className="space-y-2.5 sm:space-y-3">
+          <h1 className="text-lg font-bold text-text-dark sm:text-xl lg:text-2xl">
             Вітаємо, {userName}!
           </h1>
-          <p className="text-base text-neutral-600">
+          <p className="text-xs text-neutral-600 sm:text-sm lg:text-base">
             Ось огляд ваших комунальних послуг за {currentMonth}
           </p>
           {addressOptions.length > 0 ? (
             <div className="flex flex-col gap-2">
-              <Label htmlFor={selectId}>Адреса обліку</Label>
+              <Label htmlFor={selectId} className="text-sm sm:text-base">Адреса обліку</Label>
               <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <Select
                   id={selectId}
                   value={activeAddressId}
                   onChange={handleAddressChange}
-                  className="w-full sm:w-72"
+                  className="w-full text-sm sm:w-72 sm:text-base"
                 >
                   {addressOptions.map((option) => (
                     <option key={option.id} value={option.id}>
@@ -90,7 +92,7 @@ export function WelcomeHeader({
                   ))}
                 </Select>
                 {selectedAddress?.description ? (
-                  <span className="hidden text-xs text-neutral-500 sm:inline">
+                  <span className="hidden text-xs text-neutral-500 sm:inline lg:text-sm">
                     {selectedAddress.description}
                   </span>
                 ) : null}
@@ -104,13 +106,14 @@ export function WelcomeHeader({
           ) : null}
         </div>
 
+        {/* Add reading button - full width on mobile, auto on tablet+ */}
         <Button
           onClick={handleAddReading}
           type="button"
           size="lg"
-          className="shrink-0 px-5"
+          className="w-full shrink-0 px-4 text-sm sm:w-auto sm:px-5 sm:text-base"
         >
-          <Plus className="h-5 w-5" strokeWidth={2.2} />
+          <Plus className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.2} />
           Додати показання
         </Button>
       </div>

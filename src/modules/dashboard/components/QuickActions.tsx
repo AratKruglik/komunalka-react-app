@@ -37,14 +37,15 @@ export function QuickActions() {
   ]
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
-      <header className="mb-4">
-        <h2 className="text-lg font-semibold leading-7 text-neutral-900">
+    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg sm:p-5 lg:p-6">
+      <header className="mb-3 sm:mb-4">
+        <h2 className="text-base font-semibold leading-6 text-neutral-900 sm:text-lg sm:leading-7 lg:text-xl">
           Швидкі дії
         </h2>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      {/* Mobile: 1 col, Tablet: 2 cols, Desktop: 3 cols */}
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         {actions.map((action) => {
           const Icon = action.icon
           return (

@@ -40,27 +40,40 @@ export function ExpenseDistribution({ dataByPeriod }: ExpenseDistributionProps) 
     return `₴${numericValue.toLocaleString('uk-UA')}`
   }
 
-  const renderLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-    name,
-  }: PieLabelRenderProps) => {
-    if (!percent || !totalExpenses || percent < 0.06) {
+  const renderLabel = (props: PieLabelRenderProps) => {
+    const {
+      cx,
+      cy,
+      midAngle,
+      innerRadius,
+      outerRadius,
+      percent,
+      name,
+    } = props
+
+    const percentValue =
+      typeof percent === 'number' ? percent : Number(percent ?? 0)
+    const startRadius =
+      typeof innerRadius === 'number'
+        ? innerRadius
+        : Number(innerRadius ?? 0)
+    const endRadius =
+      typeof outerRadius === 'number'
+        ? outerRadius
+        : startRadius
+    const centerX = typeof cx === 'number' ? cx : Number(cx ?? 0)
+    const centerY = typeof cy === 'number' ? cy : Number(cy ?? 0)
+
+    if (!totalExpenses || percentValue < 0.06) {
       return null
     }
 
     const RADIAN = Math.PI / 180
-    const startRadius = innerRadius ?? 0
-    const endRadius = outerRadius ?? startRadius
     const labelRadius = startRadius + (endRadius - startRadius) * 1.2
-    const centerX = cx ?? 0
-    const centerY = cy ?? 0
-    const x = centerX + labelRadius * Math.cos(-midAngle * RADIAN)
-    const y = centerY + labelRadius * Math.sin(-midAngle * RADIAN)
+    const normalizedMidAngle =
+      typeof midAngle === 'number' ? midAngle : Number(midAngle) || 0
+    const x = centerX + labelRadius * Math.cos(-normalizedMidAngle * RADIAN)
+    const y = centerY + labelRadius * Math.sin(-normalizedMidAngle * RADIAN)
 
     const labelName = typeof name === 'string' ? name : String(name ?? '')
 
@@ -73,7 +86,7 @@ export function ExpenseDistribution({ dataByPeriod }: ExpenseDistributionProps) 
         textAnchor={x > centerX ? 'start' : 'end'}
         dominantBaseline="central"
       >
-        <tspan fontWeight={600}>{`${(percent * 100).toFixed(0)}%`}</tspan>
+        <tspan fontWeight={600}>{`${(percentValue * 100).toFixed(0)}%`}</tspan>
         <tspan x={x} dy={14} fontSize={11} fill="#4B5563">
           {labelName}
         </tspan>
@@ -82,10 +95,10 @@ export function ExpenseDistribution({ dataByPeriod }: ExpenseDistributionProps) 
   }
 
   return (
-    <section className="flex h-full flex-col rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <section className="flex h-full flex-col rounded-xl border border-neutral-200 bg-white p-4 shadow-lg sm:p-6">
+      <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold leading-7 text-neutral-900">
+          <h2 className="text-base font-semibold leading-6 text-neutral-900 sm:text-lg sm:leading-7">
             Розподіл витрат
           </h2>
           <p className="mt-1 text-sm text-neutral-500">
@@ -118,7 +131,7 @@ export function ExpenseDistribution({ dataByPeriod }: ExpenseDistributionProps) 
 
       <div className="flex flex-1 flex-col gap-6">
         <div className="flex w-full items-center justify-center">
-          <div className="w-full max-w-[320px]">
+          <div className="w-full max-w-[280px] sm:max-w-[320px]">
             <ResponsiveContainer width="100%" height={260}>
               <PieChart margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
                 <Pie
@@ -138,11 +151,16 @@ export function ExpenseDistribution({ dataByPeriod }: ExpenseDistributionProps) 
                   <Label
                     position="center"
                     content={({ viewBox }) => {
-                      if (!viewBox || typeof viewBox.cx !== 'number' || typeof viewBox.cy !== 'number') {
+                      if (
+                        !viewBox ||
+                        typeof viewBox !== 'object' ||
+                        !('cx' in viewBox) ||
+                        !('cy' in viewBox)
+                      ) {
                         return null
                       }
 
-                      const { cx, cy } = viewBox
+                      const { cx, cy } = viewBox as { cx: number; cy: number }
 
                       return (
                         <text x={cx} y={cy} fill="#374151" textAnchor="middle">
