@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   MapPin,
+  Plug,
   Settings,
   User,
   X,
@@ -56,6 +57,11 @@ const defaultSections: SidebarSection[] = [
         label: 'Мої адреси',
         to: '/addresses',
         icon: MapPin,
+      },
+      {
+        label: 'Провайдери',
+        to: '/providers',
+        icon: Plug,
       },
       {
         label: 'Мої рахунки',

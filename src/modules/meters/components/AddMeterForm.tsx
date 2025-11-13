@@ -24,6 +24,7 @@ import {
   METER_TYPE_UNITS,
 } from '../../../shared/constants/meterTypes'
 import { MOCK_ADDRESS_OPTIONS } from '../../../shared/data/mockAddresses'
+import { MOCK_PROVIDER_TEMPLATES } from '../../../shared/data/mockProviders'
 
 type SubmissionIntent = 'draft' | 'submit'
 
@@ -36,6 +37,7 @@ interface MeterFormValues {
   installationDate: string
   initialReading: string
   tariffValue: string
+  providerId: string
   notes: string
   photo: FileList | null
 }
@@ -49,6 +51,7 @@ const defaultValues: MeterFormValues = {
   installationDate: '',
   initialReading: '',
   tariffValue: '',
+  providerId: '',
   notes: '',
   photo: null,
 }
@@ -88,6 +91,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const installationDate = watch('installationDate')
   const initialReading = watch('initialReading')
   const tariffValue = watch('tariffValue')
+  const providerId = watch('providerId')
 
   const { ref: photoRef, onChange: photoOnChange, ...photoField } = register('photo')
 
@@ -125,6 +129,48 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const handleMeterTypeSelect = (value: MeterType) => {
     setValue('meterType', value, { shouldValidate: true })
   }
+
+  const availableProviders = useMemo(() => {
+    if (!meterType) {
+      return []
+    }
+
+    return MOCK_PROVIDER_TEMPLATES.filter((provider) => {
+      if (!provider.meterTypes?.length) {
+        return true
+      }
+      return provider.meterTypes.includes(meterType)
+    })
+  }, [meterType])
+
+  const selectedProvider = useMemo(() => {
+    if (!providerId) {
+      return null
+    }
+    return availableProviders.find((provider) => provider.id === providerId) ?? null
+  }, [availableProviders, providerId])
+
+  useEffect(() => {
+    if (!meterType && providerId) {
+      setValue('providerId', '', { shouldDirty: true })
+      return
+    }
+
+    if (providerId && availableProviders.every((provider) => provider.id !== providerId)) {
+      setValue('providerId', '', { shouldDirty: true })
+    }
+  }, [availableProviders, meterType, providerId, setValue])
+
+  useEffect(() => {
+    if (!selectedProvider) {
+      return
+    }
+
+    setValue('tariffValue', selectedProvider.unitPrice.toString(), {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }, [selectedProvider, setValue])
 
   const updatePhotoState = (files: FileList | null) => {
     setValue('photo', files, {
@@ -204,6 +250,8 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   }
 
   const readingUnit = meterType && meterType in METER_TYPE_UNITS ? METER_TYPE_UNITS[meterType] : 'од.'
+  const tariffUnitLabel =
+    selectedProvider?.unitLabel ?? (meterType ? `грн/${readingUnit}` : 'грн')
 
   useEffect(() => {
     return () => {
@@ -359,7 +407,6 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               />
               <FormMessage variant="error">{errors.installationDate?.message}</FormMessage>
             </div>
-
             <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="initialReading">
@@ -381,23 +428,55 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tariffValue">
-                  Поточний тариф (грн за одиницю) <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="tariffValue"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  placeholder="0.00"
-                  {...register('tariffValue', {
-                    required: 'Вкажіть тариф',
-                  })}
-                  isInvalid={Boolean(errors.tariffValue)}
-                  endAdornment={<span className="text-sm text-gray-500">грн</span>}
-                />
-                <FormMessage variant="error">{errors.tariffValue?.message}</FormMessage>
+                <Label htmlFor="providerId">Провайдер послуги</Label>
+                <Select
+                  id="providerId"
+                  {...register('providerId')}
+                  disabled={!meterType || availableProviders.length === 0}
+                >
+                  <option value="">
+                    {meterType
+                      ? availableProviders.length
+                        ? 'Оберіть провайдера'
+                        : 'Немає шаблонів для цього типу'
+                      : 'Спочатку оберіть тип лічильника'}
+                  </option>
+                  {availableProviders.map((provider) => (
+                    <option key={provider.id} value={provider.id}>
+                      {provider.name} · {provider.unitPrice.toFixed(2)} {provider.unitLabel}
+                    </option>
+                  ))}
+                </Select>
+                <p className="text-sm text-gray-500">
+                  {selectedProvider
+                    ? 'Тариф автоматично оновлено згідно з обраним провайдером.'
+                    : 'Виберіть провайдера, щоб автоматично підставити тариф.'}
+                </p>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tariffValue">
+                Поточний тариф (грн за одиницю) <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="tariffValue"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                {...register('tariffValue', {
+                  required: 'Вкажіть тариф',
+                })}
+                isInvalid={Boolean(errors.tariffValue)}
+                endAdornment={<span className="text-sm text-gray-500">{tariffUnitLabel}</span>}
+              />
+              {selectedProvider ? (
+                <p className="text-sm text-gray-500">
+                  Джерело тарифу: {selectedProvider.name}
+                </p>
+              ) : null}
+              <FormMessage variant="error">{errors.tariffValue?.message}</FormMessage>
             </div>
           </section>
 
