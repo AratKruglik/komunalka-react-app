@@ -221,7 +221,7 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
   return (
     <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-5">
-        <Card className="border border-gray-200 shadow-sm">
+        <Card className="border border-gray-200 shadow-lg">
           <CardHeader className="gap-2">
             <CardTitle className="text-2xl font-bold text-dark">Новий провайдер</CardTitle>
             <CardDescription className="text-base text-gray-600">

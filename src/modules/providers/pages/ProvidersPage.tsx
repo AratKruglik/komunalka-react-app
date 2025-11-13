@@ -32,7 +32,7 @@ export default function ProvidersPage() {
       pageSubtitle="Керуйте тарифами води, газу, електрики та тепла в одному місці"
     >
       <div className="space-y-6">
-        <Card className="border border-gray-200 shadow-sm">
+        <Card className="border border-gray-200 shadow-lg">
           <CardHeader className="flex flex-col gap-4 border-b border-gray-200 pb-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
               <CardTitle className="text-2xl font-bold text-dark">Журнал провайдерів</CardTitle>
@@ -79,7 +79,7 @@ export default function ProvidersPage() {
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {Object.entries(groupedProviders).map(([serviceLabel, providers]) => (
-                  <Card key={serviceLabel} className="border border-gray-200 shadow-sm">
+                  <Card key={serviceLabel} className="border border-gray-200 shadow-md">
                     <CardHeader className="gap-1">
                       <CardTitle className="flex items-center gap-2 text-base">
                         <Plug className="h-4 w-4 text-amber-500" />
