@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import type { ChangeEvent, DragEvent } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   Button,
@@ -12,71 +12,20 @@ import {
   FormMessage,
   Input,
   Label,
+  PhotoDropzone,
+  RadioCard,
   Select,
   Textarea,
 } from '../../../shared/components/ui'
+import { CalendarDays, UploadCloud } from 'lucide-react'
 import {
-  CalendarDays,
-  Camera,
-  Droplet,
-  Flame,
-  UploadCloud,
-  Zap,
-  Thermometer,
-} from 'lucide-react'
-
-const addressOptions = [
-  {
-    label: 'вул. Хрещатик, 22, кв. 15, м. Київ',
-    value: 'kyiv-khreschatyk-22',
-  },
-  {
-    label: 'вул. Галицька, 12, м. Львів',
-    value: 'lviv-halytska-12',
-  },
-  {
-    label: 'просп. Науки, 45, м. Харків',
-    value: 'kharkiv-nauky-45',
-  },
-]
-
-type MeterType = 'electricity' | 'gas' | 'coldWater' | 'hotWater'
+  type MeterType,
+  METER_TYPE_OPTIONS,
+  METER_TYPE_UNITS,
+} from '../../../shared/constants/meterTypes'
+import { MOCK_ADDRESS_OPTIONS } from '../../../shared/data/mockAddresses'
 
 type SubmissionIntent = 'draft' | 'submit'
-
-interface MeterTypeOption {
-  value: MeterType
-  title: string
-  description: string
-  icon: typeof Zap
-}
-
-const meterTypeOptions: MeterTypeOption[] = [
-  {
-    value: 'electricity',
-    title: 'Електролічильник',
-    description: 'Для обліку споживання електроенергії',
-    icon: Zap,
-  },
-  {
-    value: 'gas',
-    title: 'Газовий лічильник',
-    description: 'Контроль споживання газу',
-    icon: Flame,
-  },
-  {
-    value: 'coldWater',
-    title: 'Лічильник холодної води',
-    description: 'Для холодного водопостачання',
-    icon: Droplet,
-  },
-  {
-    value: 'hotWater',
-    title: 'Лічильник гарячої води',
-    description: 'Для гарячого водопостачання',
-    icon: Thermometer,
-  },
-]
 
 interface MeterFormValues {
   addressId: string
@@ -113,20 +62,14 @@ const requiredFieldKeys: Array<keyof Pick<MeterFormValues, 'addressId' | 'meterT
   'tariffValue',
 ]
 
-const readingUnits: Record<MeterType, string> = {
-  electricity: 'кВт·год',
-  gas: 'м³',
-  coldWater: 'м³',
-  hotWater: 'м³',
-}
-
 export interface AddMeterFormProps {
   onCancel?: () => void
 }
 
 export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
-  const [isDragActive, setIsDragActive] = useState(false)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const photoInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
     register,
@@ -145,6 +88,8 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const installationDate = watch('installationDate')
   const initialReading = watch('initialReading')
   const tariffValue = watch('tariffValue')
+
+  const { ref: photoRef, onChange: photoOnChange, ...photoField } = register('photo')
 
   const progress = useMemo(() => {
     const completed = requiredFieldKeys.reduce((count, key) => {
@@ -171,7 +116,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     }, 0)
 
     if (completed === 0) {
-      return 5
+      return 0
     }
 
     return Math.min(100, Math.round((completed / requiredFieldKeys.length) * 100))
@@ -181,41 +126,48 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     setValue('meterType', value, { shouldValidate: true })
   }
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    setUploadedFileName(file ? file.name : null)
-    setIsDragActive(false)
-  }
-
-  const handleDragOver = (event: DragEvent<HTMLLabelElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setIsDragActive(true)
-  }
-
-  const handleDragLeave = (event: DragEvent<HTMLLabelElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-      setIsDragActive(false)
-    }
-  }
-
-  const handleDrop = (event: DragEvent<HTMLLabelElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setIsDragActive(false)
-    if (!event.dataTransfer?.files?.length) {
-      return
-    }
-
-    const files = event.dataTransfer.files
-    setUploadedFileName(files[0]?.name ?? null)
+  const updatePhotoState = (files: FileList | null) => {
     setValue('photo', files, {
       shouldValidate: true,
       shouldDirty: true,
       shouldTouch: true,
     })
+
+    if (files?.[0]) {
+      const file = files[0]
+      setUploadedFileName(file.name)
+      setPhotoPreview((previous) => {
+        if (previous) {
+          URL.revokeObjectURL(previous)
+        }
+        return URL.createObjectURL(file)
+      })
+    } else {
+      setUploadedFileName(null)
+      setPhotoPreview((previous) => {
+        if (previous) {
+          URL.revokeObjectURL(previous)
+        }
+        return null
+      })
+    }
+  }
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    photoOnChange(event)
+    const files = event.target.files
+    updatePhotoState(files?.length ? files : null)
+  }
+
+  const handleFilesSelected = (files: FileList | null) => {
+    updatePhotoState(files)
+  }
+
+  const handleClearPhoto = () => {
+    if (photoInputRef.current) {
+      photoInputRef.current.value = ''
+    }
+    updatePhotoState(null)
   }
 
   const simulateSubmit = async (values: MeterFormValues, intent: SubmissionIntent) => {
@@ -231,7 +183,10 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
 
     if (intent === 'submit') {
       reset(defaultValues)
-      setUploadedFileName(null)
+      updatePhotoState(null)
+      if (photoInputRef.current) {
+        photoInputRef.current.value = ''
+      }
     }
   }
 
@@ -242,12 +197,21 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
 
   const handleResetForm = () => {
     reset(defaultValues)
-    setUploadedFileName(null)
+    updatePhotoState(null)
+    if (photoInputRef.current) {
+      photoInputRef.current.value = ''
+    }
   }
 
-  const readingUnit = meterType && meterType in readingUnits ? readingUnits[meterType] : 'од.'
+  const readingUnit = meterType && meterType in METER_TYPE_UNITS ? METER_TYPE_UNITS[meterType] : 'од.'
 
-  const { ref: photoRef, onChange: photoOnChange, ...photoField } = register('photo')
+  useEffect(() => {
+    return () => {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview)
+      }
+    }
+  }, [photoPreview])
 
   return (
     <form className="space-y-6" onSubmit={submitWithIntent('submit')}>
@@ -271,7 +235,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               className="text-base"
             >
               <option value="">Оберіть адресу зі списку</option>
-              {addressOptions.map((option) => (
+              {MOCK_ADDRESS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -290,49 +254,16 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {meterTypeOptions.map((option) => {
-                const Icon = option.icon
-                const isSelected = meterType === option.value
-
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    className={[
-                      'rounded-lg border p-4 text-left transition-all',
-                      isSelected
-                        ? 'border-primary bg-primary/10 shadow-[var(--shadow-sm)]'
-                        : 'border-gray-200 hover:border-primary/60 hover:bg-gray-50',
-                    ].join(' ')}
-                    onClick={() => handleMeterTypeSelect(option.value)}
-                    aria-pressed={isSelected}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={[
-                          'flex h-12 w-12 items-center justify-center rounded-full border-2',
-                          isSelected
-                            ? 'border-primary bg-white text-primary'
-                            : 'border-gray-200 bg-gray-50 text-gray-500',
-                        ].join(' ')}
-                      >
-                        <Icon className="h-6 w-6" />
-                      </span>
-                      <div>
-                        <p
-                          className={[
-                            'text-base font-semibold',
-                            isSelected ? 'text-dark' : 'text-gray-700',
-                          ].join(' ')}
-                        >
-                          {option.title}
-                        </p>
-                        <p className="text-sm text-gray-500">{option.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                )
-              })}
+              {METER_TYPE_OPTIONS.map((option) => (
+                <RadioCard
+                  key={option.value}
+                  title={option.title}
+                  description={option.description}
+                  icon={option.icon}
+                  selected={meterType === option.value}
+                  onClick={() => handleMeterTypeSelect(option.value)}
+                />
+              ))}
             </div>
             <input
               type="hidden"
@@ -383,47 +314,35 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="photoUpload">Фото лічильника</Label>
-              <label
-                htmlFor="photoUpload"
-                className={[
-                  'flex min-h-[200px] cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-4 text-center text-gray-600 transition',
-                  isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 bg-gray-50 hover:border-primary hover:bg-primary/5',
-                ].join(' ')}
-                onDragEnter={handleDragOver}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <UploadCloud className="h-8 w-8 text-primary" />
-                <p className="text-base font-medium text-gray-800">
-                  Перетягніть фото сюди або натисніть для вибору
-                </p>
-                <p className="text-sm text-gray-500">
-                  Підтримувані формати: JPG, PNG, HEIC. Макс. розмір: 5MB
-                </p>
-                <Button type="button" variant="outline" tone="neutral" size="sm" className="pointer-events-none">
-                  <Camera className="h-4 w-4" /> Завантажити фото
-                </Button>
-                <input
-                  id="photoUpload"
-                  type="file"
-                  className="sr-only"
-                  accept="image/png,image/jpeg,image/heic"
-                  {...photoField}
-                  ref={photoRef}
-                  onChange={(event) => {
-                    photoOnChange(event)
-                    handleFileChange(event)
-                  }}
-                />
-              </label>
-              {uploadedFileName ? (
+              <PhotoDropzone
+                id="photoUpload"
+                fileName={uploadedFileName}
+                previewUrl={photoPreview}
+                emptyIcon={<UploadCloud className="h-8 w-8 text-primary" />}
+                emptyTitle="Перетягніть фото сюди або натисніть для вибору"
+                emptyDescription="Підтримувані формати: JPG, PNG, HEIC. Макс. розмір: 5MB"
+                helperText="Перетягніть інше фото або натисніть, щоб замінити"
+                buttonLabel="Завантажити фото"
+                clearLabel="Видалити фото"
+                onFilesSelected={handleFilesSelected}
+                onClear={handleClearPhoto}
+                inputProps={{
+                  ...photoField,
+                  accept: 'image/png,image/jpeg,image/heic',
+                  onChange: handleFileChange,
+                  ref: (element) => {
+                    photoRef(element)
+                    photoInputRef.current = element
+                  },
+                }}
+              />
+              {!photoPreview && uploadedFileName ? (
                 <FormMessage className="text-sm text-gray-600">
                   Вибрано: {uploadedFileName}
                 </FormMessage>
               ) : null}
             </div>
-          </section>
+         </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
             <div className="space-y-2">

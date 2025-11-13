@@ -20,6 +20,7 @@ import {
   FormMessage,
   Input,
   Label,
+  RadioCard,
   Select,
   Textarea,
 } from '../../../shared/components/ui'
@@ -209,42 +210,14 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {propertyTypeOptions.map((option) => (
-                <button
+                <RadioCard
                   key={option.value}
-                  type="button"
-                  className={[
-                    'rounded-lg border p-4 text-left transition-all',
-                    propertyType === option.value
-                      ? 'border-primary bg-primary/10 shadow-[var(--shadow-sm)]'
-                      : 'border-gray-200 hover:border-primary/60 hover:bg-gray-50',
-                  ].join(' ')}
+                  title={option.title}
+                  description={option.description}
+                  icon={option.icon}
+                  selected={propertyType === option.value}
                   onClick={() => handlePropertyTypeSelect(option.value)}
-                  aria-pressed={propertyType === option.value}
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={[
-                        'flex h-12 w-12 items-center justify-center rounded-full border-2',
-                        propertyType === option.value
-                          ? 'border-primary bg-white text-primary'
-                          : 'border-gray-200 bg-gray-50 text-gray-500',
-                      ].join(' ')}
-                    >
-                      <option.icon className="h-6 w-6" />
-                    </span>
-                    <div>
-                      <p
-                        className={[
-                          'text-base font-semibold',
-                          propertyType === option.value ? 'text-dark' : 'text-gray-700',
-                        ].join(' ')}
-                      >
-                        {option.title}
-                      </p>
-                      <p className="text-sm text-gray-500">{option.description}</p>
-                    </div>
-                  </div>
-                </button>
+                />
               ))}
             </div>
             <input
