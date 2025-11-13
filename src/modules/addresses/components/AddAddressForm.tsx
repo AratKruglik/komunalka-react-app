@@ -185,7 +185,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      <Card className="border border-gray-200 shadow-sm">
+      <Card className="border border-gray-200 shadow-lg">
         <CardHeader className="gap-2">
           <CardTitle className="text-2xl font-bold text-dark">
             Додати нову адресу

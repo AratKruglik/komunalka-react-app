@@ -43,6 +43,8 @@ This project uses **pnpm** as the package manager.
 - Indent with two spaces; keep JSX props on new lines when they wrap.
 - Components and hooks use PascalCase (`GuestLayout`) and camelCase (`useAuthRedirect`). Match Tailwind utility strings to the design tokens defined in `src/index.css`.
 - Rely on ESLint's recommended + TypeScript rules; fix issues with `pnpm run lint -- --fix` before submitting.
+- Core content blocks on authenticated pages (cards containing main forms or dashboards) must use `shadow-lg` with a light border to match the addresses/meters/providers screens. Nested cards/lists inside those blocks should step down to `shadow-md`.
+- Primary CTA buttons on these blocks reuse the shared `Button` component with `tone="primary"` (yellow background, dark text). Keep spacing consistent with the Addresses page (`size="md"`, `min-w` on desktop, full width on mobile). Reuse the shared button props instead of custom class lists.
 
 ## Testing Expectations
 - A formal test runner is not configured yet; when contributing logic-heavy features, add Vitest + React Testing Library alongside your change and expose it via a new `pnpm run test` script.
