@@ -5,6 +5,7 @@ import LoginPage from './modules/auth/pages/LoginPage'
 import RegisterPage from './modules/auth/pages/RegisterPage'
 import DashboardPage from './modules/dashboard/pages/DashboardPage'
 import AddMeterPage from './modules/meters/pages/AddMeterPage'
+import AddressMetersPage from './modules/meters/pages/AddressMetersPage'
 import ProvidersPage from './modules/providers/pages/ProvidersPage'
 import AddProviderPage from './modules/providers/pages/AddProviderPage'
 
@@ -20,6 +21,7 @@ export function App() {
           <Route index element={<DashboardPage />} />
           <Route path="/addresses" element={<AddressesPage />} />
           <Route path="/addresses/new" element={<AddAddressPage />} />
+          <Route path="/meters" element={<AddressMetersPage />} />
           <Route path="/meters/new" element={<AddMeterPage />} />
           <Route path="/providers" element={<ProvidersPage />} />
           <Route path="/providers/new" element={<AddProviderPage />} />

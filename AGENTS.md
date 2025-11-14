@@ -45,6 +45,7 @@ This project uses **pnpm** as the package manager.
 - Rely on ESLint's recommended + TypeScript rules; fix issues with `pnpm run lint -- --fix` before submitting.
 - Core content blocks on authenticated pages (cards containing main forms or dashboards) must use `shadow-lg` with a light border to match the addresses/meters/providers screens. Nested cards/lists inside those blocks should step down to `shadow-md`.
 - Primary CTA buttons on these blocks reuse the shared `Button` component with `tone="primary"` (yellow background, dark text). Keep spacing consistent with the Addresses page (`size="md"`, `min-w` on desktop, full width on mobile). Reuse the shared button props instead of custom class lists.
+- **NEVER use hardcoded HEX colors** (e.g., `bg-[#FFE082]`, `text-[#333333]`, `border-[#FFD54F]`) in component styling. Always use Tailwind's semantic color classes or theme-based utilities (`bg-primary`, `text-gray-600`, `border-primary/20`). The color scheme is defined in `src/index.css` and ensures consistency, theme support, and maintainability. Hardcoded colors break the design system and prevent proper theme switching.
 
 ## Testing Expectations
 - A formal test runner is not configured yet; when contributing logic-heavy features, add Vitest + React Testing Library alongside your change and expose it via a new `pnpm run test` script.

@@ -3,10 +3,11 @@ import type { SelectHTMLAttributes } from 'react'
 
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   isInvalid?: boolean
+  wrapperClassName?: string
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { className = '', isInvalid = false, children, ...props },
+  { className = '', wrapperClassName = '', isInvalid = false, children, ...props },
   ref,
 ) {
   const baseClasses =
@@ -16,7 +17,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     'border-error focus:ring-error focus:border-error'
 
   return (
-    <div className="relative">
+    <div className={['relative w-full', wrapperClassName].filter(Boolean).join(' ')}>
       <select
         ref={ref}
         className={[

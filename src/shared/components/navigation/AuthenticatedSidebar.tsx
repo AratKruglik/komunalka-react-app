@@ -3,6 +3,7 @@ import {
   BarChart3,
   CreditCard,
   FileText,
+  Gauge,
   HelpCircle,
   LayoutDashboard,
   LogOut,
@@ -57,6 +58,11 @@ const defaultSections: SidebarSection[] = [
         label: 'Мої адреси',
         to: '/addresses',
         icon: MapPin,
+      },
+      {
+        label: 'Лічильники',
+        to: '/meters',
+        icon: Gauge,
       },
       {
         label: 'Провайдери',
