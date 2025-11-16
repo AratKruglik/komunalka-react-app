@@ -1,0 +1,48 @@
+import type { MeterType } from '../../../shared/constants/meterTypes'
+
+export interface MeterReadingDraft {
+  id: string
+  type: MeterType
+  serviceName: string
+  meterLabel: string
+  meterNumber: string
+  unit: string
+  previousValue: number
+  previousDate: string
+  currentValue: number
+  readingDate: string
+  tariff: number
+  tariffLabel: string
+  photo?: {
+    fileName: string | null
+    previewUrl: string | null
+  }
+}
+
+export interface MeterReadingSummaryRow {
+  id: string
+  type: MeterType
+  serviceName: string
+  previousValue: number | null
+  currentValue: number | null
+  unit: string
+  tariff: number
+  tariffLabel: string
+}
+
+export interface MeterReadingHistoryRecord {
+  id: string
+  submittedAt: string
+  serviceName: string
+  type: MeterType
+  currentValue: number
+  consumption: number
+  tariff: number
+  cost: number
+}
+
+export interface AddressReadingsSnapshot {
+  addressId: string
+  meterDrafts: MeterReadingDraft[]
+  summaryRows: MeterReadingSummaryRow[]
+}

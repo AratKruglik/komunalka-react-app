@@ -3,14 +3,12 @@ import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { ShieldCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { PageSectionHeader } from '../../../shared/components/pages'
 import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
   Checkbox,
   FormMessage,
   Input,
@@ -222,12 +220,11 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
     <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-5">
         <Card className="border border-gray-200 shadow-lg">
-          <CardHeader className="gap-2">
-            <CardTitle className="text-2xl font-bold text-dark">Новий провайдер</CardTitle>
-            <CardDescription className="text-base text-gray-600">
-              Додайте тариф комунального провайдера та налаштуйте нагадування про нарахування
-            </CardDescription>
-          </CardHeader>
+          <PageSectionHeader
+            title="Новий провайдер"
+            description="Додайте тариф комунального провайдера та налаштуйте нагадування про нарахування"
+            titleClassName="text-2xl font-bold text-dark"
+          />
 
           <CardContent className="space-y-8">
             <FormField

@@ -2,6 +2,7 @@ import { NavLink } from 'react-router'
 import {
   BarChart3,
   CreditCard,
+  FilePlus,
   FileText,
   Gauge,
   HelpCircle,
@@ -63,6 +64,11 @@ const defaultSections: SidebarSection[] = [
         label: 'Лічильники',
         to: '/meters',
         icon: Gauge,
+      },
+      {
+        label: 'Внести показання',
+        to: '/readings/new',
+        icon: FilePlus,
       },
       {
         label: 'Провайдери',

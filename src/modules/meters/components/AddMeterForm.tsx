@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
+import { PageSectionHeader } from '../../../shared/components/pages'
 import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
   FormMessage,
   Input,
   Label,
@@ -264,12 +262,10 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   return (
     <form className="space-y-6" onSubmit={submitWithIntent('submit')}>
       <Card className="border border-gray-200 shadow-sm">
-        <CardHeader className="gap-2">
-          <CardTitle className="text-2xl font-semibold text-gray-900">Додати новий лічильник</CardTitle>
-          <CardDescription className="text-base text-gray-600">
-            Заповніть форму, щоб додати новий лічильник для обліку комунальних послуг
-          </CardDescription>
-        </CardHeader>
+        <PageSectionHeader
+          title="Додати новий лічильник"
+          description="Заповніть форму, щоб додати новий лічильник для обліку комунальних послуг"
+        />
 
         <CardContent className="space-y-8">
           <section className="space-y-3">

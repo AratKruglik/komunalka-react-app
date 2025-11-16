@@ -27,6 +27,7 @@ export interface PhotoDropzoneProps {
   onClear?: () => void
   inputProps?: InputPropsWithRef
   previewHeight?: number
+  variant?: 'default' | 'full'
 }
 
 export function PhotoDropzone({
@@ -44,6 +45,7 @@ export function PhotoDropzone({
   onClear,
   inputProps,
   previewHeight = 260,
+  variant = 'default',
 }: PhotoDropzoneProps) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [isDragActive, setIsDragActive] = useState(false)
@@ -108,60 +110,91 @@ export function PhotoDropzone({
     onClear?.()
   }
 
+  const wrapperClasses = [
+    'flex min-h-[220px] cursor-pointer flex-col gap-3 rounded-2xl border border-dashed text-gray-600 transition',
+    variant === 'full' ? 'px-5 py-5 sm:px-6 sm:py-6' : 'px-4 py-4',
+    isDragActive
+      ? 'border-primary bg-primary/10'
+      : variant === 'full'
+        ? 'border-sky-200 bg-sky-50 hover:border-primary hover:bg-primary/5'
+        : 'border-gray-300 bg-gray-50 hover:border-primary hover:bg-primary/5',
+    hasPreview && variant === 'default' ? 'items-stretch text-left' : 'items-center text-center',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <label
       htmlFor={id}
-      className={[
-        'flex min-h-[220px] cursor-pointer flex-col gap-3 rounded-xl border-2 border-dashed px-4 text-gray-600 transition',
-        isDragActive ? 'border-primary bg-primary/10' : 'border-gray-300 bg-gray-50 hover:border-primary hover:bg-primary/5',
-        hasPreview ? 'items-stretch text-left' : 'items-center text-center',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={wrapperClasses}
       onDragEnter={handleDragOver}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
       {hasPreview ? (
-        <div className="flex w-full flex-col gap-3">
-          <div className="w-full rounded-lg border border-gray-200 bg-white shadow-inner">
-            <div className="w-full overflow-hidden rounded-lg bg-gray-50" style={{ minHeight: previewHeight }}>
-              <img
-                src={previewUrl ?? ''}
-                alt={fileName ?? 'Превʼю фото'}
-                className="h-full w-full object-contain"
-              />
+        variant === 'full' ? (
+          <div className="flex w-full flex-col gap-4 text-left">
+            <div
+              className="relative w-full overflow-hidden rounded-[24px] bg-white shadow-inner"
+              style={{ minHeight: previewHeight }}
+            >
+              <img src={previewUrl ?? ''} alt={fileName ?? 'Превʼю фото'} className="h-full w-full object-cover" />
             </div>
+            <div className="text-sm text-gray-600">
+              <p className="font-semibold text-gray-900">{fileName}</p>
+              {helperText ? <p className="text-xs text-gray-500">{helperText}</p> : null}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              tone="neutral"
+              size="sm"
+              className="self-start"
+              onClick={(event) => {
+                event.preventDefault()
+                handleClear()
+              }}
+            >
+              {clearLabel}
+            </Button>
           </div>
-          <div className="text-center text-sm text-gray-500 sm:text-left">
-            <p className="text-sm font-medium text-gray-800">{fileName}</p>
-            {helperText ? <p className="text-xs text-gray-500">{helperText}</p> : null}
+        ) : (
+          <div className="flex w-full flex-col gap-3">
+            <div className="w-full rounded-lg border border-gray-200 bg-white shadow-inner">
+              <div className="w-full overflow-hidden rounded-lg bg-gray-50" style={{ minHeight: previewHeight }}>
+                <img
+                  src={previewUrl ?? ''}
+                  alt={fileName ?? 'Превʼю фото'}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            </div>
+            <div className="text-center text-sm text-gray-500 sm:text-left">
+              <p className="text-sm font-medium text-gray-800">{fileName}</p>
+              {helperText ? <p className="text-xs text-gray-500">{helperText}</p> : null}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              tone="neutral"
+              size="sm"
+              className="self-center sm:self-start"
+              onClick={(event) => {
+                event.preventDefault()
+                handleClear()
+              }}
+            >
+              {clearLabel}
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            tone="neutral"
-            size="sm"
-            className="self-center sm:self-start"
-            onClick={(event) => {
-              event.preventDefault()
-              handleClear()
-            }}
-          >
-            {clearLabel}
-          </Button>
-        </div>
+        )
       ) : (
         <>
           {emptyIcon}
-          {emptyTitle ? (
-            <p className="text-base font-medium text-gray-800">{emptyTitle}</p>
-          ) : null}
-          {emptyDescription ? (
-            <p className="text-sm text-gray-500">{emptyDescription}</p>
-          ) : null}
+          {emptyTitle ? <p className="text-base font-medium text-gray-800">{emptyTitle}</p> : null}
+          {emptyDescription ? <p className="text-sm text-gray-500">{emptyDescription}</p> : null}
           {buttonLabel ? (
             <Button type="button" variant="outline" tone="neutral" size="sm" className="pointer-events-none">
               {buttonLabel}

@@ -8,14 +8,12 @@ import {
   MapPinned,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
+import { PageSectionHeader } from '../../../shared/components/pages'
 import {
   Button,
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
-  CardHeader,
-  CardTitle,
   Checkbox,
   FormMessage,
   Input,
@@ -186,14 +184,11 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <Card className="border border-gray-200 shadow-lg">
-        <CardHeader className="gap-2">
-          <CardTitle className="text-2xl font-bold text-dark">
-            Додати нову адресу
-          </CardTitle>
-          <CardDescription className="text-base text-gray-600">
-            Заповніть форму нижче, щоб додати нову адресу для обліку комунальних послуг
-          </CardDescription>
-        </CardHeader>
+        <PageSectionHeader
+          title="Додати нову адресу"
+          description="Заповніть форму нижче, щоб додати нову адресу для обліку комунальних послуг"
+          titleClassName="text-2xl font-bold text-dark"
+        />
 
         <CardContent className="space-y-8">
           <FormStepper steps={steps} />

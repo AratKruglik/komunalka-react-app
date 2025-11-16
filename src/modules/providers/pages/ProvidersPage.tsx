@@ -2,6 +2,7 @@ import { Pencil, Plug, Plus, Shield, Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
+import { PageSectionHeader } from '../../../shared/components/pages'
 import {
   Badge,
   Button,
@@ -33,24 +34,19 @@ export default function ProvidersPage() {
     >
       <div className="space-y-6">
         <Card className="border border-gray-200 shadow-lg">
-          <CardHeader className="flex flex-col gap-4 border-b border-gray-200 pb-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-dark">Журнал провайдерів</CardTitle>
-              <CardDescription className="text-base text-gray-600">
-                Ми скоро додамо таблицю з тарифами. А поки що ви можете створювати провайдерів для майбутнього використання.
-              </CardDescription>
-            </div>
-            <Button
-              type="button"
-              size="md"
-              tone="primary"
-              className="w-full min-w-0 text-sm sm:w-auto sm:min-w-[188px] sm:text-base"
-              onClick={() => navigate('/providers/new')}
-            >
-              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Додати провайдера</span>
-            </Button>
-          </CardHeader>
+          <PageSectionHeader
+            title="Журнал провайдерів"
+            description="Ми скоро додамо таблицю з тарифами. А поки що ви можете створювати провайдерів для майбутнього використання."
+            withBorder
+            className="pb-4"
+            titleClassName="text-2xl font-bold text-dark"
+            ctaButton={{
+              label: 'Додати провайдера',
+              icon: <Plus className="h-4 w-4 sm:h-5 sm:w-5" />,
+              onClick: () => navigate('/providers/new'),
+              className: 'w-full min-w-0 text-sm sm:w-auto sm:min-w-[188px] sm:text-base',
+            }}
+          />
 
           <CardContent className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">

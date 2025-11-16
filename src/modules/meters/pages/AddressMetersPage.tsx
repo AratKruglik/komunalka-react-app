@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus } from 'lucide-react'
 import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
+import { PageSectionHeader } from '../../../shared/components/pages'
 import {
   Badge,
   Button,
@@ -392,28 +393,16 @@ export default function AddressMetersPage() {
     >
       <div className="space-y-6">
         <Card className="border border-gray-200 shadow-lg">
-          <CardHeader className="gap-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <CardTitle className="text-2xl text-gray-900">
-                  Оберіть адресу для перегляду лічильників
-                </CardTitle>
-                <CardDescription className="text-base text-gray-600">
-                  Всі налаштування, прив'язані до адреси, синхронізуються з вашим обліковим записом
-                </CardDescription>
-              </div>
-              <Button
-                type="button"
-                size="md"
-                tone="primary"
-                className="w-full min-w-0 text-sm sm:w-auto sm:min-w-[188px] sm:text-base"
-                onClick={() => navigate('/meters/new')}
-              >
-                <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>Додати лічильник</span>
-              </Button>
-            </div>
-          </CardHeader>
+          <PageSectionHeader
+            title="Оберіть адресу для перегляду лічильників"
+            description="Всі налаштування, прив'язані до адреси, синхронізуються з вашим обліковим записом"
+            ctaButton={{
+              label: 'Додати лічильник',
+              icon: <Plus className="h-4 w-4 sm:h-5 sm:w-5" />,
+              onClick: () => navigate('/meters/new'),
+              className: 'w-full min-w-0 text-sm sm:w-auto sm:min-w-[188px] sm:text-base',
+            }}
+          />
           <CardContent className="space-y-5">
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm">
