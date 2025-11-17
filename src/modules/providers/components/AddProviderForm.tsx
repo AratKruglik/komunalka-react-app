@@ -17,8 +17,9 @@ import {
   Select,
   Textarea,
 } from '../../../shared/components/ui'
-import { SERVICE_CONFIG, type ServiceType } from '../../../shared/constants/services'
-import { MOCK_PROVIDER_TEMPLATES } from '../../../shared/data/mockProviders'
+import { SERVICE_CONFIG } from '../../../shared/constants/services'
+import type { MeterType } from '../../../shared/constants/meterTypes'
+import { MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
 import type { BillingCycle, UtilityServiceType } from '../../../shared/types/providers'
 
 type ProviderFormValues = {
@@ -52,9 +53,21 @@ type BillingCycleOption = {
   label: string
 }
 
+// Mapper from MeterType to UtilityServiceType
+const meterTypeToUtilityServiceType = (meterType: MeterType): UtilityServiceType | '' => {
+  const mapping: Record<MeterType, UtilityServiceType> = {
+    electricity: 'electricity',
+    gas: 'gas',
+    coldWater: 'water',
+    hotWater: 'water',
+    heat: 'heating',
+  }
+  return mapping[meterType] || ''
+}
+
 const utilityOptionConfigs: Record<
   UtilityServiceType,
-  Omit<UtilityOption, 'icon' | 'iconColor'> & { serviceKey: ServiceType }
+  Omit<UtilityOption, 'icon' | 'iconColor'> & { serviceKey: MeterType }
 > = {
   water: {
     value: 'water',
@@ -62,7 +75,7 @@ const utilityOptionConfigs: Record<
     description: 'Холодна та гаряча вода для вашої адреси',
     unitLabel: 'грн/м³',
     helper: 'Вкажіть тариф за кубічний метр спожитої води',
-    serviceKey: 'Водопостачання',
+    serviceKey: 'coldWater',
   },
   gas: {
     value: 'gas',
@@ -70,7 +83,7 @@ const utilityOptionConfigs: Record<
     description: 'Природний газ для опалення та приготування їжі',
     unitLabel: 'грн/м³',
     helper: 'Зазвичай нараховується в кубічних метрах',
-    serviceKey: 'Газ',
+    serviceKey: 'gas',
   },
   electricity: {
     value: 'electricity',
@@ -78,7 +91,7 @@ const utilityOptionConfigs: Record<
     description: 'Електроенергія для квартири чи будинку',
     unitLabel: 'грн/кВт·год',
     helper: 'Вкажіть тариф за кіловат-годину',
-    serviceKey: 'Електроенергія',
+    serviceKey: 'electricity',
   },
   heating: {
     value: 'heating',
@@ -86,7 +99,7 @@ const utilityOptionConfigs: Record<
     description: 'Централізоване опалення або автономні системи',
     unitLabel: 'грн/Гкал',
     helper: 'Найчастіше тариф вказується за гігакалорію',
-    serviceKey: 'Опалення',
+    serviceKey: 'heat',
   },
 }
 
@@ -134,7 +147,7 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
     defaultValues,
     mode: 'onSubmit',
   })
-  const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null)
 
   const providerName = watch('providerName')
   const unitPrice = watch('unitPrice')
@@ -169,9 +182,9 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
     return Math.min(100, Math.round((completed / requiredFieldKeys.length) * 100))
   }, [providerName, serviceType, unitPrice])
 
-  const applyTemplate = (templateId: string) => {
+  const applyTemplate = (templateId: number) => {
     setSelectedTemplateId(templateId)
-    const template = MOCK_PROVIDER_TEMPLATES.find((entry) => entry.id === templateId)
+    const template = MOCK_PROVIDERS.find((entry) => entry.id === templateId)
     if (!template) {
       return
     }
@@ -180,7 +193,7 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
     const reminderValue = hasReminder ? String(template.reminderDay) : defaultValues.reminderDay
 
     setValue('providerName', template.name, { shouldDirty: true, shouldValidate: true })
-    setValue('serviceType', template.serviceType, { shouldDirty: true, shouldValidate: true })
+    setValue('serviceType', meterTypeToUtilityServiceType(template.serviceType), { shouldDirty: true, shouldValidate: true })
     setValue('unitPrice', template.unitPrice.toString(), { shouldDirty: true, shouldValidate: true })
     setValue('billingCycle', template.billingCycle, { shouldDirty: true })
     setValue('supportPhone', template.supportPhone ?? '', { shouldDirty: true })
@@ -213,7 +226,7 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
     })
 
     reset(defaultValues)
-    setSelectedTemplateId('')
+    setSelectedTemplateId(null)
   }
 
   return (
@@ -234,11 +247,18 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
             >
               <Select
                 id="providerTemplate"
-                value={selectedTemplateId}
-                onChange={(event) => applyTemplate(event.target.value)}
+                value={selectedTemplateId ?? ''}
+                onChange={(event) => {
+                  const value = event.target.value
+                  if (value) {
+                    applyTemplate(Number(value))
+                  } else {
+                    setSelectedTemplateId(null)
+                  }
+                }}
               >
                 <option value="">Не використовувати шаблон</option>
-                {MOCK_PROVIDER_TEMPLATES.map((template) => (
+                {MOCK_PROVIDERS.map((template) => (
                   <option key={template.id} value={template.id}>
                     {template.name} · {template.serviceLabel}
                   </option>

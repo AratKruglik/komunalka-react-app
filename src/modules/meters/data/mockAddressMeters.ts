@@ -38,6 +38,7 @@ const createGroup = (
 
   return {
     type,
+    meters: overrides.meters,
     latestReadings: [],
     quickDraft: {
       meterId: overrides.meters[0].id,

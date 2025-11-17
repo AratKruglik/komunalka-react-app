@@ -4,14 +4,23 @@ import { Plus } from 'lucide-react'
 import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
 import { PageSectionHeader } from '../../../shared/components/pages'
 import { Button, Card, CardContent, Label, Select } from '../../../shared/components/ui'
-import { MOCK_ADDRESS_OPTIONS } from '../../../shared/data/mockAddresses'
-import { MOCK_ADDRESS_READING_SNAPSHOTS } from '../data/mockReadings'
+import {
+  MOCK_ADDRESSES,
+  MOCK_PROVIDERS,
+  getMetersByAddressId,
+  getReadingsByAddressId,
+} from '../../../shared/data/mockDatabase'
+import {
+  toAddressSelectViewModel,
+  toAddressReadingsSnapshotViewModel,
+  type AddressReadingsSnapshotViewModel,
+  type MeterReadingDraftViewModel,
+} from '../../../shared/viewModels'
 import { ReadingCard } from '../components/ReadingCard'
 import { ReadingSummaryTable } from '../components/ReadingSummaryTable'
-import type { AddressReadingsSnapshot, MeterReadingDraft } from '../types'
 
 type MeterFormState = Record<
-  string,
+  number, // Changed from string to number for meterId
   {
     currentValue: string
     readingDate: string
@@ -22,7 +31,7 @@ type MeterFormState = Record<
   }
 >
 
-const buildFormState = (drafts: MeterReadingDraft[]): MeterFormState => {
+const buildFormState = (drafts: readonly MeterReadingDraftViewModel[]): MeterFormState => {
   return drafts.reduce<MeterFormState>((acc, draft) => {
     acc[draft.id] = {
       currentValue: String(draft.currentValue),
@@ -36,14 +45,32 @@ const buildFormState = (drafts: MeterReadingDraft[]): MeterFormState => {
   }, {})
 }
 
-const findSnapshot = (addressId: string): AddressReadingsSnapshot | undefined => {
-  return MOCK_ADDRESS_READING_SNAPSHOTS.find((snapshot) => snapshot.addressId === addressId)
-}
-
 export default function AddReadingsPage() {
   const navigate = useNavigate()
-  const [selectedAddressId, setSelectedAddressId] = useState(MOCK_ADDRESS_OPTIONS[0]?.value ?? '')
-  const snapshot = useMemo(() => findSnapshot(selectedAddressId), [selectedAddressId])
+  const [selectedAddressId, setSelectedAddressId] = useState(MOCK_ADDRESSES[0]?.id ?? 1)
+
+  // Generate address options for dropdown
+  const addressOptions = useMemo(
+    () => MOCK_ADDRESSES.map(toAddressSelectViewModel),
+    []
+  )
+
+  // Generate snapshot for selected address
+  const snapshot = useMemo<AddressReadingsSnapshotViewModel | null>(() => {
+    const meters = getMetersByAddressId(selectedAddressId)
+    const readings = getReadingsByAddressId(selectedAddressId)
+
+    if (meters.length === 0) {
+      return null
+    }
+
+    return toAddressReadingsSnapshotViewModel(
+      selectedAddressId,
+      meters,
+      readings,
+      MOCK_PROVIDERS
+    )
+  }, [selectedAddressId])
   const [forms, setForms] = useState<MeterFormState>(() => buildFormState(snapshot?.meterDrafts ?? []))
   const generatedPreviews = useRef<Record<string, string>>({})
 
@@ -60,10 +87,10 @@ export default function AddReadingsPage() {
   }, [])
 
   const handleAddressChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAddressId(event.target.value)
+    setSelectedAddressId(Number(event.target.value))
   }
 
-  const handleCurrentValueChange = (meterId: string, value: string) => {
+  const handleCurrentValueChange = (meterId: number, value: string) => {
     setForms((previous) => ({
       ...previous,
       [meterId]: {
@@ -73,7 +100,7 @@ export default function AddReadingsPage() {
     }))
   }
 
-  const handleReadingDateChange = (meterId: string, date: string) => {
+  const handleReadingDateChange = (meterId: number, date: string) => {
     setForms((previous) => ({
       ...previous,
       [meterId]: {
@@ -83,7 +110,7 @@ export default function AddReadingsPage() {
     }))
   }
 
-  const handlePhotoSelected = (meterId: string, file: File | null) => {
+  const handlePhotoSelected = (meterId: number, file: File | null) => {
     setForms((previous) => {
       const nextState = { ...previous }
       if (!nextState[meterId]) {
@@ -118,7 +145,7 @@ export default function AddReadingsPage() {
     })
   }
 
-  const handlePhotoClear = (meterId: string) => {
+  const handlePhotoClear = (meterId: number) => {
     setForms((previous) => {
       if (!previous[meterId]) {
         return previous
@@ -141,6 +168,23 @@ export default function AddReadingsPage() {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault()
+
+    // Demo: Log submitted readings
+    const submittedData = meterDrafts.map((draft) => {
+      const formState = forms[draft.id]
+      return {
+        meterId: draft.id,
+        meterNumber: draft.meterNumber,
+        serviceName: draft.serviceName,
+        currentValue: Number(formState?.currentValue ?? draft.currentValue),
+        readingDate: formState?.readingDate ?? draft.readingDate,
+        hasPhoto: Boolean(formState?.photo?.fileName),
+      }
+    })
+
+    console.log('Submitting readings:', submittedData)
+    alert(`Показання успішно збережено для ${meterDrafts.length} лічильників!`)
+
     // TODO: Hook up API call once backend is ready.
   }
 
@@ -189,8 +233,8 @@ export default function AddReadingsPage() {
                 onChange={handleAddressChange}
                 wrapperClassName="w-full"
               >
-                {MOCK_ADDRESS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
+                {addressOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
                     {option.label}
                   </option>
                 ))}

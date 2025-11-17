@@ -2,14 +2,14 @@ import { Calendar, AlertCircle, Clock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import {
   SERVICE_CONFIG,
-  type ServiceType,
   getServiceIcon,
 } from '../../../shared/constants/services'
+import type { MeterType } from '../../../shared/constants/meterTypes'
 import { Button } from '../../../shared/components/ui'
-import type { PaymentReminder } from '../types'
+import type { PaymentReminderViewModel } from '../../../shared/viewModels'
 
 interface PaymentRemindersProps {
-  reminders: PaymentReminder[]
+  reminders: PaymentReminderViewModel[]
 }
 
 export function PaymentReminders({ reminders }: PaymentRemindersProps) {
@@ -22,7 +22,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
     })
   }
 
-  const getUrgencyIcon = (urgency: PaymentReminder['urgency']): LucideIcon => {
+  const getUrgencyIcon = (urgency: PaymentReminderViewModel['urgency']): LucideIcon => {
     switch (urgency) {
       case 'high':
         return AlertCircle
@@ -33,20 +33,19 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
     }
   }
 
-  const getServiceStyles = (serviceName: string) => {
-    const config = SERVICE_CONFIG[serviceName as ServiceType]
+  const getServiceStyles = (meterType: MeterType) => {
+    const config = SERVICE_CONFIG[meterType]
 
-    // Map service names to their background colors
-    const serviceColorMap: Record<string, { bg: string; textColor: string }> = {
-      'Електроенергія': { bg: 'bg-sky-50', textColor: 'text-sky-700' },
-      'Газ': { bg: 'bg-amber-50', textColor: 'text-amber-700' },
-      'Холодна вода': { bg: 'bg-blue-50', textColor: 'text-blue-700' },
-      'Гаряча вода': { bg: 'bg-rose-50', textColor: 'text-rose-700' },
-      'Водопостачання': { bg: 'bg-cyan-50', textColor: 'text-cyan-700' },
-      'Опалення': { bg: 'bg-orange-50', textColor: 'text-orange-700' },
+    // Map meter types to their background colors
+    const serviceColorMap: Record<MeterType, { bg: string; textColor: string }> = {
+      electricity: { bg: 'bg-sky-50', textColor: 'text-sky-700' },
+      gas: { bg: 'bg-amber-50', textColor: 'text-amber-700' },
+      coldWater: { bg: 'bg-blue-50', textColor: 'text-blue-700' },
+      hotWater: { bg: 'bg-rose-50', textColor: 'text-rose-700' },
+      heat: { bg: 'bg-orange-50', textColor: 'text-orange-700' },
     }
 
-    const colors = serviceColorMap[serviceName] || { bg: 'bg-neutral-50', textColor: 'text-neutral-700' }
+    const colors = serviceColorMap[meterType] || { bg: 'bg-neutral-50', textColor: 'text-neutral-700' }
 
     if (!config) {
       // Fallback to neutral colors if service not found
@@ -80,9 +79,9 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
 
       <div className="space-y-3 sm:space-y-3">
         {reminders.map((reminder) => {
-          const styles = getServiceStyles(reminder.serviceName)
+          const styles = getServiceStyles(reminder.type)
           const ServiceIcon =
-            getServiceIcon(reminder.serviceName) ?? AlertCircle
+            getServiceIcon(reminder.type) ?? AlertCircle
           const UrgencyIcon = getUrgencyIcon(reminder.urgency)
 
           return (

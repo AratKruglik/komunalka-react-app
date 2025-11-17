@@ -1,6 +1,8 @@
 import { Zap, Flame, Droplets, Thermometer, Waves } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { MeterType } from './meterTypes'
 
+// Legacy type - kept for backward compatibility during migration
 export type ServiceType =
   | 'Електроенергія'
   | 'Газ'
@@ -20,10 +22,11 @@ export interface ServiceConfig {
 
 /**
  * Централізована конфігурація кольорів та іконок для комунальних послуг.
+ * НОВИЙ ПІДХІД: Використовує MeterType як ключі для консистентності з логікою.
  * Використовується по всьому додатку для консистентності UI.
  */
-export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
-  Електроенергія: {
+export const SERVICE_CONFIG: Record<MeterType, ServiceConfig> = {
+  electricity: {
     icon: Zap,
     iconBg: 'bg-sky-100',
     iconColor: 'text-sky-600',
@@ -31,7 +34,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     tagText: 'text-sky-800',
     chartColor: '#7DD3FC',
   },
-  Газ: {
+  gas: {
     icon: Flame,
     iconBg: 'bg-amber-100',
     iconColor: 'text-amber-600',
@@ -39,7 +42,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     tagText: 'text-amber-800',
     chartColor: '#FBBF24',
   },
-  'Холодна вода': {
+  coldWater: {
     icon: Droplets,
     iconBg: 'bg-blue-100',
     iconColor: 'text-blue-600',
@@ -47,7 +50,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     tagText: 'text-blue-800',
     chartColor: '#93C5FD',
   },
-  'Гаряча вода': {
+  hotWater: {
     icon: Thermometer,
     iconBg: 'bg-rose-100',
     iconColor: 'text-rose-600',
@@ -55,15 +58,7 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
     tagText: 'text-rose-800',
     chartColor: '#F9A8D4',
   },
-  Водопостачання: {
-    icon: Droplets,
-    iconBg: 'bg-cyan-100',
-    iconColor: 'text-cyan-600',
-    tagBg: 'bg-cyan-100',
-    tagText: 'text-cyan-800',
-    chartColor: '#67E8F9',
-  },
-  Опалення: {
+  heat: {
     icon: Waves,
     iconBg: 'bg-orange-100',
     iconColor: 'text-orange-600',
@@ -74,21 +69,21 @@ export const SERVICE_CONFIG: Record<ServiceType, ServiceConfig> = {
 }
 
 /**
- * Отримує конфігурацію іконки для послуги
+ * Отримує конфігурацію іконки для послуги за MeterType
  */
-export function getServiceIcon(serviceName: string): LucideIcon | null {
-  const config = SERVICE_CONFIG[serviceName as ServiceType]
+export function getServiceIcon(meterType: MeterType): LucideIcon | null {
+  const config = SERVICE_CONFIG[meterType]
   return config?.icon ?? null
 }
 
 /**
  * Отримує класи фону та кольору іконки для послуги (для великих іконок у картках)
  */
-export function getServiceIconClasses(serviceName: string): {
+export function getServiceIconClasses(meterType: MeterType): {
   iconBg: string
   iconColor: string
 } {
-  const config = SERVICE_CONFIG[serviceName as ServiceType]
+  const config = SERVICE_CONFIG[meterType]
   return config
     ? { iconBg: config.iconBg, iconColor: config.iconColor }
     : { iconBg: 'bg-gray-100', iconColor: 'text-gray-600' }
@@ -97,7 +92,7 @@ export function getServiceIconClasses(serviceName: string): {
 /**
  * Отримує класи для тегів/badges послуг (для маленьких міток)
  */
-export function getServiceTagClasses(serviceName: string): string {
-  const config = SERVICE_CONFIG[serviceName as ServiceType]
+export function getServiceTagClasses(meterType: MeterType): string {
+  const config = SERVICE_CONFIG[meterType]
   return config ? `${config.tagBg} ${config.tagText}` : 'bg-gray-100 text-gray-800'
 }

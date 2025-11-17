@@ -29,7 +29,7 @@ export function ExpenseDistribution({ dataByPeriod }: ExpenseDistributionProps) 
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>('1year')
 
   const currentData = useMemo<ExpenseDistributionItem[]>(() => {
-    return dataByPeriod[selectedPeriod] ?? []
+    return [...(dataByPeriod[selectedPeriod] ?? [])]
   }, [dataByPeriod, selectedPeriod])
 
   const totalExpenses = useMemo(() => {

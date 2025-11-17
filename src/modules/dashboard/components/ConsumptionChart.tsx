@@ -14,7 +14,7 @@ import { Button } from '../../../shared/components/ui'
 import { SERVICE_CONFIG } from '../../../shared/constants/services'
 
 interface ConsumptionChartProps {
-  data: ChartDataPoint[]
+  data: readonly ChartDataPoint[]
 }
 
 const periodOptions: { value: PeriodFilter; label: string }[] = [
@@ -24,28 +24,28 @@ const periodOptions: { value: PeriodFilter; label: string }[] = [
 ]
 
 const chartColors = {
-  electricity: SERVICE_CONFIG['Електроенергія'].chartColor,
-  gas: SERVICE_CONFIG['Газ'].chartColor,
-  hotWater: SERVICE_CONFIG['Гаряча вода'].chartColor,
-  coldWater: SERVICE_CONFIG['Холодна вода'].chartColor,
-  heating: SERVICE_CONFIG['Опалення'].chartColor,
+  electricity: SERVICE_CONFIG.electricity.chartColor,
+  gas: SERVICE_CONFIG.gas.chartColor,
+  hotWater: SERVICE_CONFIG.hotWater.chartColor,
+  coldWater: SERVICE_CONFIG.coldWater.chartColor,
+  heating: SERVICE_CONFIG.heat.chartColor,
 }
 
 export function ConsumptionChart({ data }: ConsumptionChartProps) {
   const [selectedPeriod, setSelectedPeriod] =
     useState<PeriodFilter>('1year')
 
-  // Filter data based on selected period
+  // Filter data based on selected period (convert readonly to mutable for recharts)
   const filteredData = (() => {
     switch (selectedPeriod) {
       case '3months':
-        return data.slice(-3)
+        return [...data.slice(-3)]
       case '6months':
-        return data.slice(-6)
+        return [...data.slice(-6)]
       case '1year':
-        return data.slice(-12)
+        return [...data.slice(-12)]
       default:
-        return data
+        return [...data]
     }
   })()
 

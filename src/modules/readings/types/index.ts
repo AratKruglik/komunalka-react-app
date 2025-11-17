@@ -1,7 +1,7 @@
 import type { MeterType } from '../../../shared/constants/meterTypes'
 
 export interface MeterReadingDraft {
-  id: string
+  id: number
   type: MeterType
   serviceName: string
   meterLabel: string
@@ -42,7 +42,7 @@ export interface MeterReadingHistoryRecord {
 }
 
 export interface AddressReadingsSnapshot {
-  addressId: string
+  addressId: number
   meterDrafts: MeterReadingDraft[]
   summaryRows: MeterReadingSummaryRow[]
 }

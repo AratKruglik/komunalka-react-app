@@ -12,12 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from '../../../shared/components/ui'
-import { MOCK_PROVIDER_TEMPLATES } from '../../../shared/data/mockProviders'
+import { MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
 
 export default function ProvidersPage() {
   const navigate = useNavigate()
   const groupedProviders = useMemo(() => {
-    return MOCK_PROVIDER_TEMPLATES.reduce<Record<string, typeof MOCK_PROVIDER_TEMPLATES>>((groups, provider) => {
+    return MOCK_PROVIDERS.reduce<Record<string, typeof MOCK_PROVIDERS>>((groups, provider) => {
       const key = provider.serviceLabel
       if (!groups[key]) {
         groups[key] = []
@@ -130,7 +130,7 @@ export default function ProvidersPage() {
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
-                              <Badge tone="neutral">
+                              <Badge variant="neutral">
                                 {provider.unitPrice.toFixed(2)} {provider.unitLabel}
                               </Badge>
                             </div>

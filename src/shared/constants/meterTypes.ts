@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
-import { SERVICE_CONFIG, type ServiceType } from './services'
+import { SERVICE_CONFIG } from './services'
+import type { ServiceLabel } from '../types/entities'
 
 export type MeterType = 'electricity' | 'gas' | 'coldWater' | 'hotWater' | 'heat'
 
@@ -7,7 +8,7 @@ interface BaseMeterTypeConfig {
   value: MeterType
   title: string
   description: string
-  service: ServiceType
+  serviceLabel: ServiceLabel
   unit: string
 }
 
@@ -16,46 +17,50 @@ const baseMeterTypeConfigs: BaseMeterTypeConfig[] = [
     value: 'electricity',
     title: 'Електролічильник',
     description: 'Для обліку споживання електроенергії',
-    service: 'Електроенергія',
+    serviceLabel: 'Електроенергія',
     unit: 'кВт·год',
   },
   {
     value: 'gas',
     title: 'Газовий лічильник',
     description: 'Контроль споживання газу',
-    service: 'Газ',
+    serviceLabel: 'Газ',
     unit: 'м³',
   },
   {
     value: 'coldWater',
     title: 'Лічильник холодної води',
     description: 'Для холодного водопостачання',
-    service: 'Холодна вода',
+    serviceLabel: 'Холодна вода',
     unit: 'м³',
   },
   {
     value: 'hotWater',
     title: 'Лічильник гарячої води',
     description: 'Для гарячого водопостачання',
-    service: 'Гаряча вода',
+    serviceLabel: 'Гаряча вода',
     unit: 'м³',
   },
   {
     value: 'heat',
     title: 'Лічильник тепла',
     description: 'Для систем опалення та теплопостачання',
-    service: 'Опалення',
+    serviceLabel: 'Опалення',
     unit: 'Гкал',
   },
 ]
 
-export interface MeterTypeOption extends Omit<BaseMeterTypeConfig, 'service'> {
+export interface MeterTypeOption {
+  value: MeterType
+  title: string
+  description: string
+  serviceLabel: ServiceLabel
+  unit: string
   icon: LucideIcon
-  service: ServiceType
 }
 
 export const METER_TYPE_OPTIONS: MeterTypeOption[] = baseMeterTypeConfigs.map((config) => {
-  const serviceConfig = SERVICE_CONFIG[config.service]
+  const serviceConfig = SERVICE_CONFIG[config.value]
 
   return {
     ...config,

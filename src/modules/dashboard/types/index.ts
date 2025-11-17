@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 
 export interface ServiceData {
-  id: string
+  id: number
   name: string
   icon: LucideIcon
   iconBg: string
@@ -14,8 +14,8 @@ export interface ServiceData {
 }
 
 export interface Reading {
-  id: string
-  serviceId: string
+  id: number
+  serviceId: number
   serviceName: string
   serviceIcon: LucideIcon
   serviceIconBg: string
@@ -27,8 +27,9 @@ export interface Reading {
 }
 
 export interface PaymentReminder {
-  id: string
-  serviceId: string
+  id: number
+  serviceId: number
+  type: import('../../../shared/constants/meterTypes').MeterType
   serviceName: string
   amount: number
   dueDate: string
@@ -57,11 +58,11 @@ export interface ExpenseDistributionItem {
 
 export type ExpenseDistributionByPeriod = Record<
   PeriodFilter,
-  ExpenseDistributionItem[]
+  readonly ExpenseDistributionItem[]
 >
 
 export interface DashboardAddressOption {
-  id: string
+  id: number
   label: string
   description?: string
 }

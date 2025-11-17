@@ -6,8 +6,8 @@ import type { DashboardAddressOption } from '../types'
 interface WelcomeHeaderProps {
   userName?: string
   addresses?: DashboardAddressOption[]
-  selectedAddressId?: string
-  onAddressChange?: (addressId: string) => void
+  selectedAddressId?: number
+  onAddressChange?: (addressId: number) => void
 }
 
 export function WelcomeHeader({
@@ -27,8 +27,8 @@ export function WelcomeHeader({
   }).format(new Date())
 
   const addressOptions = addresses ?? []
-  const [internalAddressId, setInternalAddressId] = useState(
-    selectedAddressId ?? addressOptions[0]?.id ?? ''
+  const [internalAddressId, setInternalAddressId] = useState<number | undefined>(
+    selectedAddressId ?? addressOptions[0]?.id
   )
   const activeAddressId = selectedAddressId ?? internalAddressId
   const selectId = useId()
@@ -54,7 +54,7 @@ export function WelcomeHeader({
   )
 
   const handleAddressChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const newAddressId = event.target.value
+    const newAddressId = Number(event.target.value)
 
     if (selectedAddressId === undefined) {
       setInternalAddressId(newAddressId)

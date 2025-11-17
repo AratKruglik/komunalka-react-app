@@ -9,11 +9,11 @@ import {
   Label,
   PhotoDropzone,
 } from '../../../shared/components/ui'
-import { SERVICE_CONFIG, type ServiceType } from '../../../shared/constants/services'
-import type { MeterReadingDraft } from '../types'
+import { SERVICE_CONFIG } from '../../../shared/constants/services'
+import type { MeterReadingDraftViewModel } from '../../../shared/viewModels'
 
 interface ReadingCardProps {
-  draft: MeterReadingDraft
+  draft: MeterReadingDraftViewModel
   currentValue: string
   readingDate: string
   photo?: {
@@ -46,7 +46,7 @@ export function ReadingCard({
   onPhotoClear,
   onPhotoSelected,
 }: ReadingCardProps) {
-  const serviceConfig = SERVICE_CONFIG[draft.serviceName as ServiceType]
+  const serviceConfig = SERVICE_CONFIG[draft.type]
   const ServiceIcon = serviceConfig?.icon
   const serviceIconBg = serviceConfig?.iconBg ?? 'bg-gray-100'
   const serviceIconColor = serviceConfig?.iconColor ?? 'text-gray-600'

@@ -21,8 +21,7 @@ import {
   METER_TYPE_OPTIONS,
   METER_TYPE_UNITS,
 } from '../../../shared/constants/meterTypes'
-import { MOCK_ADDRESS_OPTIONS } from '../../../shared/data/mockAddresses'
-import { MOCK_PROVIDER_TEMPLATES } from '../../../shared/data/mockProviders'
+import { MOCK_ADDRESSES, MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
 
 type SubmissionIntent = 'draft' | 'submit'
 
@@ -124,6 +123,13 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     return Math.min(100, Math.round((completed / requiredFieldKeys.length) * 100))
   }, [addressId, meterType, serialNumber, installationDate, initialReading, tariffValue])
 
+  const addressOptions = useMemo(() => {
+    return MOCK_ADDRESSES.map((address) => ({
+      value: String(address.id),
+      label: `${address.street}, ${address.building}, кв. ${address.apartment}`,
+    }))
+  }, [])
+
   const handleMeterTypeSelect = (value: MeterType) => {
     setValue('meterType', value, { shouldValidate: true })
   }
@@ -133,11 +139,8 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
       return []
     }
 
-    return MOCK_PROVIDER_TEMPLATES.filter((provider) => {
-      if (!provider.meterTypes?.length) {
-        return true
-      }
-      return provider.meterTypes.includes(meterType)
+    return MOCK_PROVIDERS.filter((provider) => {
+      return provider.serviceType === meterType
     })
   }, [meterType])
 
@@ -145,7 +148,8 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     if (!providerId) {
       return null
     }
-    return availableProviders.find((provider) => provider.id === providerId) ?? null
+    const providerIdNum = Number(providerId)
+    return availableProviders.find((provider) => provider.id === providerIdNum) ?? null
   }, [availableProviders, providerId])
 
   useEffect(() => {
@@ -154,8 +158,11 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
       return
     }
 
-    if (providerId && availableProviders.every((provider) => provider.id !== providerId)) {
-      setValue('providerId', '', { shouldDirty: true })
+    if (providerId) {
+      const providerIdNum = Number(providerId)
+      if (availableProviders.every((provider) => provider.id !== providerIdNum)) {
+        setValue('providerId', '', { shouldDirty: true })
+      }
     }
   }, [availableProviders, meterType, providerId, setValue])
 
@@ -279,7 +286,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               className="text-base"
             >
               <option value="">Оберіть адресу зі списку</option>
-              {MOCK_ADDRESS_OPTIONS.map((option) => (
+              {addressOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

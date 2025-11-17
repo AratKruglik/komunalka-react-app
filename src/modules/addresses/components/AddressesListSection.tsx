@@ -1,17 +1,33 @@
 import { Plus } from 'lucide-react'
 import { AddressCard } from './AddressCard'
-import { mockAddressCards, type AddressCardData } from './addressCardData'
 import { Button } from '../../../shared/components/ui'
+import {
+  MOCK_ADDRESSES,
+  getMetersByAddressId,
+  getReadingsByAddressId,
+} from '../../../shared/data/mockDatabase'
+import {
+  toAddressCardViewModel,
+  type AddressCardViewModel,
+} from '../../../shared/viewModels'
 
 interface AddressesListSectionProps {
-  addresses?: AddressCardData[]
+  addresses?: AddressCardViewModel[]
   onAddAddress?: () => void
 }
 
 export function AddressesListSection({
-  addresses = mockAddressCards,
+  addresses,
   onAddAddress,
 }: AddressesListSectionProps) {
+  // Generate address view models from centralized database
+  const defaultAddresses = MOCK_ADDRESSES.map((address) => {
+    const meters = getMetersByAddressId(address.id)
+    const readings = getReadingsByAddressId(address.id)
+    return toAddressCardViewModel(address, meters, readings)
+  })
+
+  const addressViewModels = addresses ?? defaultAddresses
   return (
     <section className="w-full overflow-hidden rounded-lg bg-white shadow-lg">
       {/* Header section with responsive layout */}
@@ -37,7 +53,7 @@ export function AddressesListSection({
 
       {/* Address cards grid - Mobile: 1 col, Tablet: 2 cols, Desktop: 3 cols, Wide: 4 cols */}
       <div className="grid gap-4 px-3.5 pb-5 sm:gap-5 sm:px-5 sm:pb-6 md:grid-cols-2 lg:gap-6 lg:px-6 xl:grid-cols-3 2xl:grid-cols-4">
-        {addresses.map((address) => (
+        {addressViewModels.map((address) => (
           <AddressCard key={address.id} {...address} />
         ))}
       </div>

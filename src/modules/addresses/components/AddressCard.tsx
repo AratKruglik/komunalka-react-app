@@ -24,15 +24,17 @@ interface AddressAction {
 }
 
 interface AddressCardProps {
+  id: number
   title: string
   subtitle: string
-  badges: AddressBadge[]
-  services: AddressServiceTag[]
+  badges: readonly AddressBadge[]
+  services: readonly AddressServiceTag[]
   isPrimary?: boolean
   actions?: AddressAction[]
 }
 
 export interface AddressServiceTag {
+  type: import('../../../shared/constants/meterTypes').MeterType
   label: string
   icon?: LucideIcon
 }
@@ -97,11 +99,11 @@ export function AddressCard({
       {/* Service tags - responsive sizing */}
       <div className="flex flex-wrap gap-1.5 sm:gap-2">
         {services.map((service) => {
-          const Icon = service.icon || getServiceIcon(service.label)
+          const Icon = service.icon || getServiceIcon(service.type)
           return (
             <span
               key={service.label}
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium sm:gap-2 sm:px-3 sm:py-1 sm:text-xs ${getServiceTagClasses(service.label)}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-medium sm:gap-2 sm:px-3 sm:py-1 sm:text-xs ${getServiceTagClasses(service.type)}`}
             >
               {Icon && <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />}
               {service.label}

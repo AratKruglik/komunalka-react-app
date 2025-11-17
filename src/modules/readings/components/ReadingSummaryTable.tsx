@@ -56,13 +56,13 @@ export function ReadingSummaryTable({ rows }: ReadingSummaryTableProps) {
           <tbody className="divide-y divide-gray-100">
             {rows.map((row) => {
               const hasValues = row.previousValue != null && row.currentValue != null
-              const consumption = hasValues ? Math.max(0, row.currentValue - row.previousValue) : null
+              const consumption = hasValues ? Math.max(0, row.currentValue! - row.previousValue!) : null
               const amount = consumption != null ? consumption * row.tariff : null
               return (
                 <tr key={row.id} className="text-gray-700">
                   <td className="px-3 py-3 font-medium text-gray-900">{row.serviceName}</td>
-                  <td className="px-3 py-3">{hasValues ? `${numberFormatter.format(row.previousValue)} ${row.unit}` : '—'}</td>
-                  <td className="px-3 py-3">{hasValues ? `${numberFormatter.format(row.currentValue)} ${row.unit}` : '—'}</td>
+                  <td className="px-3 py-3">{hasValues ? `${numberFormatter.format(row.previousValue!)} ${row.unit}` : '—'}</td>
+                  <td className="px-3 py-3">{hasValues ? `${numberFormatter.format(row.currentValue!)} ${row.unit}` : '—'}</td>
                   <td className="px-3 py-3">
                     {consumption != null ? `${numberFormatter.format(consumption)} ${row.unit}` : '—'}
                   </td>
