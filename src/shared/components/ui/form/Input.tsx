@@ -1,5 +1,28 @@
 import { forwardRef } from 'react'
 import type { InputHTMLAttributes, ReactNode } from 'react'
+import { tv } from 'tailwind-variants'
+
+const inputVariants = tv({
+  base: 'w-full py-2.5 rounded-md border border-neutral-200 text-base text-dark placeholder:text-neutral-400 bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
+  variants: {
+    isInvalid: {
+      true: 'border-error focus:ring-error focus:border-error',
+    },
+    hasLeadingIcon: {
+      true: 'pl-11',
+      false: 'pl-4',
+    },
+    hasEndAdornment: {
+      true: 'pr-12',
+      false: 'pr-4',
+    },
+  },
+  defaultVariants: {
+    isInvalid: false,
+    hasLeadingIcon: false,
+    hasEndAdornment: false,
+  },
+})
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   isInvalid?: boolean
@@ -10,7 +33,7 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   {
-    className = '',
+    className,
     wrapperClassName = '',
     isInvalid = false,
     leadingIcon,
@@ -22,12 +45,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   const hasLeadingIcon = Boolean(leadingIcon)
   const hasEndAdornment = Boolean(endAdornment)
 
-  const baseClasses =
-    'w-full py-2.5 rounded-md border border-neutral-200 text-base text-dark placeholder:text-[#adaebc] bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
-
-  const invalidClasses =
-    'border-error focus:ring-error focus:border-error'
-
   return (
     <div className={['relative', wrapperClassName].filter(Boolean).join(' ')}>
       {leadingIcon ? (
@@ -37,16 +54,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ) : null}
       <input
         ref={ref}
-        className={[
-          baseClasses,
-          isInvalid ? invalidClasses : '',
-          hasLeadingIcon ? 'pl-11' : 'pl-4',
-          hasEndAdornment ? 'pr-12' : 'pr-4',
-          'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
+        className={inputVariants({
+          isInvalid,
+          hasLeadingIcon,
+          hasEndAdornment,
           className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        })}
         aria-invalid={isInvalid || undefined}
         {...props}
       />

@@ -40,6 +40,7 @@ pnpm run preview
 - **Build Tool:** Vite 7.1.7
 - **Language:** TypeScript 5.9.3
 - **Styling:** Tailwind CSS
+- **Component Variants:** tailwind-variants
 - **Package Manager:** pnpm
 - **Linting:** ESLint 9.36.0 with TypeScript and React plugins
 

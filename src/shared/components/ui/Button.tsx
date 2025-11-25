@@ -1,103 +1,194 @@
 import { forwardRef } from 'react'
 import type { ButtonHTMLAttributes } from 'react'
+import { tv, type VariantProps } from 'tailwind-variants'
 import { Spinner } from './Spinner'
 
-type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'link'
-type ButtonTone = 'primary' | 'neutral' | 'secondary' | 'success' | 'warning' | 'danger'
-type ButtonSize = 'sm' | 'md' | 'lg' | 'xl' | 'icon'
+const button = tv({
+  base: 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-60 disabled:bg-gray-300',
+  variants: {
+    variant: {
+      solid: '',
+      outline: 'border bg-white',
+      ghost: '',
+      link: 'p-0 h-auto underline-offset-4 hover:underline focus-visible:outline-none',
+    },
+    tone: {
+      primary: '',
+      neutral: '',
+      secondary: '',
+      success: '',
+      warning: '',
+      danger: '',
+    },
+    size: {
+      sm: 'h-9 px-3 text-sm',
+      md: 'h-10 px-4 text-sm',
+      lg: 'h-11 px-5 text-base',
+      xl: 'h-12 px-6 text-base',
+      icon: 'h-10 w-10 p-0 rounded-full gap-0',
+    },
+    fullWidth: {
+      true: 'w-full',
+    },
+  },
+  compoundVariants: [
+    // solid tones
+    {
+      variant: 'solid',
+      tone: 'primary',
+      className: 'bg-primary text-gray-900 hover:bg-primary-dark active:bg-yellow-600',
+    },
+    {
+      variant: 'solid',
+      tone: 'neutral',
+      className: 'bg-neutral-800 text-white hover:bg-neutral-900 active:bg-neutral-950',
+    },
+    {
+      variant: 'solid',
+      tone: 'secondary',
+      className:
+        'bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] active:bg-[var(--color-secondary-dark)]/90',
+    },
+    {
+      variant: 'solid',
+      tone: 'success',
+      className: 'bg-[var(--color-success)] text-white hover:bg-green-700 active:bg-green-800',
+    },
+    {
+      variant: 'solid',
+      tone: 'warning',
+      className: 'bg-[var(--color-warning)] text-neutral-900 hover:bg-orange-700 active:bg-orange-800',
+    },
+    {
+      variant: 'solid',
+      tone: 'danger',
+      className: 'bg-[var(--color-error)] text-white hover:bg-red-700 active:bg-red-800',
+    },
+    // outline tones
+    {
+      variant: 'outline',
+      tone: 'primary',
+      className: 'border-gray-300 text-[#333333] hover:bg-gray-50',
+    },
+    {
+      variant: 'outline',
+      tone: 'neutral',
+      className: 'border-gray-300 text-gray-700 hover:bg-gray-50',
+    },
+    {
+      variant: 'outline',
+      tone: 'secondary',
+      className:
+        'border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/10',
+    },
+    {
+      variant: 'outline',
+      tone: 'success',
+      className:
+        'border-[var(--color-success)] text-[var(--color-success)] hover:bg-[var(--color-success)]/10',
+    },
+    {
+      variant: 'outline',
+      tone: 'warning',
+      className:
+        'border-[var(--color-warning)] text-[var(--color-warning)] hover:bg-[var(--color-warning)]/10',
+    },
+    {
+      variant: 'outline',
+      tone: 'danger',
+      className:
+        'border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)]/10',
+    },
+    // ghost tones
+    {
+      variant: 'ghost',
+      tone: 'primary',
+      className: 'text-gray-900 hover:bg-primary/10',
+    },
+    {
+      variant: 'ghost',
+      tone: 'neutral',
+      className: 'text-gray-600 hover:bg-gray-100',
+    },
+    {
+      variant: 'ghost',
+      tone: 'secondary',
+      className: 'text-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/10',
+    },
+    {
+      variant: 'ghost',
+      tone: 'success',
+      className: 'text-[var(--color-success)] hover:bg-[var(--color-success)]/10',
+    },
+    {
+      variant: 'ghost',
+      tone: 'warning',
+      className: 'text-[var(--color-warning)] hover:bg-[var(--color-warning)]/10',
+    },
+    {
+      variant: 'ghost',
+      tone: 'danger',
+      className: 'text-[var(--color-error)] hover:bg-[var(--color-error)]/10',
+    },
+    // link tones
+    {
+      variant: 'link',
+      tone: 'primary',
+      className: 'text-yellow-600',
+    },
+    {
+      variant: 'link',
+      tone: 'neutral',
+      className: 'text-gray-600',
+    },
+    {
+      variant: 'link',
+      tone: 'secondary',
+      className: 'text-[var(--color-secondary)]',
+    },
+    {
+      variant: 'link',
+      tone: 'success',
+      className: 'text-[var(--color-success)]',
+    },
+    {
+      variant: 'link',
+      tone: 'warning',
+      className: 'text-[var(--color-warning)]',
+    },
+    {
+      variant: 'link',
+      tone: 'danger',
+      className: 'text-[var(--color-error)]',
+    },
+    // link size override
+    {
+      variant: 'link',
+      size: ['sm', 'md', 'lg', 'xl', 'icon'],
+      className: 'h-auto px-0 py-0 text-sm',
+    },
+  ],
+  defaultVariants: {
+    variant: 'solid',
+    tone: 'primary',
+    size: 'md',
+  },
+})
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant
-  tone?: ButtonTone
-  size?: ButtonSize
-  fullWidth?: boolean
+export interface ButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof button> {
   loading?: boolean
   loadingText?: string
 }
 
-const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-sm',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-11 px-5 text-base',
-  xl: 'h-12 px-6 text-base',
-  icon: 'h-10 w-10 p-0',
-}
-
-const solidToneClasses: Record<ButtonTone, string> = {
-  primary:
-    'bg-primary text-[#333333] hover:bg-primary-dark active:bg-[#FFB700]',
-  neutral:
-    'bg-neutral-800 text-white hover:bg-neutral-900 active:bg-neutral-950',
-  secondary:
-    'bg-[var(--color-secondary)] text-white hover:bg-[var(--color-secondary-dark)] active:bg-[var(--color-secondary-dark)]/90',
-  success:
-    'bg-[var(--color-success)] text-white hover:bg-[#0f9a73] active:bg-[#0c7f5c]',
-  warning:
-    'bg-[var(--color-warning)] text-neutral-900 hover:bg-[#d48709] active:bg-[#b36c05]',
-  danger:
-    'bg-[var(--color-error)] text-white hover:bg-[#dc2626] active:bg-[#b91c1c]',
-}
-
-const outlineToneClasses: Record<ButtonTone, string> = {
-  primary:
-    'border border-gray-300 text-[#333333] bg-white hover:bg-gray-50',
-  neutral:
-    'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50',
-  secondary:
-    'border border-[var(--color-secondary)] text-[var(--color-secondary)] bg-white hover:bg-[var(--color-secondary)]/10',
-  success:
-    'border border-[var(--color-success)] text-[var(--color-success)] bg-white hover:bg-[var(--color-success)]/10',
-  warning:
-    'border border-[var(--color-warning)] text-[var(--color-warning)] bg-white hover:bg-[var(--color-warning)]/10',
-  danger:
-    'border border-[var(--color-error)] text-[var(--color-error)] bg-white hover:bg-[var(--color-error)]/10',
-}
-
-const ghostToneClasses: Record<ButtonTone, string> = {
-  primary:
-    'text-[#333333] hover:bg-primary/10',
-  neutral:
-    'text-gray-600 hover:bg-gray-100',
-  secondary:
-    'text-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/10',
-  success:
-    'text-[var(--color-success)] hover:bg-[var(--color-success)]/10',
-  warning:
-    'text-[var(--color-warning)] hover:bg-[var(--color-warning)]/10',
-  danger:
-    'text-[var(--color-error)] hover:bg-[var(--color-error)]/10',
-}
-
-const linkToneClasses: Record<ButtonTone, string> = {
-  primary: 'text-[#DAA520]',
-  neutral: 'text-gray-600',
-  secondary: 'text-[var(--color-secondary)]',
-  success: 'text-[var(--color-success)]',
-  warning: 'text-[var(--color-warning)]',
-  danger: 'text-[var(--color-error)]',
-}
-
-const variantToneLookup: Record<ButtonVariant, Record<ButtonTone, string>> = {
-  solid: solidToneClasses,
-  outline: outlineToneClasses,
-  ghost: ghostToneClasses,
-  link: linkToneClasses,
-}
-
-const variantBaseClasses: Record<ButtonVariant, string> = {
-  solid: '',
-  outline: '',
-  ghost: '',
-  link: 'p-0 h-auto underline-offset-4 focus-visible:outline-none',
-}
-
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
-    className = '',
-    variant = 'solid',
-    tone = 'primary',
-    size = 'md',
-    fullWidth = false,
+    className,
+    variant,
+    tone,
+    size,
+    fullWidth,
     loading = false,
     loadingText,
     disabled,
@@ -109,28 +200,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 ) {
   const isDisabled = disabled || loading
   const content = loading ? loadingText ?? children : children
-  const sizeClass = variant === 'link' ? 'h-auto px-0 py-0 text-sm' : sizeClasses[size]
-  const gapClass = size === 'icon' ? 'gap-0' : ''
 
   return (
     <button
       ref={ref}
       type={type}
       disabled={isDisabled}
-      className={[
-        'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150',
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-        'disabled:pointer-events-none disabled:opacity-60 disabled:bg-gray-300',
-        sizeClass,
-        variantToneLookup[variant][tone],
-        variantBaseClasses[variant],
-        fullWidth ? 'w-full' : '',
-        size === 'icon' ? 'rounded-full' : '',
-        gapClass,
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      className={button({ variant, tone, size, fullWidth, className })}
       {...props}
     >
       {loading ? (
