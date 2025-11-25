@@ -1,54 +1,59 @@
-import { forwardRef } from 'react'
-import type { SelectHTMLAttributes } from 'react'
+import { forwardRef, type ComponentPropsWithRef, type ReactNode } from 'react'
+import { tv, type VariantProps } from 'tailwind-variants'
+import { ChevronDown } from 'lucide-react'
 
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  isInvalid?: boolean
-  wrapperClassName?: string
+const selectStyles = tv({
+  slots: {
+    wrapper: 'relative',
+    select:
+      'w-full appearance-none rounded-md border border-neutral-200 bg-white bg-no-repeat py-2.5 pr-10 text-base text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
+    iconWrapper: 'pointer-events-none absolute inset-y-0 right-0 flex items-center px-2',
+  },
+  variants: {
+    isInvalid: {
+      true: {
+        select: 'border-error focus:border-error focus:ring-error',
+      },
+    },
+    hasLeadingIcon: {
+      true: {
+        select: 'pl-11',
+      },
+      false: {
+        select: 'pl-4',
+      },
+    },
+  },
+  defaultVariants: {
+    isInvalid: false,
+    hasLeadingIcon: false,
+  },
+})
+
+export interface SelectProps
+  extends ComponentPropsWithRef<'select'>,
+    VariantProps<typeof selectStyles> {
+  leadingIcon?: ReactNode
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { className = '', wrapperClassName = '', isInvalid = false, children, ...props },
+  { className, isInvalid, hasLeadingIcon, leadingIcon, children, ...props },
   ref,
 ) {
-  const baseClasses =
-    'w-full appearance-none rounded-md border border-neutral-200 bg-white px-4 py-2.5 text-base text-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary'
-
-  const invalidClasses =
-    'border-error focus:ring-error focus:border-error'
+  const { wrapper, select, iconWrapper } = selectStyles({ isInvalid, hasLeadingIcon })
 
   return (
-    <div className={['relative w-full', wrapperClassName].filter(Boolean).join(' ')}>
-      <select
-        ref={ref}
-        className={[
-          baseClasses,
-          isInvalid ? invalidClasses : '',
-          'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
-          'pr-10',
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        aria-invalid={isInvalid || undefined}
-        {...props}
-      >
+    <div className={wrapper()}>
+      {leadingIcon ? (
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+          {leadingIcon}
+        </span>
+      ) : null}
+      <select ref={ref} className={select({ className })} {...props}>
         {children}
       </select>
-      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-neutral-400">
-        <svg
-          className="h-4 w-4"
-          viewBox="0 0 20 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M5 7.5L10 12.5L15 7.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+      <span className={iconWrapper()}>
+        <ChevronDown className="h-5 w-5 text-gray-400" />
       </span>
     </div>
   )

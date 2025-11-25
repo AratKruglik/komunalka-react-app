@@ -1,24 +1,22 @@
-import { forwardRef } from 'react'
-import type { LabelHTMLAttributes } from 'react'
+import { forwardRef, type ComponentPropsWithRef } from 'react'
+import { tv, type VariantProps } from 'tailwind-variants'
 
-export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {}
+const labelStyles = tv({
+  base: 'block text-sm font-medium text-neutral-800',
+  variants: {
+    isRequired: {
+      true: "after:ml-0.5 after:text-red-500 after:content-['*']",
+    },
+  },
+})
+
+export interface LabelProps
+  extends ComponentPropsWithRef<'label'>,
+    VariantProps<typeof labelStyles> {}
 
 export const Label = forwardRef<HTMLLabelElement, LabelProps>(function Label(
-  { className = '', children, ...props },
+  { className, isRequired, ...props },
   ref,
 ) {
-  return (
-    <label
-      ref={ref}
-      className={[
-        'block text-sm font-medium text-gray-700',
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      {...props}
-    >
-      {children}
-    </label>
-  )
+  return <label ref={ref} className={labelStyles({ isRequired, className })} {...props} />
 })
