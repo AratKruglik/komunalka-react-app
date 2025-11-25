@@ -1,7 +1,7 @@
 import { forwardRef } from 'react'
 import type { HTMLAttributes } from 'react'
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {}
+export type CardProps = HTMLAttributes<HTMLDivElement>
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
   { className = '', ...props },
@@ -21,7 +21,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
   )
 })
 
-export interface CardSectionProps extends HTMLAttributes<HTMLDivElement> {}
+export type CardSectionProps = HTMLAttributes<HTMLDivElement>
 
 export const CardHeader = forwardRef<HTMLDivElement, CardSectionProps>(function CardHeader(
   { className = '', ...props },

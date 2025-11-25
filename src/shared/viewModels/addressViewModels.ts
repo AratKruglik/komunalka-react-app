@@ -3,7 +3,7 @@
  * Mapper функції для трансформації entity → view model
  */
 
-import type { Address, Meter, Reading } from '../types/entities'
+import type { Address, Meter } from '../types/entities'
 import type { MeterType } from '../constants/meterTypes'
 import { METER_TYPE_TO_SERVICE_LABEL } from '../types/entities'
 import type { LucideIcon } from 'lucide-react'
@@ -49,7 +49,6 @@ export interface AddressSelectViewModel {
 export function toAddressCardViewModel(
   address: Address,
   meters: readonly Meter[],
-  _readings: readonly Reading[],
 ): AddressCardViewModel {
   // Формуємо title з адреси
   const title = `${address.street}, ${address.building}, кв. ${address.apartment}`
@@ -109,11 +108,9 @@ export function toAddressSelectViewModel(address: Address): AddressSelectViewMod
 export function toAddressCardViewModels(
   addresses: readonly Address[],
   metersMap: ReadonlyMap<number, readonly Meter[]>,
-  readingsMap: ReadonlyMap<number, readonly Reading[]>,
 ): readonly AddressCardViewModel[] {
   return addresses.map((address) => {
     const meters = metersMap.get(address.id) || []
-    const readings = readingsMap.get(address.id) || []
-    return toAddressCardViewModel(address, meters, readings)
+    return toAddressCardViewModel(address, meters)
   })
 }

@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from '../../../shared/components/ui'
 import { MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
+import { formatTariffLabel, getPrimaryTariff } from '../../../shared/utils/providerTariffs'
 
 export default function ProvidersPage() {
   const navigate = useNavigate()
@@ -131,11 +132,33 @@ export default function ProvidersPage() {
                                 </Button>
                               </div>
                               <Badge variant="neutral">
-                                {provider.unitPrice.toFixed(2)} {provider.unitLabel}
+                                {(() => {
+                                  const primaryTariff = getPrimaryTariff(provider)
+                                  if (!primaryTariff) return provider.unitLabel
+                                  return `${primaryTariff.name} · ${primaryTariff.price.toFixed(2)} ${provider.unitLabel}`
+                                })()}
                               </Badge>
                             </div>
                           </div>
                           <p className="text-sm text-gray-600">{provider.description}</p>
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                              Тарифи
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {provider.tariffs.map((tariff) => (
+                                <span
+                                  key={tariff.id}
+                                  className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900"
+                                >
+                                  <span>{tariff.name}</span>
+                                  <span className="text-[11px] font-medium text-amber-700">
+                                    {formatTariffLabel(tariff.price, provider.unitLabel)}
+                                  </span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         </article>
                       ))}
                     </CardContent>

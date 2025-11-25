@@ -11,12 +11,21 @@ export interface MeterReadingDraft {
   previousDate: string
   currentValue: number
   readingDate: string
+  tariffId: string
   tariff: number
   tariffLabel: string
+  tariffs: TariffOption[]
   photo?: {
     fileName: string | null
     previewUrl: string | null
   }
+}
+
+export interface TariffOption {
+  id: string
+  name: string
+  price: number
+  label: string
 }
 
 export interface MeterReadingSummaryRow {
@@ -26,6 +35,7 @@ export interface MeterReadingSummaryRow {
   previousValue: number | null
   currentValue: number | null
   unit: string
+  tariffId: string
   tariff: number
   tariffLabel: string
 }

@@ -8,6 +8,7 @@ import type { MeterType } from '../constants/meterTypes'
 import { METER_TYPE_TO_SERVICE_LABEL } from '../types/entities'
 import { SERVICE_CONFIG } from '../constants/services'
 import type { LucideIcon } from 'lucide-react'
+import { getPrimaryTariff } from '../utils/providerTariffs'
 
 // =============================================================================
 // View Model Types
@@ -95,7 +96,8 @@ export function toServiceDataViewModel(
 ): ServiceDataViewModel {
   const config = SERVICE_CONFIG[meter.type]
   const consumption = latestReading?.consumption || 0
-  const cost = consumption * provider.unitPrice
+  const primaryTariff = getPrimaryTariff(provider)
+  const cost = consumption * (primaryTariff?.price ?? 0)
 
   // Розрахунок зміни споживання у відсотках
   let change = 0
@@ -114,7 +116,7 @@ export function toServiceDataViewModel(
     cost: Math.round(cost * 100) / 100,
     consumption,
     unit: provider.unitLabel.split('/')[1] || 'од',
-    rate: provider.unitPrice,
+    rate: primaryTariff?.price ?? 0,
     change: Math.round(change),
   }
 }
@@ -153,7 +155,8 @@ export function toPaymentReminderViewModel(
   dueDate: string,
 ): PaymentReminderViewModel {
   const consumption = latestReading?.consumption || 0
-  const amount = consumption * provider.unitPrice
+  const primaryTariff = getPrimaryTariff(provider)
+  const amount = consumption * (primaryTariff?.price ?? 0)
 
   // Розрахунок днів до сплати
   const today = new Date()
@@ -213,7 +216,7 @@ export function toChartDataViewModel(
   // Перетворюємо в масив ChartDataPointViewModel
   const chartData: ChartDataPointViewModel[] = []
   monthsMap.forEach((monthData, month) => {
-    const dataPoint: any = { month }
+    const dataPoint: ChartDataPointViewModel = { month }
 
     monthData.forEach((value, meterType) => {
       switch (meterType) {
@@ -287,7 +290,8 @@ export function toExpenseDistributionViewModel(
     const provider = providers.find((p) => p.id === meter.providerId)
     if (!provider) return
 
-    const cost = (reading.consumption || 0) * provider.unitPrice
+    const primaryTariff = getPrimaryTariff(provider)
+    const cost = (reading.consumption || 0) * (primaryTariff?.price ?? 0)
     const currentValue = expensesByType.get(meter.type) || 0
     expensesByType.set(meter.type, currentValue + cost)
   })

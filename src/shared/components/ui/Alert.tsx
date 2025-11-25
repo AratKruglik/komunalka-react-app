@@ -75,7 +75,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   )
 })
 
-export interface AlertTitleProps extends HTMLAttributes<HTMLHeadingElement> {}
+export type AlertTitleProps = HTMLAttributes<HTMLHeadingElement>
 
 export const AlertTitle = forwardRef<HTMLHeadingElement, AlertTitleProps>(function AlertTitle(
   { className = '', ...props },
@@ -95,7 +95,7 @@ export const AlertTitle = forwardRef<HTMLHeadingElement, AlertTitleProps>(functi
   )
 })
 
-export interface AlertDescriptionProps extends HTMLAttributes<HTMLParagraphElement> {}
+export type AlertDescriptionProps = HTMLAttributes<HTMLParagraphElement>
 
 export const AlertDescription = forwardRef<HTMLParagraphElement, AlertDescriptionProps>(
   function AlertDescription({ className = '', ...props }, ref) {

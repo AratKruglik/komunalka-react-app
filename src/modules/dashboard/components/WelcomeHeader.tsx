@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ChangeEvent } from 'react'
+import { useEffect, useId, useMemo, useState, type ChangeEvent } from 'react'
 import { Plus } from 'lucide-react'
 import { Button, Label, Select } from '../../../shared/components/ui'
 import type { DashboardAddressOption } from '../types'
@@ -26,7 +26,7 @@ export function WelcomeHeader({
     year: 'numeric',
   }).format(new Date())
 
-  const addressOptions = addresses ?? []
+  const addressOptions = useMemo(() => addresses ?? [], [addresses])
   const [internalAddressId, setInternalAddressId] = useState<number | undefined>(
     selectedAddressId ?? addressOptions[0]?.id
   )

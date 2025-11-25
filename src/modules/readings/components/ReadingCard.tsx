@@ -8,6 +8,7 @@ import {
   Input,
   Label,
   PhotoDropzone,
+  Select,
 } from '../../../shared/components/ui'
 import { SERVICE_CONFIG } from '../../../shared/constants/services'
 import type { MeterReadingDraftViewModel } from '../../../shared/viewModels'
@@ -16,12 +17,14 @@ interface ReadingCardProps {
   draft: MeterReadingDraftViewModel
   currentValue: string
   readingDate: string
+  selectedTariffId: string
   photo?: {
     fileName: string | null
     previewUrl: string | null
   }
   onCurrentValueChange: (value: string) => void
   onReadingDateChange: (value: string) => void
+  onTariffChange: (tariffId: string) => void
   onPhotoSelected: (file: File | null) => void
   onPhotoClear: () => void
 }
@@ -40,9 +43,11 @@ export function ReadingCard({
   draft,
   currentValue,
   readingDate,
+  selectedTariffId,
   photo,
   onCurrentValueChange,
   onReadingDateChange,
+  onTariffChange,
   onPhotoClear,
   onPhotoSelected,
 }: ReadingCardProps) {
@@ -53,7 +58,9 @@ export function ReadingCard({
   const parsedCurrent = Number(currentValue)
   const isValidCurrent = !Number.isNaN(parsedCurrent)
   const consumption = isValidCurrent ? Math.max(0, parsedCurrent - draft.previousValue) : 0
-  const estimatedCost = consumption * draft.tariff
+  const activeTariff =
+    draft.tariffs.find((tariff) => tariff.id === selectedTariffId) ?? draft.tariffs[0]
+  const estimatedCost = consumption * (activeTariff?.price ?? draft.tariff)
 
   const handleDropzoneSelection = (files: FileList | null) => {
     if (!files?.length) {
@@ -141,6 +148,26 @@ export function ReadingCard({
 
         <div className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor={`${draft.id}-tariff`} className="text-sm font-medium text-gray-700">
+              Тариф для розрахунку
+            </Label>
+            <Select
+              id={`${draft.id}-tariff`}
+              value={activeTariff?.id ?? draft.tariffId}
+              onChange={(event) => onTariffChange(event.target.value)}
+            >
+              {draft.tariffs.map((tariff) => (
+                <option key={tariff.id} value={tariff.id}>
+                  {tariff.label}
+                </option>
+              ))}
+            </Select>
+            <p className="text-xs text-gray-500">
+              Перемикайте між денним, нічним або іншими тарифами цього провайдера.
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">Фото лічильника</Label>
             <PhotoDropzone
               id={`${draft.id}-photo`}
@@ -169,7 +196,7 @@ export function ReadingCard({
               </div>
               <div className="flex items-center justify-between">
                 <dt>Тариф:</dt>
-                <dd className="font-semibold text-gray-900">{draft.tariffLabel}</dd>
+                <dd className="font-semibold text-gray-900">{activeTariff?.label ?? draft.tariffLabel}</dd>
               </div>
               <div className="flex items-center justify-between border-t border-primary/20 pt-3 text-base">
                 <dt className="font-semibold text-gray-900">Вартість:</dt>
@@ -184,4 +211,3 @@ export function ReadingCard({
     </Card>
   )
 }
-

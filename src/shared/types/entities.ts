@@ -4,6 +4,7 @@
  */
 
 import type { MeterType } from '../constants/meterTypes'
+import type { ProviderTariff } from './providers'
 
 // =============================================================================
 // Service Labels (Ukrainian UI strings)
@@ -62,8 +63,8 @@ export interface Provider {
   name: string
   serviceType: MeterType
   serviceLabel: ServiceLabel
-  unitPrice: number
   unitLabel: string
+  tariffs: ProviderTariff[]
   billingCycle: 'monthly' | 'quarterly' | 'annual'
   supportPhone?: string
   supportEmail?: string

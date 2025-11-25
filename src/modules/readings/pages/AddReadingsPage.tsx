@@ -24,6 +24,7 @@ type MeterFormState = Record<
   {
     currentValue: string
     readingDate: string
+    tariffId: string
     photo: {
       fileName: string | null
       previewUrl: string | null
@@ -36,6 +37,7 @@ const buildFormState = (drafts: readonly MeterReadingDraftViewModel[]): MeterFor
     acc[draft.id] = {
       currentValue: String(draft.currentValue),
       readingDate: draft.readingDate,
+      tariffId: draft.tariffId,
       photo: {
         fileName: draft.photo?.fileName ?? null,
         previewUrl: draft.photo?.previewUrl ?? null,
@@ -74,6 +76,14 @@ export default function AddReadingsPage() {
   const [forms, setForms] = useState<MeterFormState>(() => buildFormState(snapshot?.meterDrafts ?? []))
   const generatedPreviews = useRef<Record<string, string>>({})
 
+  const getActiveTariff = (
+    draft: MeterReadingDraftViewModel,
+    formState?: MeterFormState[number],
+  ) => {
+    const selectedTariffId = formState?.tariffId ?? draft.tariffId
+    return draft.tariffs.find((tariff) => tariff.id === selectedTariffId) ?? draft.tariffs[0]
+  }
+
   useEffect(() => {
     setForms(buildFormState(snapshot?.meterDrafts ?? []))
     Object.values(generatedPreviews.current).forEach((url) => URL.revokeObjectURL(url))
@@ -106,6 +116,16 @@ export default function AddReadingsPage() {
       [meterId]: {
         ...previous[meterId],
         readingDate: date,
+      },
+    }))
+  }
+
+  const handleTariffChange = (meterId: number, tariffId: string) => {
+    setForms((previous) => ({
+      ...previous,
+      [meterId]: {
+        ...previous[meterId],
+        tariffId,
       },
     }))
   }
@@ -172,12 +192,15 @@ export default function AddReadingsPage() {
     // Demo: Log submitted readings
     const submittedData = meterDrafts.map((draft) => {
       const formState = forms[draft.id]
+      const activeTariff = getActiveTariff(draft, formState)
       return {
         meterId: draft.id,
         meterNumber: draft.meterNumber,
         serviceName: draft.serviceName,
         currentValue: Number(formState?.currentValue ?? draft.currentValue),
         readingDate: formState?.readingDate ?? draft.readingDate,
+        tariffId: activeTariff?.id ?? draft.tariffId,
+        tariffLabel: activeTariff?.label ?? draft.tariffLabel,
         hasPhoto: Boolean(formState?.photo?.fileName),
       }
     })
@@ -193,6 +216,7 @@ export default function AddReadingsPage() {
   const summaryRows = meterDrafts.map((draft) => {
     const formState = forms[draft.id]
     const currentValue = Number(formState?.currentValue ?? draft.currentValue)
+    const activeTariff = getActiveTariff(draft, formState)
     return {
       id: `${draft.id}-summary`,
       type: draft.type,
@@ -200,8 +224,9 @@ export default function AddReadingsPage() {
       previousValue: draft.previousValue,
       currentValue: Number.isNaN(currentValue) ? null : currentValue,
       unit: draft.unit,
-      tariff: draft.tariff,
-      tariffLabel: draft.tariffLabel,
+      tariffId: activeTariff?.id ?? draft.tariffId,
+      tariff: activeTariff?.price ?? draft.tariff,
+      tariffLabel: activeTariff?.label ?? draft.tariffLabel,
     }
   })
 
@@ -251,9 +276,11 @@ export default function AddReadingsPage() {
                 draft={draft}
                 currentValue={forms[draft.id]?.currentValue ?? String(draft.currentValue)}
                 readingDate={forms[draft.id]?.readingDate ?? draft.readingDate}
+                selectedTariffId={forms[draft.id]?.tariffId ?? draft.tariffId}
                 photo={forms[draft.id]?.photo}
                 onCurrentValueChange={(value) => handleCurrentValueChange(draft.id, value)}
                 onReadingDateChange={(value) => handleReadingDateChange(draft.id, value)}
+                onTariffChange={(value) => handleTariffChange(draft.id, value)}
                 onPhotoSelected={(file) => handlePhotoSelected(draft.id, file)}
                 onPhotoClear={() => handlePhotoClear(draft.id)}
               />

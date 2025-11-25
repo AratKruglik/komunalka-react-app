@@ -22,6 +22,7 @@ import {
   METER_TYPE_UNITS,
 } from '../../../shared/constants/meterTypes'
 import { MOCK_ADDRESSES, MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
+import { formatTariffLabel, getPrimaryTariff } from '../../../shared/utils/providerTariffs'
 
 type SubmissionIntent = 'draft' | 'submit'
 
@@ -152,6 +153,10 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     return availableProviders.find((provider) => provider.id === providerIdNum) ?? null
   }, [availableProviders, providerId])
 
+  const selectedTariff = useMemo(() => {
+    return selectedProvider ? getPrimaryTariff(selectedProvider) : null
+  }, [selectedProvider])
+
   useEffect(() => {
     if (!meterType && providerId) {
       setValue('providerId', '', { shouldDirty: true })
@@ -167,15 +172,15 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   }, [availableProviders, meterType, providerId, setValue])
 
   useEffect(() => {
-    if (!selectedProvider) {
+    if (!selectedProvider || !selectedTariff) {
       return
     }
 
-    setValue('tariffValue', selectedProvider.unitPrice.toString(), {
+    setValue('tariffValue', selectedTariff.price.toString(), {
       shouldDirty: true,
       shouldValidate: true,
     })
-  }, [selectedProvider, setValue])
+  }, [selectedProvider, selectedTariff, setValue])
 
   const updatePhotoState = (files: FileList | null) => {
     setValue('photo', files, {
@@ -446,7 +451,11 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
                   </option>
                   {availableProviders.map((provider) => (
                     <option key={provider.id} value={provider.id}>
-                      {provider.name} · {provider.unitPrice.toFixed(2)} {provider.unitLabel}
+                      {provider.name} · {(() => {
+                        const tariff = getPrimaryTariff(provider)
+                        if (!tariff) return provider.unitLabel
+                        return `${tariff.name} · ${formatTariffLabel(tariff.price, provider.unitLabel)}`
+                      })()}
                     </option>
                   ))}
                 </Select>

@@ -7,6 +7,7 @@
 import type { Meter, Reading, Provider } from '../types/entities'
 import type { MeterType } from '../constants/meterTypes'
 import { METER_TYPE_TO_SERVICE_LABEL } from '../types/entities'
+import { formatTariffLabel } from '../utils/providerTariffs'
 
 // =============================================================================
 // View Model Types
@@ -23,12 +24,21 @@ export interface MeterReadingDraftViewModel {
   readonly previousDate: string
   readonly currentValue: number
   readonly readingDate: string
+  readonly tariffId: string
   readonly tariff: number
   readonly tariffLabel: string
+  readonly tariffs: readonly TariffOptionViewModel[]
   readonly photo?: {
     fileName: string | null
     previewUrl: string | null
   }
+}
+
+export interface TariffOptionViewModel {
+  readonly id: string
+  readonly name: string
+  readonly price: number
+  readonly label: string
 }
 
 export interface MeterReadingSummaryRowViewModel {
@@ -38,6 +48,7 @@ export interface MeterReadingSummaryRowViewModel {
   readonly previousValue: number | null
   readonly currentValue: number | null
   readonly unit: string
+  readonly tariffId: string
   readonly tariff: number
   readonly tariffLabel: string
 }
@@ -59,6 +70,25 @@ export interface AddressReadingsSnapshotViewModel {
   readonly summaryRows: readonly MeterReadingSummaryRowViewModel[]
 }
 
+const mapTariffs = (provider: Provider): TariffOptionViewModel[] => {
+  return provider.tariffs.map((tariff) => ({
+    id: tariff.id,
+    name: tariff.name,
+    price: tariff.price,
+    label: `${tariff.name} · ${formatTariffLabel(tariff.price, provider.unitLabel)}`,
+  }))
+}
+
+const resolveTariff = (provider: Provider, tariffId?: string) => {
+  const tariffs = mapTariffs(provider)
+  const selected = tariffs.find((tariff) => tariff.id === tariffId) ?? tariffs[0]
+
+  return {
+    tariffs,
+    selected,
+  }
+}
+
 // =============================================================================
 // Mapper Functions
 // =============================================================================
@@ -73,6 +103,7 @@ export function toMeterReadingDraftViewModel(
   provider: Provider,
 ): MeterReadingDraftViewModel {
   const serviceName = METER_TYPE_TO_SERVICE_LABEL[meter.type]
+  const { tariffs, selected } = resolveTariff(provider)
 
   return {
     id: meter.id,
@@ -85,8 +116,10 @@ export function toMeterReadingDraftViewModel(
     previousDate: latestReading?.date || new Date().toISOString().split('T')[0],
     currentValue: latestReading?.value || 0,
     readingDate: new Date().toISOString().split('T')[0],
-    tariff: provider.unitPrice,
-    tariffLabel: provider.unitLabel,
+    tariffId: selected?.id ?? '',
+    tariff: selected?.price ?? 0,
+    tariffLabel: selected?.label ?? provider.unitLabel,
+    tariffs,
     photo: {
       fileName: null,
       previewUrl: null,
@@ -102,8 +135,11 @@ export function toMeterReadingSummaryRowViewModel(
   latestReading: Reading | undefined,
   currentValue: number | null,
   provider: Provider,
+  selectedTariffId?: string,
 ): MeterReadingSummaryRowViewModel {
   const serviceName = METER_TYPE_TO_SERVICE_LABEL[meter.type]
+  const { selected } = resolveTariff(provider, selectedTariffId)
+  const tariffPrice = selected?.price ?? 0
 
   return {
     id: meter.id,
@@ -112,8 +148,9 @@ export function toMeterReadingSummaryRowViewModel(
     previousValue: latestReading?.value || null,
     currentValue,
     unit: provider.unitLabel.split('/')[1] || '>4',
-    tariff: provider.unitPrice,
-    tariffLabel: provider.unitLabel,
+    tariffId: selected?.id ?? '',
+    tariff: tariffPrice,
+    tariffLabel: selected?.label ?? provider.unitLabel,
   }
 }
 
@@ -124,10 +161,13 @@ export function toMeterReadingHistoryRecordViewModel(
   reading: Reading,
   meter: Meter,
   provider: Provider,
+  tariffId?: string,
 ): MeterReadingHistoryRecordViewModel {
   const serviceName = METER_TYPE_TO_SERVICE_LABEL[meter.type]
   const consumption = reading.consumption || 0
-  const cost = consumption * provider.unitPrice
+  const { selected } = resolveTariff(provider, tariffId)
+  const tariffPrice = selected?.price ?? 0
+  const cost = consumption * tariffPrice
 
   return {
     id: reading.id,
@@ -136,7 +176,7 @@ export function toMeterReadingHistoryRecordViewModel(
     type: meter.type,
     currentValue: reading.value,
     consumption,
-    tariff: provider.unitPrice,
+    tariff: tariffPrice,
     cost: Math.round(cost * 100) / 100,
   }
 }
@@ -180,6 +220,7 @@ export function toAddressReadingsSnapshotViewModel(
       latestReading,
       draft.currentValue,
       provider,
+      draft.tariffId,
     )
   })
 

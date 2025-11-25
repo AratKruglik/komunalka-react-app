@@ -4,7 +4,6 @@ import { Button } from '../../../shared/components/ui'
 import {
   MOCK_ADDRESSES,
   getMetersByAddressId,
-  getReadingsByAddressId,
 } from '../../../shared/data/mockDatabase'
 import {
   toAddressCardViewModel,
@@ -23,8 +22,7 @@ export function AddressesListSection({
   // Generate address view models from centralized database
   const defaultAddresses = MOCK_ADDRESSES.map((address) => {
     const meters = getMetersByAddressId(address.id)
-    const readings = getReadingsByAddressId(address.id)
-    return toAddressCardViewModel(address, meters, readings)
+    return toAddressCardViewModel(address, meters)
   })
 
   const addressViewModels = addresses ?? defaultAddresses

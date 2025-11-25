@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { useForm } from 'react-hook-form'
-import { ShieldCheck } from 'lucide-react'
+import { useForm, useFieldArray } from 'react-hook-form'
+import { Plus, ShieldCheck, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PageSectionHeader } from '../../../shared/components/pages'
 import {
@@ -22,10 +22,15 @@ import type { MeterType } from '../../../shared/constants/meterTypes'
 import { MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
 import type { BillingCycle, UtilityServiceType } from '../../../shared/types/providers'
 
+type TariffFormValue = {
+  id: string
+  name: string
+  price: string
+}
+
 type ProviderFormValues = {
   providerName: string
   serviceType: UtilityServiceType | ''
-  unitPrice: string
   billingCycle: BillingCycle
   supportPhone: string
   supportEmail: string
@@ -33,6 +38,7 @@ type ProviderFormValues = {
   description: string
   autoReminder: boolean
   reminderDay: string
+  tariffs: TariffFormValue[]
 }
 
 export interface AddProviderFormProps {
@@ -121,7 +127,6 @@ const billingCycleOptions: BillingCycleOption[] = [
 const defaultValues: ProviderFormValues = {
   providerName: '',
   serviceType: '',
-  unitPrice: '',
   billingCycle: 'monthly',
   supportPhone: '',
   supportEmail: '',
@@ -129,17 +134,15 @@ const defaultValues: ProviderFormValues = {
   description: '',
   autoReminder: true,
   reminderDay: '5',
+  tariffs: [{ id: 'tariff-1', name: 'Базовий тариф', price: '' }],
 }
-
-const requiredFieldKeys: Array<
-  keyof Pick<ProviderFormValues, 'providerName' | 'serviceType' | 'unitPrice'>
-> = ['providerName', 'serviceType', 'unitPrice']
 
 export function AddProviderForm({ onCancel }: AddProviderFormProps) {
   const {
     register,
     handleSubmit,
     setValue,
+    control,
     watch,
     reset,
     formState: { errors, isSubmitting },
@@ -150,37 +153,31 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null)
 
   const providerName = watch('providerName')
-  const unitPrice = watch('unitPrice')
   const serviceType = watch('serviceType')
   const autoReminder = watch('autoReminder')
+  const tariffs = watch('tariffs') ?? []
+
+  const { fields: tariffFields, append, remove, replace } = useFieldArray({
+    control,
+    name: 'tariffs',
+  })
 
   const selectedUtility = useMemo(() => {
     return utilityOptions.find((option) => option.value === serviceType)
   }, [serviceType])
 
+  const primaryTariff = tariffs[0]
+
   const completionProgress = useMemo(() => {
-    const completed = requiredFieldKeys.reduce((count, key) => {
-      const value = (() => {
-        switch (key) {
-          case 'providerName':
-            return providerName
-          case 'serviceType':
-            return serviceType
-          case 'unitPrice':
-            return unitPrice
-          default:
-            return ''
-        }
-      })()
-      return value ? count + 1 : count
-    }, 0)
+    const requiredFields = [providerName, serviceType, primaryTariff?.price]
+    const completed = requiredFields.filter(Boolean).length
 
     if (!completed) {
       return 0
     }
 
-    return Math.min(100, Math.round((completed / requiredFieldKeys.length) * 100))
-  }, [providerName, serviceType, unitPrice])
+    return Math.min(100, Math.round((completed / requiredFields.length) * 100))
+  }, [primaryTariff?.price, providerName, serviceType])
 
   const applyTemplate = (templateId: number) => {
     setSelectedTemplateId(templateId)
@@ -194,7 +191,14 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
 
     setValue('providerName', template.name, { shouldDirty: true, shouldValidate: true })
     setValue('serviceType', meterTypeToUtilityServiceType(template.serviceType), { shouldDirty: true, shouldValidate: true })
-    setValue('unitPrice', template.unitPrice.toString(), { shouldDirty: true, shouldValidate: true })
+    const mappedTariffs = template.tariffs.map((tariff) => ({
+      id: tariff.id,
+      name: tariff.name,
+      price: tariff.price.toString(),
+    }))
+
+    replace(mappedTariffs)
+    setValue('tariffs', mappedTariffs, { shouldDirty: true, shouldValidate: true })
     setValue('billingCycle', template.billingCycle, { shouldDirty: true })
     setValue('supportPhone', template.supportPhone ?? '', { shouldDirty: true })
     setValue('supportEmail', template.supportEmail ?? '', { shouldDirty: true })
@@ -219,13 +223,22 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
   const onSubmit = async (data: ProviderFormValues) => {
     await new Promise((resolve) => setTimeout(resolve, 600))
 
+    const normalizedTariffs = data.tariffs
+      .filter((tariff) => tariff.price)
+      .map((tariff, index) => ({
+        id: tariff.id || `tariff-${index + 1}`,
+        name: tariff.name || `Тариф ${index + 1}`,
+        price: Number(tariff.price),
+      }))
+
     console.log('Submitting provider', {
       ...data,
-      unitPrice: data.unitPrice ? Number(data.unitPrice) : null,
+      tariffs: normalizedTariffs,
       reminderDay: data.autoReminder ? Number(data.reminderDay) : null,
     })
 
     reset(defaultValues)
+    replace(defaultValues.tariffs)
     setSelectedTemplateId(null)
   }
 
@@ -318,53 +331,138 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                 />
               </FormField>
 
-              <div className="grid gap-6 md:grid-cols-2">
-                <FormField
-                  id="unitPrice"
-                  label="Ціна за одиницю"
-                  required
-                  helper={selectedUtility?.helper ?? 'Вкажіть тариф у гривнях'}
-                  error={errors.unitPrice?.message}
-                >
-                  <Input
-                    id="unitPrice"
-                    type="number"
-                    placeholder="12.45"
-                    step="0.01"
-                    min="0"
-                    inputMode="decimal"
-                    endAdornment={
-                      <span className="text-sm font-medium text-gray-600">
-                        {selectedUtility?.unitLabel ?? 'грн/од.'}
-                      </span>
+              <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-dark">
+                      Тарифи провайдера<span className="text-red-500">*</span>
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Додайте денний, нічний чи інші плани. Мінімум один тариф обовʼязковий.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    tone="primary"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() =>
+                      append({
+                        id: `tariff-${tariffFields.length + 1}-${Date.now()}`,
+                        name: '',
+                        price: '',
+                      })
                     }
-                    {...register('unitPrice', {
-                      required: 'Вкажіть тариф',
-                      validate: (value) =>
-                        Number(value) > 0 || 'Вартість має бути більшою за 0',
-                    })}
-                    isInvalid={Boolean(errors.unitPrice)}
-                  />
-                </FormField>
-
-                <FormField
-                  id="billingCycle"
-                  label="Період нарахування"
-                  helper="Як часто провайдер виставляє рахунок"
-                  error={errors.billingCycle?.message}
-                >
-                  <Select
-                    id="billingCycle"
-                    {...register('billingCycle')}
+                    leftIcon={<Plus className="h-4 w-4" />}
                   >
-                    {billingCycleOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
+                    Додати тариф
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {tariffFields.map((tariff, index) => {
+                    const tariffNameError = errors.tariffs?.[index]?.name?.message
+                    const tariffPriceError = errors.tariffs?.[index]?.price?.message
+
+                    return (
+                      <div
+                        key={tariff.id}
+                        className="rounded-lg border border-gray-200 bg-white p-4 shadow-md"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 text-sm font-semibold text-gray-800">
+                            <span className="grid size-9 place-items-center rounded-full bg-gray-100 text-gray-700">
+                              {index + 1}
+                            </span>
+                            <span>{watch(`tariffs.${index}.name`) || 'Новий тариф'}</span>
+                          </div>
+                          {tariffFields.length > 1 ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              tone="neutral"
+                              size="xs"
+                              className="text-sm"
+                              onClick={() => remove(index)}
+                              leftIcon={<Trash2 className="h-4 w-4" />}
+                            >
+                              Видалити
+                            </Button>
+                          ) : (
+                            <span className="text-xs font-medium text-gray-500">Базовий</span>
+                          )}
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-2 md:gap-6 md:pt-2">
+                          <FormField
+                            id={`tariff-name-${tariff.id}`}
+                            label="Назва тарифу"
+                            required
+                            helper="Наприклад: Денний, Нічний або Стандарт"
+                            error={tariffNameError}
+                          >
+                            <Input
+                              id={`tariff-name-${tariff.id}`}
+                              placeholder="Вкажіть назву тарифу"
+                              {...register(`tariffs.${index}.name` as const, {
+                                required: 'Назва тарифу є обовʼязковою',
+                              })}
+                              isInvalid={Boolean(tariffNameError)}
+                            />
+                          </FormField>
+
+                          <FormField
+                            id={`tariff-price-${tariff.id}`}
+                            label="Вартість"
+                            required
+                            helper={selectedUtility?.helper ?? 'Вкажіть тариф у гривнях'}
+                            error={tariffPriceError}
+                          >
+                            <Input
+                              id={`tariff-price-${tariff.id}`}
+                              type="number"
+                              placeholder="12.45"
+                              step="0.01"
+                              min="0"
+                              inputMode="decimal"
+                              endAdornment={
+                                <span className="text-sm font-medium text-gray-600">
+                                  {selectedUtility?.unitLabel ?? 'грн/од.'}
+                                </span>
+                              }
+                              {...register(`tariffs.${index}.price` as const, {
+                                required: 'Вкажіть тариф',
+                                validate: (value) =>
+                                  Number(value) > 0 || 'Вартість має бути більшою за 0',
+                              })}
+                              isInvalid={Boolean(tariffPriceError)}
+                            />
+                          </FormField>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
+
+              <FormField
+                id="billingCycle"
+                label="Період нарахування"
+                helper="Як часто провайдер виставляє рахунок"
+                error={errors.billingCycle?.message}
+              >
+                <Select
+                  id="billingCycle"
+                  {...register('billingCycle')}
+                >
+                  {billingCycleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              </FormField>
 
               <div className="grid gap-6 md:grid-cols-2">
                 <FormField
