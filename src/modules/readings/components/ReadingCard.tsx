@@ -168,7 +168,7 @@ export function ReadingCard({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700">Фото лічильника</Label>
+            <Label className="text-sm font-medium text-gray-700 dark:text-slate-100">Фото лічильника</Label>
             <PhotoDropzone
               id={`${draft.id}-photo`}
               fileName={photo?.fileName ?? draft.photo?.fileName ?? null}
@@ -179,28 +179,30 @@ export function ReadingCard({
               helperText="Підтримуються формати JPG, PNG. Максимум 10 МБ"
               buttonLabel="Завантажити фото"
               variant="full"
-              className="border-blue-200 bg-blue-50"
+              className="border-blue-200 bg-blue-50 dark:border-slate-600 dark:bg-slate-900/60"
               onFilesSelected={handleDropzoneSelection}
               onClear={onPhotoClear}
             />
           </div>
 
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-            <p className="text-base font-semibold text-gray-900">Розрахунок</p>
-            <dl className="mt-4 space-y-3 text-sm text-gray-600">
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 dark:border-amber-300/30 dark:bg-amber-200/10">
+            <p className="text-base font-semibold text-gray-900 dark:text-slate-100">Розрахунок</p>
+            <dl className="mt-4 space-y-3 text-sm text-gray-600 dark:text-slate-300">
               <div className="flex items-center justify-between">
                 <dt>Споживання:</dt>
-                <dd className="font-semibold text-gray-900">
+                <dd className="font-semibold text-gray-900 dark:text-slate-100">
                   {numberFormatter.format(consumption)} {draft.unit}
                 </dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt>Тариф:</dt>
-                <dd className="font-semibold text-gray-900">{activeTariff?.label ?? draft.tariffLabel}</dd>
+                <dd className="font-semibold text-gray-900 dark:text-slate-100">
+                  {activeTariff?.label ?? draft.tariffLabel}
+                </dd>
               </div>
-              <div className="flex items-center justify-between border-t border-primary/20 pt-3 text-base">
-                <dt className="font-semibold text-gray-900">Вартість:</dt>
-                <dd className="font-semibold text-gray-900">
+              <div className="flex items-center justify-between border-t border-primary/20 pt-3 text-base dark:border-amber-300/30">
+                <dt className="font-semibold text-gray-900 dark:text-slate-100">Вартість:</dt>
+                <dd className="font-semibold text-gray-900 dark:text-slate-100">
                   {currencyFormatter.format(estimatedCost || 0)}
                 </dd>
               </div>

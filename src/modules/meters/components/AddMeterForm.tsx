@@ -273,7 +273,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
 
   return (
     <form className="space-y-6" onSubmit={submitWithIntent('submit')}>
-      <Card className="border border-gray-200 shadow-sm">
+      <Card className="border border-gray-200 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <PageSectionHeader
           title="Додати новий лічильник"
           description="Заповніть форму, щоб додати новий лічильник для обліку комунальних послуг"
@@ -393,7 +393,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
                 }}
               />
               {!photoPreview && uploadedFileName ? (
-                <FormMessage className="text-sm text-gray-600">
+                <FormMessage className="text-sm text-gray-600 dark:text-slate-300">
                   Вибрано: {uploadedFileName}
                 </FormMessage>
               ) : null}
@@ -459,7 +459,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
                     </option>
                   ))}
                 </Select>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-slate-400">
                   {selectedProvider
                     ? 'Тариф автоматично оновлено згідно з обраним провайдером.'
                     : 'Виберіть провайдера, щоб автоматично підставити тариф.'}
@@ -484,7 +484,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
                 endAdornment={<span className="text-sm text-gray-500">{tariffUnitLabel}</span>}
               />
               {selectedProvider ? (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-slate-400">
                   Джерело тарифу: {selectedProvider.name}
                 </p>
               ) : null}
@@ -502,28 +502,28 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
                 {...register('notes')}
               />
             </div>
-            <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-              <p className="font-semibold text-gray-800">Поради щодо заповнення</p>
+            <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              <p className="font-semibold text-gray-800 dark:text-slate-100">Поради щодо заповнення</p>
               <ul className="list-disc space-y-2 pl-5">
                 <li>Перевірте серійний номер і дату встановлення у техпаспорті.</li>
                 <li>Завантажте фото з чітко видимими показниками лічильника.</li>
                 <li>Уточніть тариф у договорі з постачальником послуги.</li>
               </ul>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-gray-800">Заповнення форми</p>
-                <div className="h-2 rounded-full bg-gray-200">
+                <p className="text-sm font-medium text-gray-800 dark:text-slate-100">Заповнення форми</p>
+                <div className="h-2 rounded-full bg-gray-200 dark:bg-slate-700">
                   <div
-                    className="h-full rounded-full bg-primary transition-all"
+                    className="h-full rounded-full bg-primary transition-all dark:bg-amber-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500">{progress}% завершено</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400">{progress}% завершено</p>
               </div>
             </div>
           </section>
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-4 border-t border-gray-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+        <CardFooter className="flex flex-col gap-4 border-t border-gray-200 px-6 py-5 dark:border-slate-800 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex w-full flex-wrap gap-3">
             <Button
               type="button"

@@ -139,7 +139,7 @@ export default function DashboardPage() {
         {/* Current Month Expenses - Service Cards */}
         {/* Mobile: 1 col, Tablet: 2 cols, Desktop: 3 cols, Wide: 4 cols */}
         <section className="space-y-3 sm:space-y-4">
-          <h2 className="text-base font-semibold leading-6 text-neutral-800 sm:text-lg sm:leading-7 lg:text-xl">
+          <h2 className="text-base font-semibold leading-6 text-neutral-800 dark:text-slate-100 sm:text-lg sm:leading-7 lg:text-xl">
             Витрати цього місяця
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-5 xl:grid-cols-3 2xl:grid-cols-4">

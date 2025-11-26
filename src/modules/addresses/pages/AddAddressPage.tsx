@@ -20,7 +20,7 @@ export default function AddAddressPage() {
       <div className="space-y-6">
         <nav
           aria-label="Breadcrumb"
-          className="flex flex-wrap items-center gap-2 text-sm text-gray-500"
+          className="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-slate-400"
         >
           {breadcrumbs.map((breadcrumb, index) => {
             const isLast = index === breadcrumbs.length - 1
@@ -30,13 +30,13 @@ export default function AddAddressPage() {
                 {breadcrumb.href && !isLast ? (
                   <Link
                     to={breadcrumb.href}
-                    className="transition-colors hover:text-gray-700"
+                    className="transition-colors hover:text-gray-700 dark:hover:text-slate-200"
                   >
                     {breadcrumb.label}
                   </Link>
                 ) : (
                   <span
-                    className={isLast ? 'font-medium text-gray-700' : undefined}
+                    className={isLast ? 'font-medium text-gray-700 dark:text-slate-200' : undefined}
                   >
                     {breadcrumb.label}
                   </span>

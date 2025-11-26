@@ -46,9 +46,9 @@ export const RadioCard = forwardRef<HTMLButtonElement, RadioCardProps>(function 
       className={[
         'w-full rounded-lg border p-4 text-left transition-all',
         selected
-          ? 'border-primary bg-primary/10 shadow-[var(--shadow-sm)]'
-          : 'border-gray-200 hover:border-primary/60 hover:bg-gray-50',
-        disabled ? 'cursor-not-allowed opacity-60 hover:bg-white' : '',
+          ? 'border-primary bg-primary/10 shadow-[var(--shadow-sm)] dark:border-amber-300 dark:bg-amber-200/10'
+          : 'border-gray-200 hover:border-primary/60 hover:bg-gray-50 dark:border-slate-700 dark:hover:border-amber-200 dark:hover:bg-slate-800',
+        disabled ? 'cursor-not-allowed opacity-60 hover:bg-white dark:hover:bg-slate-800' : '',
         className,
       ]
         .filter(Boolean)
@@ -63,8 +63,8 @@ export const RadioCard = forwardRef<HTMLButtonElement, RadioCardProps>(function 
             className={[
               'flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 aspect-square',
               selected
-                ? 'border-primary bg-white text-primary'
-                : 'border-gray-200 bg-gray-50 text-gray-500',
+                ? 'border-primary bg-white text-primary dark:border-amber-200 dark:bg-slate-900 dark:text-amber-200'
+                : 'border-gray-200 bg-gray-50 text-gray-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -76,7 +76,7 @@ export const RadioCard = forwardRef<HTMLButtonElement, RadioCardProps>(function 
           <p
             className={[
               'text-base font-semibold',
-              selected ? 'text-dark' : 'text-gray-700',
+              selected ? 'text-dark dark:text-slate-50' : 'text-gray-700 dark:text-slate-200',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -89,7 +89,7 @@ export const RadioCard = forwardRef<HTMLButtonElement, RadioCardProps>(function 
         </div>
       </div>
       {helperText ? (
-        <div className="mt-3 text-sm text-gray-500">{helperText}</div>
+        <div className="mt-3 text-sm text-gray-500 dark:text-slate-300">{helperText}</div>
       ) : null}
     </button>
   )

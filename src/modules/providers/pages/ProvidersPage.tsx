@@ -34,13 +34,13 @@ export default function ProvidersPage() {
       pageSubtitle="Керуйте тарифами води, газу, електрики та тепла в одному місці"
     >
       <div className="space-y-6">
-        <Card className="border border-gray-200 shadow-lg">
+        <Card className="border border-gray-200 shadow-lg dark:border-slate-800 dark:bg-slate-900">
           <PageSectionHeader
             title="Журнал провайдерів"
             description="Ми скоро додамо таблицю з тарифами. А поки що ви можете створювати провайдерів для майбутнього використання."
             withBorder
             className="pb-4"
-            titleClassName="text-2xl font-bold text-dark"
+            titleClassName="text-2xl font-bold text-dark dark:text-slate-50"
             ctaButton={{
               label: 'Додати провайдера',
               icon: <Plus className="h-4 w-4 sm:h-5 sm:w-5" />,
@@ -51,14 +51,14 @@ export default function ProvidersPage() {
 
           <CardContent className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                <p className="text-base font-semibold text-dark">Що далі?</p>
+              <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <p className="text-base font-semibold text-dark dark:text-slate-100">Що далі?</p>
                 <p className="mt-1">
                   Після збереження провайдерів ми зможемо автоматично підказувати тарифи під час додавання адрес, лічильників і платежів.
                 </p>
               </div>
-              <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                <p className="flex items-center gap-2 text-base font-semibold text-dark">
+              <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <p className="flex items-center gap-2 text-base font-semibold text-dark dark:text-slate-100">
                   <Shield className="h-4 w-4" />
                   Безпека даних
                 </p>
@@ -70,13 +70,13 @@ export default function ProvidersPage() {
 
             <section className="space-y-4">
               <div>
-                <p className="text-lg font-semibold text-dark">Шаблони провайдерів</p>
-                <p className="text-sm text-gray-500">Використайте їх як основу для власних тарифів</p>
+                <p className="text-lg font-semibold text-dark dark:text-slate-100">Шаблони провайдерів</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Використайте їх як основу для власних тарифів</p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {Object.entries(groupedProviders).map(([serviceLabel, providers]) => (
-                  <Card key={serviceLabel} className="border border-gray-200 shadow-md">
+                  <Card key={serviceLabel} className="border border-gray-200 shadow-md dark:border-slate-800 dark:bg-slate-900">
                     <CardHeader className="gap-1">
                       <CardTitle className="flex items-center gap-2 text-base">
                         <Plug className="h-4 w-4 text-amber-500" />
@@ -90,13 +90,13 @@ export default function ProvidersPage() {
                       {providers.map((provider) => (
                         <article
                           key={provider.id}
-                          className="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4"
+                          className="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-800"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
-                              <p className="font-medium text-dark">{provider.name}</p>
+                              <p className="font-medium text-dark dark:text-slate-100">{provider.name}</p>
                               {provider.website ? (
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-slate-400">
                                   <a
                                     href={provider.website}
                                     target="_blank"
@@ -140,19 +140,19 @@ export default function ProvidersPage() {
                               </Badge>
                             </div>
                           </div>
-                          <p className="text-sm text-gray-600">{provider.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-slate-300">{provider.description}</p>
                           <div className="space-y-2">
-                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
                               Тарифи
                             </p>
                             <div className="flex flex-wrap gap-2">
                               {provider.tariffs.map((tariff) => (
                                 <span
                                   key={tariff.id}
-                                  className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900"
+                                  className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/30 dark:bg-amber-200/10 dark:text-amber-100"
                                 >
                                   <span>{tariff.name}</span>
-                                  <span className="text-[11px] font-medium text-amber-700">
+                                  <span className="text-[11px] font-medium text-amber-700 dark:text-amber-200">
                                     {formatTariffLabel(tariff.price, provider.unitLabel)}
                                   </span>
                                 </span>

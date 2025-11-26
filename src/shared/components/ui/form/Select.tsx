@@ -6,8 +6,8 @@ const selectStyles = tv({
   slots: {
     wrapper: 'relative',
     select:
-      'w-full appearance-none rounded-md border border-neutral-200 bg-white bg-no-repeat py-2.5 pr-10 text-base text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
-    iconWrapper: 'pointer-events-none absolute inset-y-0 right-0 flex items-center px-2',
+      'w-full appearance-none rounded-md border border-neutral-200 bg-white bg-no-repeat py-2.5 pr-10 text-base text-dark transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500',
+    iconWrapper: 'pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400 dark:text-slate-400',
   },
   variants: {
     isInvalid: {

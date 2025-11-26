@@ -27,14 +27,14 @@ export function AddressesListSection({
 
   const addressViewModels = addresses ?? defaultAddresses
   return (
-    <section className="w-full overflow-hidden rounded-lg bg-white shadow-lg">
+    <section className="w-full overflow-hidden rounded-lg bg-white shadow-lg dark:bg-slate-900 dark:border dark:border-slate-800">
       {/* Header section with responsive layout */}
       <div className="flex flex-col gap-3 px-3.5 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-5 sm:py-6 lg:px-6">
         <div>
-          <h1 className="text-xl font-bold leading-7 text-gray-800 sm:text-2xl sm:leading-8 lg:text-[24px] lg:leading-[32px]">
+          <h1 className="text-xl font-bold leading-7 text-gray-800 dark:text-slate-100 sm:text-2xl sm:leading-8 lg:text-[24px] lg:leading-[32px]">
             Мої адреси
           </h1>
-          <p className="mt-0.5 text-sm leading-5 text-gray-600 sm:mt-1 sm:text-base sm:leading-6 lg:text-[16px] lg:leading-[24px]">
+          <p className="mt-0.5 text-sm leading-5 text-gray-600 dark:text-slate-400 sm:mt-1 sm:text-base sm:leading-6 lg:text-[16px] lg:leading-[24px]">
             Керуйте адресами для комунальних послуг
           </p>
         </div>

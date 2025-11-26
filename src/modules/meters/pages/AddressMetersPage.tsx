@@ -198,35 +198,35 @@ export default function AddressMetersPage() {
           return (
             <div
               key={meter.id}
-              className="flex flex-col gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-base font-semibold text-gray-900">{meter.name}</p>
+                  <p className="text-base font-semibold text-gray-900 dark:text-slate-100">{meter.name}</p>
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyle.badge}`}>
                     {statusStyle.text}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">
-                  Серійний №: <span className="font-medium text-gray-800">{meter.meterNumber}</span>
+                <p className="text-sm text-gray-600 dark:text-slate-300">
+                  Серійний №: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.meterNumber}</span>
                 </p>
-                <p className="text-sm text-gray-600">
-                  Локація: <span className="font-medium text-gray-800">{meter.location}</span>
+                <p className="text-sm text-gray-600 dark:text-slate-300">
+                  Локація: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.location}</span>
                 </p>
-                <p className="text-sm text-gray-600">
-                  Провайдер: <span className="font-medium text-gray-800">{meter.providerName}</span>
+                <p className="text-sm text-gray-600 dark:text-slate-300">
+                  Провайдер: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.providerName}</span>
                 </p>
               </div>
 
-              <div className="flex flex-col gap-2 text-sm text-gray-500 sm:text-right">
+              <div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-slate-400 sm:text-right">
                 <p>
                   Останні показання:{' '}
-                  <span className="font-semibold text-gray-900">{meter.lastSubmission}</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100">{meter.lastSubmission}</span>
                 </p>
                 {meter.nextCheckDate ? (
                   <p>
                     Перевірка до:{' '}
-                    <span className="font-semibold text-gray-900">{meter.nextCheckDate}</span>
+                    <span className="font-semibold text-gray-900 dark:text-slate-100">{meter.nextCheckDate}</span>
                   </p>
                 ) : null}
                 <Button
@@ -258,11 +258,11 @@ export default function AddressMetersPage() {
 
     return (
       <form
-        className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm md:flex md:flex-wrap md:items-end md:gap-4 md:space-y-0"
+        className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 md:flex md:flex-wrap md:items-end md:gap-4 md:space-y-0"
         onSubmit={handleQuickSubmit}
       >
         <div className="w-full md:flex-1">
-          <Label htmlFor="quick-meter" className="text-sm text-gray-600">
+          <Label htmlFor="quick-meter" className="text-sm text-gray-600 dark:text-slate-100">
             Лічильник
           </Label>
           <Select
@@ -282,7 +282,7 @@ export default function AddressMetersPage() {
         </div>
 
         <div className="w-full md:flex-1">
-          <Label htmlFor="quick-period" className="text-sm text-gray-600">
+          <Label htmlFor="quick-period" className="text-sm text-gray-600 dark:text-slate-100">
             Місяць
           </Label>
           <Select
@@ -302,7 +302,7 @@ export default function AddressMetersPage() {
         </div>
 
         <div className="w-full md:flex-1">
-          <Label htmlFor="quick-value" className="text-sm text-gray-600">
+          <Label htmlFor="quick-value" className="text-sm text-gray-600 dark:text-slate-100">
             Нові показання
           </Label>
           <Input
@@ -352,30 +352,30 @@ export default function AddressMetersPage() {
     }
 
     return (
-      <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-        <div className="grid grid-cols-4 gap-2 bg-gray-50 px-4 py-3 text-xs font-semibold uppercase text-gray-500 sm:text-sm">
+      <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div className="grid grid-cols-4 gap-2 bg-gray-50 px-4 py-3 text-xs font-semibold uppercase text-gray-500 dark:bg-slate-800 dark:text-slate-300 sm:text-sm">
           <span>Період</span>
           <span>Показання</span>
           <span>Статус</span>
           <span>Відправлено</span>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100 dark:divide-slate-800">
           {currentGroup.history.map((record) => (
             <div
               key={record.id}
-              className="grid grid-cols-4 gap-2 px-4 py-3 text-sm text-gray-700"
+              className="grid grid-cols-4 gap-2 px-4 py-3 text-sm text-gray-700 dark:text-slate-300"
             >
               <div>
-                <p className="font-semibold text-gray-900">{record.periodLabel}</p>
+                <p className="font-semibold text-gray-900 dark:text-slate-100">{record.periodLabel}</p>
                 {record.note ? (
-                  <p className="text-xs text-gray-500">{record.note}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{record.note}</p>
                 ) : null}
               </div>
               <div>
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-gray-900 dark:text-slate-100">
                   {record.value} {currentGroup.quickDraft.unit}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-slate-400">
                   Δ {record.consumption} {currentGroup.quickDraft.unit}
                 </p>
               </div>
@@ -400,7 +400,7 @@ export default function AddressMetersPage() {
       pageSubtitle="Переглядайте актуальні показання та швидко надсилайте оновлення"
     >
       <div className="space-y-6">
-        <Card className="border border-gray-200 shadow-lg">
+        <Card className="border border-gray-200 shadow-lg dark:border-slate-800 dark:bg-slate-900">
           <PageSectionHeader
             title="Оберіть адресу для перегляду лічильників"
             description="Всі налаштування, прив'язані до адреси, синхронізуються з вашим обліковим записом"
@@ -413,28 +413,28 @@ export default function AddressMetersPage() {
           />
           <CardContent className="space-y-5">
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm">
-                <p className="text-sm text-gray-500">Всього лічильників</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Всього лічильників</p>
+                <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-slate-50">
                   {addressSnapshot?.summary.totalMeters ?? 0}
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm">
-                <p className="text-sm text-gray-500">Активні</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Активні</p>
+                <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-slate-50">
                   {addressSnapshot?.summary.activeMeters ?? 0}
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm">
-                <p className="text-sm text-gray-500">Очікують показань</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">
+              <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-sm text-gray-500 dark:text-slate-400">Очікують показань</p>
+                <p className="mt-2 text-3xl font-semibold text-gray-900 dark:text-slate-50">
                   {addressSnapshot?.summary.pendingReadings ?? 0}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2 w-full">
-              <Label htmlFor="address-select" className="text-sm font-semibold text-gray-600">
+              <Label htmlFor="address-select" className="text-sm font-semibold text-gray-600 dark:text-slate-100">
                 Адреса
               </Label>
               <Select
@@ -458,10 +458,10 @@ export default function AddressMetersPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-gray-200 shadow-lg">
-          <CardHeader className="space-y-4 border-b border-gray-100">
+        <Card className="border border-gray-200 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+          <CardHeader className="space-y-4 border-b border-gray-100 dark:border-slate-800">
             <div>
-              <CardTitle className="text-xl text-gray-900">Типи лічильників</CardTitle>
+              <CardTitle className="text-xl text-gray-900 dark:text-slate-50">Типи лічильників</CardTitle>
               <CardDescription>
                 Виберіть потрібний тип, щоб переглянути робочі лічильники, останні показання та історію
               </CardDescription>
@@ -480,10 +480,10 @@ export default function AddressMetersPage() {
               <>
                 <section className="space-y-3">
                   <div className="flex flex-wrap items-baseline gap-3">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-50">
                       {meterTypeMeta[currentGroup.type]?.title}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
                       {currentGroup.meters.length} {currentGroup.meters.length === 1 ? 'лічильник' : 'лічильники'}
                     </p>
                   </div>
@@ -491,13 +491,13 @@ export default function AddressMetersPage() {
                 </section>
 
                 <section className="space-y-3">
-                  <h4 className="text-base font-semibold text-gray-900">Швидке внесення показань</h4>
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-slate-50">Швидке внесення показань</h4>
                   {renderQuickForm()}
                 </section>
 
                 <section className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-base font-semibold text-gray-900">Історія показань</h4>
+                    <h4 className="text-base font-semibold text-gray-900 dark:text-slate-50">Історія показань</h4>
                     <Button type="button" size="sm" variant="ghost" tone="primary">
                       Завантажити PDF
                     </Button>
@@ -506,7 +506,7 @@ export default function AddressMetersPage() {
                 </section>
               </>
             ) : (
-              <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-gray-600">
+              <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                 Оберіть тип лічильника, щоб побачити його дані.
               </div>
             )}

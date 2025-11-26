@@ -26,13 +26,13 @@ export function ServiceCard({ service }: ServiceCardProps) {
   }
 
   const changeBadgeClasses = (() => {
-    if (isIncrease) return 'bg-rose-100 text-rose-600'
-    if (isDecrease) return 'bg-emerald-100 text-emerald-600'
-    return 'bg-neutral-100 text-neutral-600'
+    if (isIncrease) return 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-100'
+    if (isDecrease) return 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-100'
+    return 'bg-neutral-100 text-neutral-600 dark:bg-slate-800 dark:text-slate-200'
   })()
 
   return (
-    <article className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg transition-shadow hover:shadow-xl sm:gap-5 sm:p-4 lg:p-5">
+    <article className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg transition-shadow hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:gap-5 sm:p-4 lg:p-5">
       {/* Header: Icon + Name + Change badge */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">
@@ -41,7 +41,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
           >
             <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${service.iconColor}`} />
           </div>
-          <h3 className="min-w-0 truncate text-sm font-semibold leading-5 text-neutral-800 sm:text-base">
+          <h3 className="min-w-0 truncate text-sm font-semibold leading-5 text-neutral-800 dark:text-slate-100 sm:text-base">
             {service.name}
           </h3>
         </div>
@@ -58,12 +58,12 @@ export function ServiceCard({ service }: ServiceCardProps) {
       </div>
 
       {/* Cost - larger on bigger screens */}
-      <p className="text-lg font-semibold leading-6 text-neutral-900 sm:text-xl sm:leading-7 lg:text-2xl lg:leading-8">
+      <p className="text-lg font-semibold leading-6 text-neutral-900 dark:text-slate-50 sm:text-xl sm:leading-7 lg:text-2xl lg:leading-8">
         ₴{formatCost(service.cost)}
       </p>
 
       {/* Details - consumption and rate */}
-      <p className="text-xs font-medium text-neutral-500 sm:text-sm">
+      <p className="text-xs font-medium text-neutral-500 dark:text-slate-400 sm:text-sm">
         {service.consumption} {service.unit} · ₴{formatRate(service.rate)}/{service.unit}
       </p>
     </article>

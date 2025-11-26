@@ -26,7 +26,11 @@ export function Logo({ size = 'md', showText = true, className = '' }: LogoProps
   const sizeConfig = sizeMap[size]
 
   return (
-    <div className={['flex items-center font-semibold text-[var(--color-text-dark)]', sizeConfig.gap, className].filter(Boolean).join(' ')}>
+    <div
+      className={['flex items-center font-semibold text-[var(--color-text-dark)] dark:text-amber-200', sizeConfig.gap, className]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <svg
         className={sizeConfig.icon}
         viewBox="0 0 24 24"
@@ -36,7 +40,7 @@ export function Logo({ size = 'md', showText = true, className = '' }: LogoProps
       >
         <path
           d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"
-          className="fill-primary stroke-[#FFA500]"
+          className="fill-primary stroke-[#FFA500] drop-shadow dark:stroke-amber-300 dark:fill-amber-300"
           strokeWidth="1"
           strokeLinecap="round"
           strokeLinejoin="round"

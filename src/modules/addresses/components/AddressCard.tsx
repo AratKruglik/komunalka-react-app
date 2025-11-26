@@ -53,8 +53,8 @@ export function AddressCard({
   actions = defaultActions,
 }: AddressCardProps) {
   const surfaceClasses = isPrimary
-    ? 'border-2 border-primary bg-primary-bg'
-    : 'border border-gray-200 bg-white'
+    ? 'border-2 border-primary bg-primary-bg dark:border-amber-300 dark:bg-amber-200/10'
+    : 'border border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900'
 
   return (
     <article
@@ -79,7 +79,7 @@ export function AddressCard({
                 variant="outline"
                 tone="neutral"
                 size="icon"
-                className="h-8 w-8 text-gray-600 sm:h-9 sm:w-9"
+                className="h-8 w-8 text-gray-600 dark:text-slate-200 sm:h-9 sm:w-9"
               >
                 <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </Button>
@@ -90,10 +90,10 @@ export function AddressCard({
 
       {/* Title and subtitle */}
       <div className="space-y-1 sm:space-y-1.5">
-        <h3 className="text-base font-bold leading-6 text-text-dark sm:text-lg sm:leading-7 lg:text-[18px]">
+        <h3 className="text-base font-bold leading-6 text-text-dark dark:text-slate-100 sm:text-lg sm:leading-7 lg:text-[18px]">
           {title}
         </h3>
-        <p className="text-xs text-gray-600 sm:text-sm">{subtitle}</p>
+        <p className="text-xs text-gray-600 dark:text-slate-400 sm:text-sm">{subtitle}</p>
       </div>
 
       {/* Service tags - responsive sizing */}
@@ -126,12 +126,12 @@ function Badge({
   const Icon = badge.icon ?? (badge.variant === 'muted' ? Gauge : undefined)
 
   const variantClasses: Record<AddressBadgeVariant, string> = {
-    primary: 'bg-primary text-text-dark',
+    primary: 'bg-primary text-text-dark dark:bg-amber-300 dark:text-slate-900',
     muted: isPrimary
-      ? 'bg-white/80 text-text-dark'
-      : 'border border-gray-200 bg-white text-gray-600',
+      ? 'bg-white/80 text-text-dark dark:bg-amber-50 dark:text-slate-900'
+      : 'border border-gray-200 bg-white text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200',
     outline:
-      'border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer',
+      'border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary cursor-pointer dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800',
   }
 
   const Element = badge.variant === 'outline' ? 'button' : 'span'

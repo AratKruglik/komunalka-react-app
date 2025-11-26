@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="uk">
+<html lang="uk" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -11,6 +11,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      ;(() => {
+        const cookieName = 'theme'
+        const cookieEntry = document.cookie
+          .split('; ')
+          .find((row) => row.startsWith(`${cookieName}=`))
+        const stored = cookieEntry?.split('=')[1]
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        const preference =
+          stored === 'dark' || stored === 'light' || stored === 'system' ? stored : 'light'
+        const resolved = preference === 'system' ? (systemPrefersDark ? 'dark' : 'light') : preference
+
+        document.documentElement.dataset.theme = resolved
+        document.documentElement.style.colorScheme = resolved
+      })()
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

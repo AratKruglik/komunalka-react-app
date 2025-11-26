@@ -64,7 +64,7 @@ export function AuthenticatedLayout({
 
   return (
     <>
-      <div className="flex min-h-screen overflow-x-hidden bg-[#F5F6FA] text-[#333333]">
+      <div className="flex min-h-screen overflow-x-hidden bg-neutral-50 text-gray-900 dark:bg-slate-950 dark:text-slate-100">
         {/* Desktop Sidebar - Hidden on mobile/tablet, visible from lg (1024px) */}
         <AuthenticatedSidebar sections={sidebarSections} />
 
@@ -86,17 +86,17 @@ export function AuthenticatedLayout({
           </main>
 
           {/* Responsive Footer */}
-          <footer className="border-t border-gray-200 bg-white">
-            <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-3 px-3 py-4 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
+          <footer className="border-t border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-3 px-3 py-4 text-sm text-gray-500 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6">
               <p className="text-xs sm:text-sm">© 2024 Комуналка. Всі права захищені.</p>
               <div className="flex flex-wrap gap-3 text-xs sm:gap-4 sm:text-sm">
-                <a href="#" className="transition-colors hover:text-[#333333]">
+                <a href="#" className="transition-colors hover:text-gray-900 dark:text-slate-300 dark:hover:text-white">
                   Умови використання
                 </a>
-                <a href="#" className="transition-colors hover:text-[#333333]">
+                <a href="#" className="transition-colors hover:text-gray-900 dark:text-slate-300 dark:hover:text-white">
                   Політика конфіденційності
                 </a>
-                <a href="#" className="transition-colors hover:text-[#333333]">
+                <a href="#" className="transition-colors hover:text-gray-900 dark:text-slate-300 dark:hover:text-white">
                   Контакти
                 </a>
               </div>

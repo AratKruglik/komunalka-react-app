@@ -183,11 +183,11 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      <Card className="border border-gray-200 shadow-lg">
+      <Card className="border border-gray-200 shadow-lg dark:border-slate-800 dark:bg-slate-900">
         <PageSectionHeader
           title="Додати нову адресу"
           description="Заповніть форму нижче, щоб додати нову адресу для обліку комунальних послуг"
-          titleClassName="text-2xl font-bold text-dark"
+          titleClassName="text-2xl font-bold text-dark dark:text-slate-100"
         />
 
         <CardContent className="space-y-8">
@@ -198,7 +198,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
               <Label htmlFor="propertyType">
                 Тип нерухомості<span className="text-red-500">*</span>
               </Label>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-slate-400">
                 Оберіть тип нерухомості, для якої додаєте адресу
               </p>
             </div>
@@ -383,18 +383,18 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
                 id="isPrimary"
                 {...register('isPrimary')}
               />
-              <Label htmlFor="isPrimary" className="!mb-0 cursor-pointer text-dark">
+              <Label htmlFor="isPrimary" className="!mb-0 cursor-pointer text-dark dark:text-slate-100">
                 Встановити як основну адресу
               </Label>
             </div>
 
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               <span className="text-red-500">*</span> Обов&apos;язкові поля
             </p>
           </fieldset>
 
           {!isPropertyTypeSelected ? (
-            <p className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+            <p className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
               Оберіть тип нерухомості, щоб заповнити адресу
             </p>
           ) : null}
@@ -435,12 +435,12 @@ interface FormFieldProps {
 function FormField({ id, label, helper, required, error, children }: FormFieldProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={id} className="flex items-center gap-1 text-dark">
+      <Label htmlFor={id} className="flex items-center gap-1 text-dark dark:text-slate-100">
         {label}
         {required ? <span className="text-red-500">*</span> : null}
       </Label>
       {children}
-      {helper ? <p className="text-sm text-gray-500">{helper}</p> : null}
+      {helper ? <p className="text-sm text-gray-500 dark:text-slate-400">{helper}</p> : null}
       {error ? <FormMessage variant="error">{error}</FormMessage> : null}
     </div>
   )
@@ -454,7 +454,7 @@ function FormStepper({ steps }: FormStepperProps) {
   const columnTemplate = `repeat(${steps.length * 2 - 1}, minmax(0, 1fr))`
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-900">
       <ol
         className="flex flex-col gap-4 md:grid md:items-center md:gap-4"
         style={{ gridTemplateColumns: columnTemplate }}
@@ -485,7 +485,7 @@ function FormStepper({ steps }: FormStepperProps) {
                     aria-hidden
                     className={['hidden h-1 w-full rounded-full md:block', getConnectorClass(step.status, nextStatus)].join(' ')}
                   />
-                  <div className="mx-auto block h-6 w-px rounded-full bg-gray-200 md:hidden" aria-hidden />
+                  <div className="mx-auto block h-6 w-px rounded-full bg-gray-200 dark:bg-slate-700 md:hidden" aria-hidden />
                 </Fragment>
               ) : null}
             </Fragment>
@@ -500,37 +500,37 @@ function getStatusClasses(status: StepStatus) {
   switch (status) {
     case 'completed':
       return {
-        circle: 'border-primary bg-primary/10 text-primary',
+        circle: 'border-primary bg-primary/10 text-primary dark:border-amber-300 dark:bg-amber-200/10 dark:text-amber-200',
         icon: 'h-6 w-6',
-        label: 'text-dark',
+        label: 'text-dark dark:text-slate-100',
       }
     case 'current':
       return {
-        circle: 'border-primary bg-white text-primary',
+        circle: 'border-primary bg-white text-primary dark:border-amber-300 dark:bg-slate-900 dark:text-amber-200',
         icon: 'h-6 w-6',
-        label: 'text-dark',
+        label: 'text-dark dark:text-slate-100',
       }
     default:
       return {
-        circle: 'border-gray-200 bg-white text-gray-400',
+        circle: 'border-gray-200 bg-white text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400',
         icon: 'h-6 w-6',
-        label: 'text-gray-500',
+        label: 'text-gray-500 dark:text-slate-400',
       }
   }
 }
 
 function getConnectorClass(current: StepStatus, next?: StepStatus) {
   if (current === 'completed' && next === 'completed') {
-    return 'bg-primary'
+    return 'bg-primary dark:bg-amber-300'
   }
 
   if (current === 'completed' && next === 'current') {
-    return 'bg-primary/70'
+    return 'bg-primary/70 dark:bg-amber-300/70'
   }
 
   if (current === 'current') {
-    return 'bg-primary/50'
+    return 'bg-primary/50 dark:bg-amber-300/50'
   }
 
-  return 'bg-gray-200'
+  return 'bg-gray-200 dark:bg-slate-700'
 }

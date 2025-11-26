@@ -50,10 +50,10 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
   })()
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg sm:p-5 lg:p-6">
+    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-5 lg:p-6">
       {/* Header with responsive layout */}
       <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between lg:mb-6">
-        <h2 className="text-base font-semibold leading-6 text-neutral-900 sm:text-lg sm:leading-7 lg:text-xl">
+        <h2 className="text-base font-semibold leading-6 text-neutral-900 dark:text-slate-50 sm:text-lg sm:leading-7 lg:text-xl">
           Графік споживання
         </h2>
 
@@ -81,19 +81,20 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
       {/* Responsive chart height: 280px mobile, 320px tablet, 350px desktop */}
       <ResponsiveContainer width="100%" height={280} className="sm:!h-[320px] lg:!h-[350px]">
         <LineChart data={filteredData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-secondary, #E5E7EB)" />
           <XAxis
             dataKey="month"
-            stroke="#6B7280"
+            stroke="var(--color-text-secondary, #6B7280)"
             style={{ fontSize: '12px' }}
           />
-          <YAxis stroke="#6B7280" style={{ fontSize: '12px' }} />
+          <YAxis stroke="var(--color-text-secondary, #6B7280)" style={{ fontSize: '12px' }} />
           <Tooltip
             contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #E5E7EB',
+              backgroundColor: 'var(--color-bg-primary)',
+              border: '1px solid var(--color-border-primary)',
               borderRadius: '8px',
               fontSize: '12px',
+              color: 'var(--color-text-primary)',
             }}
             formatter={(value: number) => [`${value} ₴`, '']}
           />

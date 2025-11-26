@@ -66,10 +66,10 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
   }
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg sm:p-5 lg:p-6">
+    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-5 lg:p-6">
       {/* Header with responsive layout */}
       <header className="mb-4 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-base font-semibold leading-6 text-neutral-900 sm:text-lg sm:leading-7 lg:text-xl">
+        <h2 className="text-base font-semibold leading-6 text-neutral-900 dark:text-slate-50 sm:text-lg sm:leading-7 lg:text-xl">
           Нагадування про оплату
         </h2>
         <Button type="button" variant="link" tone="primary" className="self-start text-sm sm:text-base">
@@ -87,23 +87,23 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
           return (
             <div
               key={reminder.id}
-              className={`flex flex-col gap-3.5 rounded-xl border border-neutral-200/60 ${styles.bg} p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4`}
+              className={`flex flex-col gap-3.5 rounded-xl border border-neutral-200/60 ${styles.bg} p-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-4 dark:border-slate-800 dark:bg-slate-800/70`}
             >
               <div className="flex items-start gap-3">
                 <div
-                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${styles.iconBg}`}
+                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${styles.iconBg} dark:bg-slate-700`}
                 >
-                  <ServiceIcon className={`h-5 w-5 ${styles.iconColor}`} />
+                  <ServiceIcon className={`h-5 w-5 ${styles.iconColor} dark:text-slate-100`} />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <h3
-                    className={`text-sm font-semibold leading-5 ${styles.textColor}`}
+                    className={`text-sm font-semibold leading-5 ${styles.textColor} dark:text-slate-100`}
                   >
                     {reminder.serviceName}
                   </h3>
                   <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-neutral-500 dark:bg-slate-900 dark:text-slate-300">
                       <UrgencyIcon className="h-3 w-3" />
                       {reminder.urgency === 'high'
                         ? 'Терміново'
@@ -111,7 +111,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
                           ? 'Скоро'
                           : 'Планово'}
                     </span>
-                    <p className="text-xs font-medium leading-4 text-neutral-600">
+                    <p className="text-xs font-medium leading-4 text-neutral-600 dark:text-slate-300">
                       {formatDate(reminder.dueDate)} (через{' '}
                       {reminder.daysUntilDue}{' '}
                       {reminder.daysUntilDue === 1
@@ -126,7 +126,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
               </div>
 
               <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
-                <p className="text-base font-bold leading-5 text-neutral-900 sm:text-sm">
+                <p className="text-base font-bold leading-5 text-neutral-900 dark:text-slate-100 sm:text-sm">
                   ₴{reminder.amount.toLocaleString('uk-UA', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,

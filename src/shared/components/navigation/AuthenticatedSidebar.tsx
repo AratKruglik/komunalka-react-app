@@ -122,7 +122,7 @@ export function AuthenticatedSidebar({
     ? 'flex h-full w-full'
     : 'relative hidden w-64 shrink-0 lg:flex'
 
-  const innerClasses = `flex h-full w-full flex-col border-r border-gray-200 bg-white ${
+  const innerClasses = `flex h-full w-full flex-col border-r border-gray-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
     isMobile ? 'shadow-2xl' : 'sticky top-0 min-h-full'
   }`
 
@@ -130,13 +130,13 @@ export function AuthenticatedSidebar({
     <aside className={containerClasses}>
       <div className={innerClasses}>
         {/* Header with Logo - Responsive height */}
-        <div className="flex h-14 items-center gap-3 border-b border-gray-200 px-3 sm:h-16 sm:px-4 lg:h-[65px]">
+        <div className="flex h-14 items-center gap-3 border-b border-gray-200 px-3 sm:h-16 sm:px-4 lg:h-[65px] dark:border-slate-800">
           <Logo size="md" />
           {isMobile ? (
             <button
               type="button"
               onClick={onClose}
-              className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-[#333333] active:bg-gray-100 sm:h-9 sm:w-9"
+              className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-slate-50 dark:active:bg-slate-700 sm:h-9 sm:w-9"
               aria-label="Закрити меню"
             >
               <X className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -152,7 +152,7 @@ export function AuthenticatedSidebar({
         >
           {sections.map((section) => (
             <div key={section.heading} className="space-y-2 sm:space-y-3">
-              <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400 sm:px-4 sm:text-xs">
+              <p className="px-3 text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500 sm:px-4 sm:text-xs">
                 {section.heading}
               </p>
 
@@ -189,24 +189,24 @@ function SidebarNavLink({
 
   return (
     <NavLink to={item.to} end={item.exact} className="block" onClick={onNavigate}>
-      {({ isActive }) => (
-        <div
-          className={`flex h-10 items-center gap-2.5 px-3 text-sm transition-colors sm:h-11 sm:gap-3 sm:px-4 sm:text-base lg:h-12 ${
-            isActive
-              ? 'bg-[#FFF0A0] font-medium text-[#333333]'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-[#333333] active:bg-gray-200'
-          }`}
-        >
+            {({ isActive }) => (
+              <div
+                className={`flex h-10 items-center gap-2.5 px-3 text-sm transition-colors sm:h-11 sm:gap-3 sm:px-4 sm:text-base lg:h-12 ${
+                  isActive
+                    ? 'bg-[#FFF0A0] font-medium text-[#333333] dark:bg-amber-300 dark:text-slate-900'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:active:bg-slate-700'
+                }`}
+              >
           <Icon className="h-4 w-4 flex-shrink-0 sm:h-[18px] sm:w-[18px]" />
           <span className="min-w-0 flex-1 truncate leading-5 sm:leading-6">{item.label}</span>
           {item.badge ? (
-            <span
-              className={`ml-auto inline-flex flex-shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:px-2 sm:text-xs ${
-                item.badgeTone === 'info'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-[#FFF0A0] text-[#333333]'
-              }`}
-            >
+                <span
+                  className={`ml-auto inline-flex flex-shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:px-2 sm:text-xs ${
+                    item.badgeTone === 'info'
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
+                      : 'bg-[#FFF0A0] text-[#333333] dark:bg-amber-200 dark:text-slate-900'
+                  }`}
+                >
               {item.badge}
             </span>
           ) : null}
@@ -230,11 +230,11 @@ function MobileUserSection({
   ]
 
   return (
-    <div className="border-t border-gray-200 bg-gray-50 md:hidden">
+    <div className="border-t border-gray-200 bg-gray-50 dark:border-slate-800 dark:bg-slate-900 md:hidden">
       {/* User Info Section */}
-      <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4">
+      <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         {/* Avatar or initials */}
-        <div className="grid h-10 w-10 flex-shrink-0 place-items-center overflow-hidden rounded-full bg-gray-200 text-sm font-semibold text-[#333333] sm:h-11 sm:w-11">
+        <div className="grid h-10 w-10 flex-shrink-0 place-items-center overflow-hidden rounded-full bg-gray-200 text-sm font-semibold text-gray-900 dark:bg-slate-700 dark:text-slate-50 sm:h-11 sm:w-11">
           {user.avatarUrl ? (
             <img
               src={user.avatarUrl}
@@ -248,10 +248,12 @@ function MobileUserSection({
 
         {/* User details */}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-[#333333] sm:text-base">
+          <p className="truncate text-sm font-medium text-gray-900 dark:text-slate-50 sm:text-base">
             {user.name}
           </p>
-          <p className="truncate text-xs text-gray-500 sm:text-sm">{user.email}</p>
+          <p className="truncate text-xs text-gray-500 dark:text-slate-400 sm:text-sm">
+            {user.email}
+          </p>
         </div>
       </div>
 
@@ -272,10 +274,10 @@ function MobileUserSection({
                 <div
                   className={`flex h-10 items-center gap-2.5 px-3 text-sm transition-colors sm:h-11 sm:gap-3 sm:px-4 sm:text-base ${
                     isActive && !isDanger
-                      ? 'bg-[#FFF0A0] font-medium text-[#333333]'
+                      ? 'bg-[#FFF0A0] font-medium text-[#333333] dark:bg-amber-300 dark:text-slate-900'
                       : isDanger
-                        ? 'text-[#D92D20] hover:bg-red-50 active:bg-red-100'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-[#333333] active:bg-gray-200'
+                        ? 'text-[#D92D20] hover:bg-red-50 active:bg-red-100 dark:text-red-300 dark:hover:bg-red-950/40 dark:active:bg-red-950/50'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:active:bg-slate-700'
                   }`}
                 >
                   <Icon className="h-4 w-4 flex-shrink-0 sm:h-[18px] sm:w-[18px]" />

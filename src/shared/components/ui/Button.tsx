@@ -4,12 +4,12 @@ import { tv, type VariantProps } from 'tailwind-variants'
 import { Spinner } from './Spinner'
 
 const button = tv({
-  base: 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-60 disabled:bg-gray-300',
+  base: 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-60 disabled:bg-gray-300 dark:disabled:bg-slate-700 dark:disabled:text-slate-400',
   variants: {
     variant: {
       solid: '',
-      outline: 'border bg-white',
-      ghost: '',
+      outline: 'border bg-white dark:bg-slate-900',
+      ghost: 'bg-transparent',
       link: 'p-0 h-auto underline-offset-4 hover:underline focus-visible:outline-none',
     },
     tone: {
@@ -68,47 +68,49 @@ const button = tv({
     {
       variant: 'outline',
       tone: 'primary',
-      className: 'border-gray-300 text-[#333333] hover:bg-gray-50',
+      className:
+        'border-gray-300 text-[#333333] hover:bg-gray-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800',
     },
     {
       variant: 'outline',
       tone: 'neutral',
-      className: 'border-gray-300 text-gray-700 hover:bg-gray-50',
+      className:
+        'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800',
     },
     {
       variant: 'outline',
       tone: 'secondary',
       className:
-        'border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/10',
+        'border-[var(--color-secondary)] text-[var(--color-secondary)] hover:bg-[var(--color-secondary)]/10 dark:border-[var(--color-secondary)] dark:text-[var(--color-secondary)] dark:hover:bg-[var(--color-secondary)]/15',
     },
     {
       variant: 'outline',
       tone: 'success',
       className:
-        'border-[var(--color-success)] text-[var(--color-success)] hover:bg-[var(--color-success)]/10',
+        'border-[var(--color-success)] text-[var(--color-success)] hover:bg-[var(--color-success)]/10 dark:hover:bg-[var(--color-success)]/15',
     },
     {
       variant: 'outline',
       tone: 'warning',
       className:
-        'border-[var(--color-warning)] text-[var(--color-warning)] hover:bg-[var(--color-warning)]/10',
+        'border-[var(--color-warning)] text-[var(--color-warning)] hover:bg-[var(--color-warning)]/10 dark:hover:bg-[var(--color-warning)]/15',
     },
     {
       variant: 'outline',
       tone: 'danger',
       className:
-        'border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)]/10',
+        'border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error)]/10 dark:hover:bg-[var(--color-error)]/15',
     },
     // ghost tones
     {
       variant: 'ghost',
       tone: 'primary',
-      className: 'text-gray-900 hover:bg-primary/10',
+      className: 'text-gray-900 hover:bg-primary/10 dark:text-amber-200 dark:hover:bg-amber-200/15',
     },
     {
       variant: 'ghost',
       tone: 'neutral',
-      className: 'text-gray-600 hover:bg-gray-100',
+      className: 'text-gray-600 hover:bg-gray-100 dark:text-slate-100 dark:hover:bg-slate-800',
     },
     {
       variant: 'ghost',

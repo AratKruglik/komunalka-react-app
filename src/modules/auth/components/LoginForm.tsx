@@ -57,7 +57,7 @@ export function LoginForm() {
         <div>
           <label
             htmlFor="email"
-            className="mb-1.5 block text-sm font-medium text-gray-700"
+            className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-200"
           >
             Електронна пошта
           </label>
@@ -70,7 +70,7 @@ export function LoginForm() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-4 text-base text-[#333333] placeholder:text-[#adaebc] transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-4 text-base text-[#333333] placeholder:text-[#adaebc] transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
               placeholder="ваша@пошта.com"
               autoComplete="email"
               disabled={isLoading}
@@ -88,7 +88,7 @@ export function LoginForm() {
           <div className="mb-1.5 flex items-center justify-between">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-gray-700 dark:text-slate-200"
             >
               Пароль
             </label>
@@ -108,7 +108,7 @@ export function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-12 text-base text-[#333333] placeholder:text-[#adaebc] transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-12 text-base text-[#333333] placeholder:text-[#adaebc] transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
               placeholder="••••••••"
               autoComplete="current-password"
               disabled={isLoading}
@@ -116,7 +116,7 @@ export function LoginForm() {
             <button
               type="button"
               onClick={togglePasswordVisibility}
-              className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 transition-colors hover:text-gray-600"
+              className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 transition-colors hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
               aria-label={showPassword ? 'Приховати пароль' : 'Показати пароль'}
               disabled={isLoading}
             >
@@ -146,7 +146,7 @@ export function LoginForm() {
           />
           <label
             htmlFor="remember"
-            className="ml-2 select-none text-sm text-gray-700"
+            className="ml-2 select-none text-sm text-gray-700 dark:text-slate-200"
           >
             Запам'ятати мене
           </label>
@@ -168,7 +168,7 @@ export function LoginForm() {
           <div className="w-full border-t border-gray-300" />
         </div>
         <div className="relative flex justify-center text-xs sm:text-sm">
-          <span className="bg-white px-2 text-gray-500">
+          <span className="bg-white px-2 text-gray-500 dark:bg-slate-900 dark:text-slate-400">
             Увійти через соцмережі
           </span>
         </div>
@@ -178,7 +178,7 @@ export function LoginForm() {
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <button
           type="button"
-          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50"
+          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
           disabled={isLoading}
           aria-label="Увійти через Google"
         >
@@ -187,7 +187,7 @@ export function LoginForm() {
 
         <button
           type="button"
-          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50"
+          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
           disabled={isLoading}
           aria-label="Увійти через Facebook"
         >
@@ -196,7 +196,7 @@ export function LoginForm() {
 
         <button
           type="button"
-          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50"
+          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
           disabled={isLoading}
           aria-label="Увійти через Apple"
         >

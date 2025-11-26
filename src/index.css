@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 /* Custom Theme Variables */
 @theme {
@@ -93,20 +94,17 @@
   --transition-slow: 300ms;
 }
 
-/* Dark Theme */
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-bg-primary: #111827;
-    --color-bg-secondary: #1f2937;
-    --color-bg-tertiary: #374151;
+:root[data-theme="dark"] {
+  --color-bg-primary: #111827;
+  --color-bg-secondary: #1f2937;
+  --color-bg-tertiary: #374151;
 
-    --color-text-primary: #f9fafb;
-    --color-text-secondary: #d1d5db;
-    --color-text-tertiary: #9ca3af;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #d1d5db;
+  --color-text-tertiary: #9ca3af;
 
-    --color-border-primary: #374151;
-    --color-border-secondary: #4b5563;
-  }
+  --color-border-primary: #374151;
+  --color-border-secondary: #4b5563;
 }
 
 /* Base Styles */

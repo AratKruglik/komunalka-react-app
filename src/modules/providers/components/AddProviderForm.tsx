@@ -331,13 +331,13 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                 />
               </FormField>
 
-              <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-900">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-dark">
+                    <p className="text-sm font-semibold text-dark dark:text-slate-100">
                       Тарифи провайдера<span className="text-red-500">*</span>
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
                       Додайте денний, нічний чи інші плани. Мінімум один тариф обовʼязковий.
                     </p>
                   </div>
@@ -368,11 +368,11 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                     return (
                       <div
                         key={tariff.id}
-                        className="rounded-lg border border-gray-200 bg-white p-4 shadow-md"
+                        className="rounded-lg border border-gray-200 bg-white p-4 shadow-md dark:border-slate-700 dark:bg-slate-800"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3 text-sm font-semibold text-gray-800">
-                            <span className="grid size-9 place-items-center rounded-full bg-gray-100 text-gray-700">
+                          <div className="flex items-center gap-3 text-sm font-semibold text-gray-800 dark:text-slate-100">
+                            <span className="grid size-9 place-items-center rounded-full bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-100">
                               {index + 1}
                             </span>
                             <span>{watch(`tariffs.${index}.name`) || 'Новий тариф'}</span>
@@ -390,7 +390,7 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                               Видалити
                             </Button>
                           ) : (
-                            <span className="text-xs font-medium text-gray-500">Базовий</span>
+                            <span className="text-xs font-medium text-gray-500 dark:text-slate-400">Базовий</span>
                           )}
                         </div>
 
@@ -427,7 +427,7 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                               min="0"
                               inputMode="decimal"
                               endAdornment={
-                                <span className="text-sm font-medium text-gray-600">
+                                <span className="text-sm font-medium text-gray-600 dark:text-slate-200">
                                   {selectedUtility?.unitLabel ?? 'грн/од.'}
                                 </span>
                               }
@@ -653,12 +653,12 @@ interface FormFieldProps {
 function FormField({ id, label, helper, required, error, children }: FormFieldProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={id} className="flex items-center gap-1 text-dark">
+      <Label htmlFor={id} className="flex items-center gap-1 text-dark dark:text-slate-100">
         {label}
         {required ? <span className="text-red-500">*</span> : null}
       </Label>
       {children}
-      {helper ? <p className="text-sm text-gray-500">{helper}</p> : null}
+      {helper ? <p className="text-sm text-gray-500 dark:text-slate-400">{helper}</p> : null}
       {error ? <FormMessage variant="error">{error}</FormMessage> : null}
     </div>
   )

@@ -36,15 +36,15 @@ export function ReadingSummaryTable({ rows }: ReadingSummaryTableProps) {
   }, 0)
 
   return (
-    <Card className="border-gray-100 shadow-lg">
-      <CardHeader className="space-y-2 border-b border-gray-200 pb-4">
-        <CardTitle className="text-xl text-gray-900">Підсумок показань</CardTitle>
-        <CardDescription className="text-base text-gray-600">Перевірте дані перед відправкою провайдерам</CardDescription>
+    <Card className="border-gray-100 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="space-y-2 border-b border-gray-200 pb-4 dark:border-slate-800">
+        <CardTitle className="text-xl text-gray-900 dark:text-slate-50">Підсумок показань</CardTitle>
+        <CardDescription className="text-base text-gray-600 dark:text-slate-400">Перевірте дані перед відправкою провайдерам</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 px-4 py-4">
-        <table className="min-w-full divide-y divide-gray-100 text-sm">
+        <table className="min-w-full divide-y divide-gray-100 text-sm dark:divide-slate-800">
           <thead>
-            <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
               <th className="px-3 py-2">Послуга</th>
               <th className="px-3 py-2">Попередні</th>
               <th className="px-3 py-2">Поточні</th>
@@ -53,14 +53,14 @@ export function ReadingSummaryTable({ rows }: ReadingSummaryTableProps) {
               <th className="px-3 py-2">Сума</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
             {rows.map((row) => {
               const hasValues = row.previousValue != null && row.currentValue != null
               const consumption = hasValues ? Math.max(0, row.currentValue! - row.previousValue!) : null
               const amount = consumption != null ? consumption * row.tariff : null
               return (
-                <tr key={row.id} className="text-gray-700">
-                  <td className="px-3 py-3 font-medium text-gray-900">{row.serviceName}</td>
+                <tr key={row.id} className="text-gray-700 dark:text-slate-300">
+                  <td className="px-3 py-3 font-medium text-gray-900 dark:text-slate-100">{row.serviceName}</td>
                   <td className="px-3 py-3">{hasValues ? `${numberFormatter.format(row.previousValue!)} ${row.unit}` : '—'}</td>
                   <td className="px-3 py-3">{hasValues ? `${numberFormatter.format(row.currentValue!)} ${row.unit}` : '—'}</td>
                   <td className="px-3 py-3">
@@ -73,7 +73,7 @@ export function ReadingSummaryTable({ rows }: ReadingSummaryTableProps) {
             })}
           </tbody>
         </table>
-        <p className="text-right text-sm font-semibold text-gray-800">
+        <p className="text-right text-sm font-semibold text-gray-800 dark:text-slate-100">
           Загальна сума: {currencyFormatter.format(totalCost)}
         </p>
       </CardContent>
