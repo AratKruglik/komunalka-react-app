@@ -542,44 +542,44 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                   />
                 </FormField>
 
-                <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-                  <p className="font-semibold text-gray-800">Поради щодо заповнення</p>
+                <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  <p className="font-semibold text-gray-800 dark:text-slate-100">Поради щодо заповнення</p>
                   <ul className="list-disc space-y-1.5 pl-5">
                     <li>Звіряйте назву та код провайдера з останньою квитанцією.</li>
                     <li>Перевірте актуальний тариф на сайті постачальника.</li>
                     <li>Налаштуйте нагадування, щоб не пропустити передачу показників.</li>
                   </ul>
-                  <div className="space-y-1 border-t border-gray-200 pt-3">
-                    <p className="text-sm font-medium text-gray-800">Заповнення форми</p>
-                    <div className="h-2 rounded-full bg-gray-200">
+                  <div className="space-y-1 border-t border-gray-200 pt-3 dark:border-slate-700">
+                    <p className="text-sm font-medium text-gray-800 dark:text-slate-100">Заповнення форми</p>
+                    <div className="h-2 rounded-full bg-gray-200 dark:bg-slate-700">
                       <div
-                        className="h-full rounded-full bg-primary transition-all"
+                        className="h-full rounded-full bg-primary transition-all dark:bg-amber-300"
                         style={{ width: `${completionProgress}%` }}
                       />
                     </div>
-                    <p className="text-xs text-gray-500">{completionProgress}% завершено</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{completionProgress}% завершено</p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-4 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4">
+              <div className="space-y-4 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                 <div className="flex flex-wrap items-start gap-4">
                   <div className="flex flex-1 items-start gap-3">
-                    <div className="grid size-10 place-items-center rounded-full bg-white text-primary shadow-sm">
+                    <div className="grid size-10 place-items-center rounded-full bg-white text-primary shadow-sm dark:bg-slate-900 dark:text-amber-200">
                       <ShieldCheck className="h-5 w-5" />
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-dark">
+                      <p className="text-sm font-medium text-dark dark:text-slate-100">
                         Нагадування про показники
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-slate-400">
                         Увімкніть автоматичне нагадування про внесення показників і оплату рахунку
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Checkbox id="autoReminder" {...register('autoReminder')} />
-                    <Label htmlFor="autoReminder" className="!mb-0 text-sm">
+                    <Label htmlFor="autoReminder" className="!mb-0 text-sm dark:text-slate-100">
                       Активувати
                     </Label>
                   </div>
