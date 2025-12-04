@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router'
 import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
 import { PageSectionHeader } from '../../../shared/components/pages'
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -13,7 +12,7 @@ import {
   CardTitle,
 } from '../../../shared/components/ui'
 import { MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
-import { formatTariffLabel, getPrimaryTariff } from '../../../shared/utils/providerTariffs'
+import { formatTariffLabel } from '../../../shared/utils/providerTariffs'
 
 export default function ProvidersPage() {
   const navigate = useNavigate()
@@ -90,7 +89,7 @@ export default function ProvidersPage() {
                       {providers.map((provider) => (
                         <article
                           key={provider.id}
-                          className="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-800"
+                          className="space-y-3 rounded-lg border border-gray-100 p-2 dark:border-slate-700"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0 flex-1">
@@ -101,43 +100,34 @@ export default function ProvidersPage() {
                                     href={provider.website}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-primary underline"
+                                    className="text-yellow-700 underline hover:text-yellow-800 dark:text-yellow-400 dark:hover:text-yellow-300"
                                   >
                                     {provider.website.replace(/^https?:\/\//, '')}
                                   </a>
                                 </p>
                               ) : null}
                             </div>
-                            <div className="flex flex-col items-end gap-2">
-                              <div className="flex gap-1.5">
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  tone="neutral"
-                                  className="h-8 w-8 text-gray-600"
-                                  aria-label={`Редагувати ${provider.name}`}
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button
-                                  type="button"
-                                  size="icon"
-                                  variant="outline"
-                                  tone="neutral"
-                                  className="h-8 w-8 text-gray-600"
-                                  aria-label={`Видалити ${provider.name}`}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                              <Badge variant="neutral">
-                                {(() => {
-                                  const primaryTariff = getPrimaryTariff(provider)
-                                  if (!primaryTariff) return provider.unitLabel
-                                  return `${primaryTariff.name} · ${primaryTariff.price.toFixed(2)} ${provider.unitLabel}`
-                                })()}
-                              </Badge>
+                            <div className="flex gap-1.5">
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="outline"
+                                tone="neutral"
+                                className="h-8 w-8 text-gray-600"
+                                aria-label={`Редагувати ${provider.name}`}
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="outline"
+                                tone="neutral"
+                                className="h-8 w-8 text-gray-600"
+                                aria-label={`Видалити ${provider.name}`}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
                             </div>
                           </div>
                           <p className="text-sm text-gray-600 dark:text-slate-300">{provider.description}</p>
