@@ -152,50 +152,52 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
         <div className="mb-2 flex items-center justify-center gap-2 sm:mb-3">
           <Logo size="sm" />
         </div>
-        <h1 className="text-2xl font-bold text-neutral-900 sm:text-3xl">Створити акаунт</h1>
-        <p className="mt-1 text-sm text-neutral-600 sm:text-base">
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-slate-100 sm:text-3xl">
+          Створити акаунт
+        </h1>
+        <p className="mt-1 text-sm text-neutral-600 dark:text-slate-300 sm:text-base">
           Керуйте всіма комунальними послугами в одному кабінеті
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
           onClick={() => handleSocialRegister('google')}
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
           <GoogleIcon className="h-4 w-4" />
-          Зареєструватися через Google
+          Через Google
         </button>
 
         <button
           type="button"
           onClick={() => handleSocialRegister('facebook')}
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
           <FacebookIcon className="h-4 w-4" />
-          Зареєструватися через Facebook
+          Через Facebook
         </button>
 
         <button
           type="button"
           onClick={() => handleSocialRegister('apple')}
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
           <AppleIcon className="h-5 w-5" />
-          Зареєструватися через Apple
+          Через Apple
         </button>
       </div>
 
       <div className="relative my-6 sm:my-8">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-neutral-200" />
+          <div className="w-full border-t border-neutral-200 dark:border-slate-700" />
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-white px-3 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500 sm:text-sm">
+          <span className="bg-white px-3 text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500 dark:bg-slate-900 dark:text-slate-400 sm:text-sm">
             Або
           </span>
         </div>
@@ -203,11 +205,16 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-5">
-          <h3 className="text-lg font-semibold text-neutral-900">Особиста інформація</h3>
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">
+            Особиста інформація
+          </h3>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
+              >
                 Ім'я <span className="text-red-500">*</span>
               </label>
               <input
@@ -215,14 +222,17 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type="text"
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300"
                 disabled={isLoading}
               />
               {errors.firstName && <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="lastName" className="block text-sm font-medium text-neutral-700">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
+              >
                 Прізвище <span className="text-red-500">*</span>
               </label>
               <input
@@ -230,7 +240,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type="text"
                 value={formData.lastName}
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300"
                 disabled={isLoading}
               />
               {errors.lastName && <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>}
@@ -238,7 +248,10 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
+            >
               Електронна пошта <span className="text-red-500">*</span>
             </label>
             <input
@@ -246,7 +259,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300"
               placeholder="example@mail.com"
               disabled={isLoading}
             />
@@ -254,11 +267,14 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="phone" className="block text-sm font-medium text-neutral-700">
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
+            >
               Номер телефону <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-neutral-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-neutral-500 dark:text-slate-400">
                 +380
               </span>
               <input
@@ -266,7 +282,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
-                className="w-full rounded-md border border-neutral-300 bg-white pl-14 pr-3 py-2.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-md border border-neutral-300 bg-white pl-14 pr-3 py-2.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300"
                 placeholder="XX XXX XX XX"
                 maxLength={9}
                 disabled={isLoading}
@@ -276,7 +292,10 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
+            >
               Пароль <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -285,13 +304,13 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 bg-white px-3 pr-12 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-md border border-neutral-300 bg-white px-3 pr-12 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300"
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:text-slate-400 dark:hover:text-slate-200"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -299,15 +318,15 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
             {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
 
             <div className="mt-2 space-y-2">
-              <div className="h-1 w-full overflow-hidden rounded-full bg-neutral-200">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-slate-700">
                 <div
                   className={['h-full transition-all duration-300', strengthStyle.barClass].join(' ')}
                   style={{ width: getPasswordStrengthWidth(passwordStrength) }}
                 />
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-neutral-500">Надійність паролю:</span>
-                <span className={['font-medium', strengthStyle.textClass].join(' ')}>
+                <span className="text-neutral-500 dark:text-slate-400">Надійність паролю:</span>
+                <span className={['font-medium', strengthStyle.textClass, 'dark:text-slate-100'].join(' ')}>
                   {getPasswordStrengthText(passwordStrength)}
                 </span>
               </div>
@@ -318,7 +337,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                   return (
                     <li
                       key={index}
-                      className="flex items-center gap-2 text-xs text-neutral-600"
+                      className="flex items-center gap-2 text-xs text-neutral-600 dark:text-slate-400"
                     >
                       {isSatisfied ? (
                         <CheckCircle2 className="h-3 w-3 text-emerald-500" />
@@ -334,7 +353,10 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-neutral-700">
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
+            >
               Підтвердити пароль <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -343,13 +365,13 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 bg-white px-3 pr-12 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-md border border-neutral-300 bg-white px-3 pr-12 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300"
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:text-slate-400 dark:hover:text-slate-200"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -361,17 +383,22 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
         </div>
 
         <div className="space-y-5">
-          <h3 className="text-lg font-semibold text-neutral-900">Налаштування облікового запису</h3>
+          <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">
+            Налаштування облікового запису
+          </h3>
 
           <div className="space-y-1.5">
-            <label htmlFor="language" className="block text-sm font-medium text-neutral-700">
+            <label
+              htmlFor="language"
+              className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
+            >
               Мова інтерфейсу
             </label>
             <select
               id="language"
               value={formData.language}
               onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-              className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300"
               disabled={isLoading}
             >
               <option value="uk">Українська</option>
@@ -385,10 +412,10 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type="checkbox"
                 checked={formData.agreeToNews}
                 onChange={(e) => setFormData({ ...formData, agreeToNews: e.target.checked })}
-                className="mt-0.5 h-5 w-5 cursor-pointer rounded border border-neutral-400 accent-primary"
+                className="mt-0.5 h-5 w-5 cursor-pointer rounded border border-neutral-400 accent-primary dark:border-slate-600"
                 disabled={isLoading}
               />
-              <span className="text-sm leading-5 text-neutral-800">
+              <span className="text-sm leading-5 text-neutral-800 dark:text-slate-300">
                 Отримувати новини та оновлення про комунальні послуги
               </span>
             </label>
@@ -398,12 +425,15 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type="checkbox"
                 checked={formData.agreeToTerms}
                 onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
-                className="mt-0.5 h-5 w-5 cursor-pointer rounded border border-neutral-400 accent-primary"
+                className="mt-0.5 h-5 w-5 cursor-pointer rounded border border-neutral-400 accent-primary dark:border-slate-600"
                 disabled={isLoading}
               />
-              <span className="text-sm leading-5 text-neutral-800">
+              <span className="text-sm leading-5 text-neutral-800 dark:text-slate-300">
                 Я погоджуюся з{' '}
-                <a href="/terms" className="text-primary hover:text-amber-700 hover:underline">
+                <a
+                  href="/terms"
+                  className="text-primary hover:text-amber-700 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
+                >
                   умовами використання
                 </a>{' '}
                 <span className="text-red-500">*</span>
@@ -418,12 +448,15 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
                 type="checkbox"
                 checked={formData.agreeToPrivacy}
                 onChange={(e) => setFormData({ ...formData, agreeToPrivacy: e.target.checked })}
-                className="mt-0.5 h-5 w-5 cursor-pointer rounded border border-neutral-400 accent-primary"
+                className="mt-0.5 h-5 w-5 cursor-pointer rounded border border-neutral-400 accent-primary dark:border-slate-600"
                 disabled={isLoading}
               />
-              <span className="text-sm leading-5 text-neutral-800">
+              <span className="text-sm leading-5 text-neutral-800 dark:text-slate-300">
                 Я погоджуюся з{' '}
-                <a href="/privacy" className="text-primary hover:text-amber-700 hover:underline">
+                <a
+                  href="/privacy"
+                  className="text-primary hover:text-amber-700 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
+                >
                   політикою конфіденційності
                 </a>{' '}
                 <span className="text-red-500">*</span>
@@ -435,10 +468,10 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
           </div>
         </div>
 
-        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 dark:border-slate-700 dark:bg-slate-800">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm text-neutral-800">Захист від роботів</span>
-            <button type="button" className="text-neutral-400 hover:text-neutral-600">
+            <span className="text-sm text-neutral-800 dark:text-slate-200">Захист від роботів</span>
+            <button type="button" className="text-neutral-400 hover:text-neutral-600 dark:text-slate-400 dark:hover:text-slate-200">
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
@@ -448,9 +481,9 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
               </svg>
             </button>
           </div>
-          <div className="flex items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3.5">
-            <div className="h-5 w-5 rounded border-2 border-neutral-300" />
-            <span className="text-sm text-neutral-700">Я не робот</span>
+          <div className="flex items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3.5 dark:border-slate-700 dark:bg-slate-900">
+            <div className="h-5 w-5 rounded border-2 border-neutral-300 dark:border-slate-600" />
+            <span className="text-sm text-neutral-700 dark:text-slate-300">Я не робот</span>
           </div>
         </div>
 
@@ -466,9 +499,12 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
         </Button>
 
         <div className="text-center">
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-neutral-600 dark:text-slate-300">
             Вже маєте акаунт?{' '}
-            <a href="/login" className="font-medium text-primary hover:text-amber-700 hover:underline">
+            <a
+              href="/login"
+              className="font-medium text-primary hover:text-amber-700 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
+            >
               Увійти
             </a>
           </p>
