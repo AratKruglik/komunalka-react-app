@@ -9,6 +9,7 @@ import AddressMetersPage from './modules/meters/pages/AddressMetersPage'
 import ProvidersPage from './modules/providers/pages/ProvidersPage'
 import AddProviderPage from './modules/providers/pages/AddProviderPage'
 import AddReadingsPage from './modules/readings/pages/AddReadingsPage'
+import ProfilePage from './modules/profile/pages/ProfilePage'
 
 function RootLayout() {
   return <Outlet />
@@ -27,6 +28,7 @@ export function App() {
           <Route path="/readings/new" element={<AddReadingsPage />} />
           <Route path="/providers" element={<ProvidersPage />} />
           <Route path="/providers/new" element={<AddProviderPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
         </Route>

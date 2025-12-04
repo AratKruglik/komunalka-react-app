@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Bell, ChevronDown, Menu } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
 
@@ -88,6 +89,7 @@ interface UserMenuProps {
 function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
   const [open, setOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!open) {
@@ -118,11 +120,18 @@ function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
     }
   }, [open])
 
-  const menuItems: Array<{ id: string; label: string; tone?: 'danger' }> = [
-    { id: 'profile', label: 'Мій профіль' },
-    { id: 'settings', label: 'Налаштування' },
-    { id: 'logout', label: 'Вийти', tone: 'danger' },
+  const menuItems: Array<{ id: string; label: string; tone?: 'danger'; path?: string }> = [
+    { id: 'profile', label: 'Мій профіль', path: '/profile' },
+    { id: 'settings', label: 'Налаштування', path: '/settings' },
+    { id: 'logout', label: 'Вийти', tone: 'danger', path: '/logout' },
   ]
+
+  const handleMenuItemClick = (item: typeof menuItems[0]) => {
+    setOpen(false)
+    if (item.path) {
+      navigate(item.path)
+    }
+  }
 
   const isCompact = variant === 'compact'
 
@@ -190,7 +199,7 @@ function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
                       ? 'text-red-600 hover:bg-red-50 focus-visible:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40 dark:focus-visible:bg-red-950/40'
                       : 'text-gray-900 hover:bg-gray-100 focus-visible:bg-gray-100 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800'
                   }`}
-                  onClick={() => setOpen(false)}
+                  onClick={() => handleMenuItemClick(item)}
                 >
                   {item.label}
                 </button>
