@@ -1,0 +1,713 @@
+# Komunalka API HTTP Client
+# Base URLs for different environments
+@KomunalkaAPI_HostAddress = http://localhost:8080/api/v1
+# @KomunalkaAPI_HostAddress = http://localhost:5242/api/v1
+# @KomunalkaAPI_HostAddress = https://localhost:7095/api/v1
+
+# JWT Token variables (update these after successful login)
+# Example tokens from test user:
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwianRpIjoiNTE4ZTI0MTQtM2Y4OS00YzZkLWI1MzQtNDJhMzg1NDMzODY4IiwidW5pcXVlX25hbWUiOiJ0ZXN0dXNlciIsInJvbGUiOiJVc2VyIiwibmJmIjoxNzYxNzMzMTU3LCJleHAiOjE3NjE3MzQ5NTcsImlhdCI6MTc2MTczMzE1NywiaXNzIjoia29tdW5hbGthLWFwaSIsImF1ZCI6ImtvbXVuYWxrYS1jbGllbnQifQ.c_XtBhH8n_UvF4DWWMOo7TpoirJeVovOMTfpzPWBTMU
+@refresh_token = c0YCDucdInwaIXd9V4fHnztbrgblXUFGAfOR4Qi5ssI=
+
+### Authentication Endpoints
+
+# Register new user
+POST {{KomunalkaAPI_HostAddress}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "Password123",
+  "confirmPassword": "Password123"
+}
+
+###
+
+# Login user
+POST {{KomunalkaAPI_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123"
+}
+
+###
+
+# Refresh JWT Token
+POST {{KomunalkaAPI_HostAddress}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+###
+
+# Revoke refresh token (requires authentication)
+POST {{KomunalkaAPI_HostAddress}}/auth/revoke-token
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+###
+
+# Validate JWT token
+GET {{KomunalkaAPI_HostAddress}}/auth/validate-token
+Authorization: Bearer {{jwt_token}}
+
+### User Management Endpoints
+
+# Get all users (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/users
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get user by ID (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/users/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Create new user (requires authentication)
+POST {{KomunalkaAPI_HostAddress}}/users
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "password123"
+}
+
+###
+
+# Update user (requires authentication)
+PUT {{KomunalkaAPI_HostAddress}}/users/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "username": "updateduser",
+  "email": "updated@example.com",
+  "password": "newpassword123"
+}
+
+###
+
+# Delete user (requires authentication)
+DELETE {{KomunalkaAPI_HostAddress}}/users/1
+Authorization: Bearer {{jwt_token}}
+
+### Address Management Endpoints
+# Note: All address endpoints now work with user-specific addresses
+# The same physical address can be shared by multiple users
+# Each user can independently mark their addresses as primary using isPrimary flag
+
+# Get all addresses with pagination (requires authentication)
+# Returns only addresses associated with the current user
+GET {{KomunalkaAPI_HostAddress}}/address?page=1&perPage=10
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get address by ID (requires authentication)
+# Returns address only if current user has access to it
+GET {{KomunalkaAPI_HostAddress}}/address/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Create new address (requires authentication)
+# If isPrimary is true, all other addresses for this user will be marked as non-primary
+# addressTypeId: 1 = Квартира, 2 = Приватний будинок, 3 = Офіс
+POST {{KomunalkaAPI_HostAddress}}/address
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "regionId": 9,
+  "city": "Київ",
+  "street": "вул. Хрещатик",
+  "buildingNumber": "1",
+  "apartmentNumber": "101",
+  "zipCode": "01001",
+  "notes": "Центр міста",
+  "isPrimary": true,
+  "addressTypeId": 1
+}
+
+###
+
+# Update address (requires authentication)
+# If isPrimary is changed to true, all other addresses for this user will be marked as non-primary
+# Only updates the address if current user has access to it
+# addressTypeId: 1 = Квартира, 2 = Приватний будинок, 3 = Офіс
+PUT {{KomunalkaAPI_HostAddress}}/address/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "regionId": 9,
+  "zipCode": "01001",
+  "city": "Київ",
+  "street": "вул. Хрещатик",
+  "buildingNumber": "1",
+  "apartmentNumber": "101",
+  "notes": "Оновлені примітки",
+  "isPrimary": true,
+  "addressTypeId": 1
+}
+
+###
+
+# Delete address (requires authentication)
+# Removes the link between user and address
+# If this was the last user linked to this address, the address is soft-deleted
+DELETE {{KomunalkaAPI_HostAddress}}/address/1
+Authorization: Bearer {{jwt_token}}
+
+### Region Management Endpoints
+
+# Get all regions (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/region
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get region by ID (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/region/9
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+### Address Type Management Endpoints
+# Updated: Address types now have Ukrainian names
+# Available types: Квартира (1), Приватний будинок (2), Офіс (3)
+
+# Get all address types (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/addresstype
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get address type by ID (requires authentication)
+# Example: ID 1 = "Квартира", ID 2 = "Приватний будинок", ID 3 = "Офіс"
+GET {{KomunalkaAPI_HostAddress}}/addresstype/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+### Meter Reading Management Endpoints
+
+# Create meter reading without image (requires authentication)
+POST {{KomunalkaAPI_HostAddress}}/meterreading
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{jwt_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ServiceCounterId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Value"
+
+123.45
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# Create meter reading with image (requires authentication)
+# Note: Replace "path/to/meter-photo.jpg" with actual image path
+POST {{KomunalkaAPI_HostAddress}}/meterreading
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{jwt_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ServiceCounterId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Value"
+
+150.75
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="image"; filename="meter-photo.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/meter-photo.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# Get meter reading by ID with images (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meterreading/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get optimized image (public access)
+GET {{KomunalkaAPI_HostAddress}}/meterreading/images/1/optimized
+
+###
+
+# Get thumbnail image (public access)
+GET {{KomunalkaAPI_HostAddress}}/meterreading/images/1/thumbnail
+
+###
+
+# Delete meter reading with images (requires authentication)
+DELETE {{KomunalkaAPI_HostAddress}}/meterreading/1
+Authorization: Bearer {{jwt_token}}
+
+###
+
+### Meter (Лічильник) Management Endpoints
+
+# Get all meters (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meter
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get meter by ID (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meter/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get meters by address ID (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meter/address/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get active meters (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meter/active
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Create new meter without photo (requires authentication)
+# utilityTypeId: 1 = Електроенергія, 2 = Газ, 3 = Холодна вода, 4 = Гаряча вода, 5 = Опалення
+POST {{KomunalkaAPI_HostAddress}}/meter
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{jwt_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="AddressId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="UtilityTypeId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Name"
+
+Лічильник електроенергії
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="SerialNumber"
+
+AB12345678
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ModelName"
+
+НІК 2102
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Location"
+
+На кухні біля дверей
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="InstallationDate"
+
+2024-01-15
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="InitialReading"
+
+1500.50
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ServiceProviderId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Notes"
+
+Перевірено та опломбовано
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="IsActive"
+
+true
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# Create new meter with photo (requires authentication)
+# Note: Replace "./path/to/meter-photo.jpg" with actual image path
+POST {{KomunalkaAPI_HostAddress}}/meter
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{jwt_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="AddressId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="UtilityTypeId"
+
+2
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Name"
+
+Лічильник газу
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="SerialNumber"
+
+GZ98765432
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ModelName"
+
+Metrix G4
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Location"
+
+У коридорі на стіні
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="InstallationDate"
+
+2024-02-20
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="InitialReading"
+
+250.0
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ServiceProviderId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Notes"
+
+Встановлено та опломбовано газовою службою
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="IsActive"
+
+true
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="photo"; filename="meter-photo.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/meter-photo.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# Update meter (requires authentication)
+PUT {{KomunalkaAPI_HostAddress}}/meter/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "serialNumber": "AB12345678-NEW",
+  "name": "Лічильник електроенергії (оновлено)",
+  "modelName": "НІК 2102-01",
+  "location": "На кухні біля дверей (ліва стіна)",
+  "notes": "Пройшов повірку 2024-11-25",
+  "isActive": true
+}
+
+###
+
+# Delete meter (requires authentication)
+DELETE {{KomunalkaAPI_HostAddress}}/meter/1
+Authorization: Bearer {{jwt_token}}
+
+###
+
+### Batch Meter Readings Management Endpoints
+# New: Submit multiple meter readings at once with automatic cost calculation
+
+# Submit batch meter readings for an address (requires authentication)
+# Automatically calculates consumption and cost based on effective tariffs
+POST {{KomunalkaAPI_HostAddress}}/meter-readings/batch
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{jwt_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="AddressId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ReadingsJson"
+
+{
+  "addressId": 1,
+  "readings": [
+    {
+      "meterId": 1,
+      "readingValue": 5097,
+      "readingDate": "2025-11-25T00:00:00Z",
+      "notes": "Електроенергія",
+      "isEstimated": false
+    },
+    {
+      "meterId": 2,
+      "readingValue": 606,
+      "readingDate": "2025-11-25T00:00:00Z",
+      "notes": "Газ",
+      "isEstimated": false
+    },
+    {
+      "meterId": 3,
+      "readingValue": 99,
+      "readingDate": "2025-11-25T00:00:00Z",
+      "notes": "Гаряча вода",
+      "isEstimated": false
+    }
+  ]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# Submit batch meter readings WITH PHOTOS (requires authentication)
+# Photos are matched to meters by meterId in filename (photo_1.jpg, photo_2.jpg, etc.)
+# Note: Replace ./path/to/photo files with actual image paths
+POST {{KomunalkaAPI_HostAddress}}/meter-readings/batch
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{jwt_token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="AddressId"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="ReadingsJson"
+
+{
+  "addressId": 1,
+  "readings": [
+    {
+      "meterId": 1,
+      "readingValue": 5100,
+      "readingDate": "2025-11-26T00:00:00Z",
+      "notes": "Електроенергія з фото",
+      "isEstimated": false
+    },
+    {
+      "meterId": 2,
+      "readingValue": 610,
+      "readingDate": "2025-11-26T00:00:00Z",
+      "notes": "Газ з фото",
+      "isEstimated": false
+    }
+  ]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Photos"; filename="photo_1.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/electricity-meter-photo.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Photos"; filename="photo_2.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/gas-meter-photo.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+# Get meter readings by address ID (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meter-readings/address/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get meter readings by address ID with date range (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meter-readings/address/1?from=2025-11-01T00:00:00Z&to=2025-11-30T23:59:59Z
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get single meter reading by ID (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/meter-readings/1
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Delete meter reading (requires authentication)
+DELETE {{KomunalkaAPI_HostAddress}}/meter-readings/1
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get optimized photo for meter reading (public access)
+GET {{KomunalkaAPI_HostAddress}}/meter-readings/photos/1/optimized
+
+###
+
+# Get thumbnail photo for meter reading (public access)
+GET {{KomunalkaAPI_HostAddress}}/meter-readings/photos/1/thumbnail
+
+###
+
+### Currency Management Endpoints
+
+# Get all currencies (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/currency
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Get currency by ID (requires authentication)
+GET {{KomunalkaAPI_HostAddress}}/currency/2
+Accept: application/json
+Authorization: Bearer {{jwt_token}}
+
+###
+
+# Create new currency (requires authentication)
+POST {{KomunalkaAPI_HostAddress}}/currency
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "US Dollar",
+  "code": "USD",
+  "symbol": "$"
+}
+
+###
+
+# Update currency (requires authentication)
+PUT {{KomunalkaAPI_HostAddress}}/currency/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "name": "Euro",
+  "code": "EUR",
+  "symbol": "€"
+}
+
+###
+
+# Delete currency (requires authentication)
+DELETE {{KomunalkaAPI_HostAddress}}/currency/1
+Authorization: Bearer {{jwt_token}}
+
+###
+
+### Health Check Endpoints
+
+# Health check
+GET http://localhost:8080/health
+
+###
+
+# Ready check
+GET http://localhost:8080/health/ready
+
+###
+
+### Swagger Documentation
+
+# Swagger UI (Development only)
+# @name SwaggerUI
+# GET http://localhost:5242/swagger/index.html
+
+###
+
+### Notes
+#
+# API Versioning: All endpoints use v1 by default (/api/v1/...)
+#
+# Authentication:
+# - Most endpoints require JWT authentication via Bearer token
+# - Register a user first, then login to get JWT and refresh tokens
+# - Update jwt_token and refresh_token variables after login
+#
+# Docker URLs:
+# - API: http://localhost:8080
+# - Database: localhost:5432
+# - pgAdmin: http://localhost:5050 (login: admin at admin.com / admin)
+#
+# Local Development URLs:
+# - HTTP: http://localhost:5242
+# - HTTPS: https://localhost:7095
+# - Swagger: http://localhost:5242/swagger (Development only)
+#
+# Pagination:
+# - Address endpoint supports pagination with ?page=1&perPage=10 (or pageSize=10)
+# - Returns Laravel-compatible format with data, links, and meta
+# - Optional sorting: ?sortBy=city&desc=true (or updatedat, isprimary)
+#
+# Address Management:
+# - Many-to-many relationship: addresses can be shared between users
+# - Each user has independent isPrimary flag for their addresses
+# - Setting isPrimary=true auto-resets other addresses for that user
+# - Database uses Laravel naming convention: address_user pivot table
+#
+# Address Types (Updated to Ukrainian):
+# - ID 1: "Квартира" (Багатоквартирний будинок у місті)
+# - ID 2: "Приватний будинок" (Окрема садиба або дача)
+# - ID 3: "Офіс" (Комерційне або офісне приміщення)
+#
+# Regions:
+# - 26 Ukrainian regions available (області України)
+# - Use GET /api/v1/region to get full list with IDs
+#
+# Meters (Лічильники):
+# - Full CRUD operations for utility meters
+# - Supports photo upload (multipart/form-data)
+# - Fields: AddressId, UtilityTypeId, Name, SerialNumber, ModelName, Location
+# - Additional: InstallationDate, InitialReading, ServiceProviderId, Notes, IsActive
+# - Utility Types: 1=Електроенергія, 2=Газ, 3=Холодна вода, 4=Гаряча вода, 5=Опалення
+# - Photos saved to /uploads/meters/ directory
+# - Get meters by address: GET /api/v1/meter/address/{addressId}
+# - Get only active meters: GET /api/v1/meter/active
+#
+# Service Providers (Провайдери послуг):
+# - New entity for utility service providers
+# - Linked to meters via ServiceProviderId
+# - Stores provider contact information (name, phone, email, website)
+#
+# Batch Meter Readings (Масове внесення показників):
+# - Submit multiple meter readings at once: POST /api/v1/meter-readings/batch
+# - Supports photo uploads for each meter (match by filename: photo_{meterId}.jpg)
+# - Photos are automatically processed (optimized + thumbnail versions)
+# - Automatic consumption calculation (current - previous reading)
+# - Dynamic cost calculation based on effective tariffs
+# - Validates: current >= previous, no duplicates on same date
+# - Returns detailed calculations with tariff breakdown
+# - Atomic transactions: all readings saved together or none
+# - Get readings by address: GET /api/v1/meter-readings/address/{addressId}
+# - Optional date range filtering: ?from=...&to=...
+# - Response includes: consumption, baseRate, serviceFee, totalCost per meter
+# - Get photos: /meter-readings/photos/{id}/optimized or /thumbnail
+# - Supports HEIC/HEIF, JPEG, PNG formats
+# - See docs/BATCH_METER_READINGS_API.md for full documentation
+#
+# CORS:
+# - Configured to allow origins from environment variable
+# - Docker: allows all origins (*)
+# - Local: configure in .env file
+
+###
