@@ -28,12 +28,18 @@ interface ProfileFormProps {
 const mockUserData = {
   username: 'olena_petrenko',
   email: 'olena@example.com',
+  firstName: 'Олена',
+  lastName: 'Петренко',
+  phone: '501234567',
 }
 
 export function ProfileForm({ onCancel }: ProfileFormProps) {
   const [formData, setFormData] = useState({
     username: mockUserData.username,
     email: mockUserData.email,
+    firstName: mockUserData.firstName,
+    lastName: mockUserData.lastName,
+    phone: mockUserData.phone,
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
@@ -56,6 +62,20 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
       newErrors.username = "Ім'я користувача обов'язкове"
     } else if (formData.username.length < 3) {
       newErrors.username = "Ім'я користувача повинно містити мінімум 3 символи"
+    }
+
+    if (!formData.firstName.trim()) {
+      newErrors.firstName = "Ім'я обов'язкове"
+    }
+
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = 'Прізвище обовʼязкове'
+    }
+
+    if (!formData.phone) {
+      newErrors.phone = "Номер телефону обов'язковий"
+    } else if (!/^\d{9}$/.test(formData.phone)) {
+      newErrors.phone = 'Введіть коректний номер телефону (9 цифр)'
     }
 
     // Validate email
@@ -101,11 +121,17 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
       // {
       //   username: formData.username,
       //   email: formData.email,
+      //   firstName: formData.firstName,
+      //   lastName: formData.lastName,
+      //   phone: formData.phone,
       //   password: formData.newPassword (only if changing password)
       // }
       console.log('Profile update attempt:', {
         username: formData.username,
         email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
         passwordChanged: isChangingPassword,
       })
 
@@ -153,6 +179,40 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
             <CardDescription>Оновіть свої особисті дані</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="firstName">Імʼя</Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  placeholder="Ваше імʼя"
+                  disabled={isLoading}
+                  isInvalid={Boolean(errors.firstName)}
+                />
+                {errors.firstName ? (
+                  <FormMessage variant="error">{errors.firstName}</FormMessage>
+                ) : null}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="lastName">Прізвище</Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  placeholder="Ваше прізвище"
+                  disabled={isLoading}
+                  isInvalid={Boolean(errors.lastName)}
+                />
+                {errors.lastName ? (
+                  <FormMessage variant="error">{errors.lastName}</FormMessage>
+                ) : null}
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="username">Ім&apos;я користувача</Label>
               <Input
@@ -185,6 +245,32 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
               {errors.email ? (
                 <FormMessage variant="error">{errors.email}</FormMessage>
               ) : null}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="phone">Номер телефону</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-neutral-500 dark:text-slate-400">
+                  +380
+                </span>
+                <input
+                  id="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      phone: e.target.value.replace(/\D/g, ''),
+                    })
+                  }
+                  className="w-full rounded-md border border-neutral-300 bg-white pl-14 pr-3 py-2.5 text-base text-neutral-900 placeholder:text-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300"
+                  placeholder="XX XXX XX XX"
+                  maxLength={9}
+                  inputMode="numeric"
+                  disabled={isLoading}
+                />
+              </div>
+              {errors.phone ? <FormMessage variant="error">{errors.phone}</FormMessage> : null}
             </div>
           </CardContent>
         </Card>
