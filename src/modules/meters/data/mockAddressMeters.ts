@@ -53,7 +53,7 @@ const createGroup = (
 
 export const MOCK_ADDRESS_METERS: AddressMetersSnapshot[] = [
   {
-    addressId: 'kyiv-khreschatyk-22',
+    addressId: '1',
     summary: {
       totalMeters: 4,
       activeMeters: 3,
@@ -214,7 +214,7 @@ export const MOCK_ADDRESS_METERS: AddressMetersSnapshot[] = [
     },
   },
   {
-    addressId: 'lviv-halytska-12',
+    addressId: '2',
     summary: {
       totalMeters: 3,
       activeMeters: 3,
@@ -342,7 +342,7 @@ export const MOCK_ADDRESS_METERS: AddressMetersSnapshot[] = [
     },
   },
   {
-    addressId: 'kharkiv-nauky-45',
+    addressId: '13',
     summary: {
       totalMeters: 2,
       activeMeters: 2,
