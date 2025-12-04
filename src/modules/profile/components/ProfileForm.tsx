@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { User, Mail } from 'lucide-react'
 import {
   Alert,
   AlertDescription,
@@ -13,7 +13,12 @@ import {
   FormMessage,
   Input,
   Label,
+  PasswordInput,
 } from '../../../shared/components/ui'
+import {
+  defaultPasswordRequirements,
+  getPasswordStrength,
+} from '../../../shared/components/ui/form/PasswordInput'
 
 interface ProfileFormProps {
   onCancel?: () => void
@@ -34,9 +39,6 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
     confirmPassword: '',
   })
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [successMessage, setSuccessMessage] = useState('')
@@ -73,8 +75,11 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
 
       if (!formData.newPassword) {
         newErrors.newPassword = "Введіть новий пароль"
-      } else if (formData.newPassword.length < 6) {
-        newErrors.newPassword = 'Пароль повинен містити мінімум 6 символів'
+      } else {
+        const strength = getPasswordStrength(formData.newPassword, defaultPasswordRequirements)
+        if (strength === 'weak' || strength === 'none') {
+          newErrors.newPassword = 'Пароль занадто слабкий'
+        }
       }
 
       if (!formData.confirmPassword) {
@@ -193,92 +198,41 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="space-y-1.5">
-              <Label htmlFor="currentPassword">Поточний пароль</Label>
-              <Input
-                id="currentPassword"
-                type={showCurrentPassword ? 'text' : 'password'}
-                value={formData.currentPassword}
-                onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                leadingIcon={<Lock className="h-4 w-4 text-neutral-500" />}
-                endAdornment={
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="rounded-md p-2 text-neutral-500 transition hover:text-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed dark:text-slate-400 dark:hover:text-slate-200"
-                    aria-label={showCurrentPassword ? 'Приховати пароль' : 'Показати пароль'}
-                    disabled={isLoading}
-                  >
-                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                }
-                placeholder="••••••••"
-                autoComplete="current-password"
-                disabled={isLoading}
-                isInvalid={Boolean(errors.currentPassword)}
-              />
-              {errors.currentPassword ? (
-                <FormMessage variant="error">{errors.currentPassword}</FormMessage>
-              ) : null}
-            </div>
+            <PasswordInput
+              id="currentPassword"
+              label="Поточний пароль"
+              value={formData.currentPassword}
+              onChange={(value) => setFormData({ ...formData, currentPassword: value })}
+              disabled={isLoading}
+              error={errors.currentPassword}
+              showStrength={false}
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="newPassword">Новий пароль</Label>
-              <Input
-                id="newPassword"
-                type={showNewPassword ? 'text' : 'password'}
-                value={formData.newPassword}
-                onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                leadingIcon={<Lock className="h-4 w-4 text-neutral-500" />}
-                endAdornment={
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="rounded-md p-2 text-neutral-500 transition hover:text-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed dark:text-slate-400 dark:hover:text-slate-200"
-                    aria-label={showNewPassword ? 'Приховати пароль' : 'Показати пароль'}
-                    disabled={isLoading}
-                  >
-                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                }
-                placeholder="••••••••"
-                autoComplete="new-password"
-                disabled={isLoading}
-                isInvalid={Boolean(errors.newPassword)}
-              />
-              {errors.newPassword ? (
-                <FormMessage variant="error">{errors.newPassword}</FormMessage>
-              ) : null}
-            </div>
+            <PasswordInput
+              id="newPassword"
+              label="Новий пароль"
+              value={formData.newPassword}
+              onChange={(value) => setFormData({ ...formData, newPassword: value })}
+              disabled={isLoading}
+              error={errors.newPassword}
+              autoComplete="new-password"
+              placeholder="••••••••"
+              requirements={defaultPasswordRequirements}
+            />
 
-            <div className="space-y-1.5">
-              <Label htmlFor="confirmPassword">Підтвердити новий пароль</Label>
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                leadingIcon={<Lock className="h-4 w-4 text-neutral-500" />}
-                endAdornment={
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="rounded-md p-2 text-neutral-500 transition hover:text-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed dark:text-slate-400 dark:hover:text-slate-200"
-                    aria-label={showConfirmPassword ? 'Приховати пароль' : 'Показати пароль'}
-                    disabled={isLoading}
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                }
-                placeholder="••••••••"
-                autoComplete="new-password"
-                disabled={isLoading}
-                isInvalid={Boolean(errors.confirmPassword)}
-              />
-              {errors.confirmPassword ? (
-                <FormMessage variant="error">{errors.confirmPassword}</FormMessage>
-              ) : null}
-            </div>
+            <PasswordInput
+              id="confirmPassword"
+              label="Підтвердити новий пароль"
+              value={formData.confirmPassword}
+              onChange={(value) => setFormData({ ...formData, confirmPassword: value })}
+              disabled={isLoading}
+              error={errors.confirmPassword}
+              autoComplete="new-password"
+              placeholder="••••••••"
+              showStrength={false}
+            />
           </CardContent>
         </Card>
       </div>

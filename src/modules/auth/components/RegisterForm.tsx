@@ -1,32 +1,13 @@
 import { useState, type FormEvent } from 'react'
-import { Eye, EyeOff, Circle, CheckCircle2 } from 'lucide-react'
 import { Logo, Button, GoogleIcon, FacebookIcon, AppleIcon } from '../../../shared/components/ui'
+import {
+  PasswordInput,
+  getPasswordStrength,
+  defaultPasswordRequirements,
+} from '../../../shared/components/ui'
 
 interface RegisterFormProps {
   className?: string
-}
-
-type PasswordStrength = 'none' | 'weak' | 'medium' | 'strong'
-
-interface PasswordRequirement {
-  label: string
-  test: (password: string) => boolean
-}
-
-const passwordRequirements: PasswordRequirement[] = [
-  { label: 'Мінімум 8 символів', test: (p) => p.length >= 8 },
-  { label: 'Мінімум 1 велика літера', test: (p) => /[A-Z]/.test(p) },
-  { label: 'Мінімум 1 цифра', test: (p) => /\d/.test(p) },
-]
-
-const passwordStrengthStyles: Record<
-  PasswordStrength,
-  { width: string; barClass: string; textClass: string }
-> = {
-  none: { width: '0%', barClass: 'bg-neutral-200', textClass: 'text-neutral-500' },
-  weak: { width: '33%', barClass: 'bg-red-400', textClass: 'text-red-600' },
-  medium: { width: '66%', barClass: 'bg-amber-400', textClass: 'text-amber-700' },
-  strong: { width: '100%', barClass: 'bg-emerald-500', textClass: 'text-emerald-600' },
 }
 
 export function RegisterForm({ className = '' }: RegisterFormProps) {
@@ -44,40 +25,10 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
     isNotRobot: false,
   })
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const getPasswordStrength = (password: string): PasswordStrength => {
-    if (!password) return 'none'
-    const satisfiedRequirements = passwordRequirements.filter((req) => req.test(password)).length
-
-    if (satisfiedRequirements === 0) return 'weak'
-    if (satisfiedRequirements === 1) return 'weak'
-    if (satisfiedRequirements === 2) return 'medium'
-    return 'strong'
-  }
-
-  const getPasswordStrengthText = (strength: PasswordStrength): string => {
-    switch (strength) {
-      case 'none':
-        return 'Не введено'
-      case 'weak':
-        return 'Слабкий'
-      case 'medium':
-        return 'Середній'
-      case 'strong':
-        return 'Надійний'
-    }
-  }
-
-  const getPasswordStrengthWidth = (strength: PasswordStrength): string => {
-    return passwordStrengthStyles[strength].width
-  }
-
-  const passwordStrength = getPasswordStrength(formData.password)
-  const strengthStyle = passwordStrengthStyles[passwordStrength]
+  const passwordStrength = getPasswordStrength(formData.password, defaultPasswordRequirements)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -291,95 +242,33 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
             {errors.phone && <p className="mt-1 text-sm text-red-500">{errors.phone}</p>}
           </div>
 
-          <div className="space-y-1.5">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
-            >
-              Пароль <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 bg-white px-3 pr-12 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:text-slate-400 dark:hover:text-slate-200"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+          <PasswordInput
+            id="password"
+            label={
+              <>
+                Пароль <span className="text-red-500">*</span>
+              </>
+            }
+            value={formData.password}
+            onChange={(value) => setFormData({ ...formData, password: value })}
+            disabled={isLoading}
+            error={errors.password}
+            requirements={defaultPasswordRequirements}
+          />
 
-            <div className="mt-2 space-y-2">
-              <div className="h-1 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-slate-700">
-                <div
-                  className={['h-full transition-all duration-300', strengthStyle.barClass].join(' ')}
-                  style={{ width: getPasswordStrengthWidth(passwordStrength) }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-neutral-500 dark:text-slate-400">Надійність паролю:</span>
-                <span className={['font-medium', strengthStyle.textClass, 'dark:text-slate-100'].join(' ')}>
-                  {getPasswordStrengthText(passwordStrength)}
-                </span>
-              </div>
-
-              <ul className="space-y-1">
-                {passwordRequirements.map((requirement, index) => {
-                  const isSatisfied = requirement.test(formData.password)
-                  return (
-                    <li
-                      key={index}
-                      className="flex items-center gap-2 text-xs text-neutral-600 dark:text-slate-400"
-                    >
-                      {isSatisfied ? (
-                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                      ) : (
-                        <Circle className="h-3 w-3" />
-                      )}
-                      {requirement.label}
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label
-              htmlFor="confirmPassword"
-              className="block text-sm font-medium text-neutral-700 dark:text-slate-200"
-            >
-              Підтвердити пароль <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 bg-white px-3 pr-12 py-2.5 text-base text-neutral-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-amber-300 dark:focus:ring-amber-300"
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:text-slate-400 dark:hover:text-slate-200"
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>
-            )}
-          </div>
+          <PasswordInput
+            id="confirmPassword"
+            label={
+              <>
+                Підтвердити пароль <span className="text-red-500">*</span>
+              </>
+            }
+            value={formData.confirmPassword}
+            onChange={(value) => setFormData({ ...formData, confirmPassword: value })}
+            disabled={isLoading}
+            error={errors.confirmPassword}
+            showStrength={false}
+          />
         </div>
 
         <div className="space-y-5">
