@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router'
 import {
-  BarChart3,
-  CreditCard,
+  // BarChart3, // TODO: Uncomment when Analytics page is ready
+  // CreditCard, // TODO: Uncomment when Payments page is ready
   FilePlus,
-  FileText,
+  // FileText, // TODO: Uncomment when Accounts page is ready
   Gauge,
   HelpCircle,
   LayoutDashboard,
@@ -75,21 +75,22 @@ const defaultSections: SidebarSection[] = [
         to: '/providers',
         icon: Plug,
       },
-      {
-        label: 'Мої рахунки',
-        to: '/accounts',
-        icon: FileText,
-      },
-      {
-        label: 'Аналітика',
-        to: '/analytics',
-        icon: BarChart3,
-      },
-      {
-        label: 'Платежі',
-        to: '/payments',
-        icon: CreditCard,
-      },
+      // TODO: Uncomment when pages are ready
+      // {
+      //   label: 'Мої рахунки',
+      //   to: '/accounts',
+      //   icon: FileText,
+      // },
+      // {
+      //   label: 'Аналітика',
+      //   to: '/analytics',
+      //   icon: BarChart3,
+      // },
+      // {
+      //   label: 'Платежі',
+      //   to: '/payments',
+      //   icon: CreditCard,
+      // },
     ],
   },
   {
