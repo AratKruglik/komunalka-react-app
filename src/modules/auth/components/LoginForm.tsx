@@ -1,23 +1,28 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { AppleIcon, FacebookIcon, GoogleIcon } from '../../../shared/components/ui'
+import { useAuth } from '../../../shared/contexts/AuthContext'
 import * as React from "react";
 
 export function LoginForm() {
+  const navigate = useNavigate()
+  const { login, state } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
+
+  const isLoading = state.isLoading
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setErrors({})
-    setIsLoading(true)
 
-    const newErrors: { email?: string; password?: string } = {}
+    const newErrors: { email?: string; password?: string; general?: string } = {}
 
+    // Валідація полів
     if (!email) {
       newErrors.email = "Електронна пошта обов'язкова"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -32,17 +37,30 @@ export function LoginForm() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      setIsLoading(false)
       return
     }
 
     try {
-      console.log('Login attempt:', { email, password, rememberMe })
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-    } catch (error) {
+      // Використовуємо метод login з AuthContext
+      await login(email, password, rememberMe)
+
+      console.log('Login successful')
+
+      // Перенаправлення на головну сторінку
+      navigate('/')
+    } catch (error: unknown) {
       console.error('Login error:', error)
-    } finally {
-      setIsLoading(false)
+
+      // Обробка помилок
+      if (error && typeof error === 'object' && 'message' in error) {
+        setErrors({
+          general: (error as { message: string }).message || 'Помилка входу. Перевірте дані та спробуйте ще раз.'
+        })
+      } else {
+        setErrors({
+          general: 'Помилка входу. Перевірте дані та спробуйте ще раз.'
+        })
+      }
     }
   }
 
@@ -53,6 +71,13 @@ export function LoginForm() {
   return (
     <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+        {/* General Error Message */}
+        {errors.general && (
+          <div className="rounded-md bg-red-50 p-3 dark:bg-red-900/20">
+            <p className="text-sm text-red-800 dark:text-red-300">{errors.general}</p>
+          </div>
+        )}
+
         {/* Email Field */}
         <div>
           <label
