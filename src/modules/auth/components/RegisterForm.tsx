@@ -1,16 +1,20 @@
 import { useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router'
 import { Logo, Button, GoogleIcon, FacebookIcon, AppleIcon } from '../../../shared/components/ui'
 import {
   PasswordInput,
   getPasswordStrength,
   defaultPasswordRequirements,
 } from '../../../shared/components/ui'
+import { useAuth } from '../../../shared/hooks'
 
 interface RegisterFormProps {
   className?: string
 }
 
 export function RegisterForm({ className = '' }: RegisterFormProps) {
+  const navigate = useNavigate()
+  const { register, state } = useAuth()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -25,15 +29,15 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
     isNotRobot: false,
   })
 
-  const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const isLoading = state.isLoading
 
   const passwordStrength = getPasswordStrength(formData.password, defaultPasswordRequirements)
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrors({})
-    setIsLoading(true)
 
     const newErrors: Record<string, string> = {}
 
@@ -72,17 +76,38 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      setIsLoading(false)
       return
     }
 
     try {
-      console.log('Registration attempt:', formData)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-    } catch (error) {
+      // Використовуємо метод register з AuthContext
+      await register({
+        username: formData.email, // Use email as username for now
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: `+380${formData.phone}`,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      })
+
+      console.log('Registration successful')
+
+      // Перенаправлення на головну сторінку
+      navigate('/')
+    } catch (error: unknown) {
       console.error('Registration error:', error)
-    } finally {
-      setIsLoading(false)
+
+      // Обробка помилок
+      if (error && typeof error === 'object' && 'message' in error) {
+        setErrors({
+          general: (error as { message: string }).message || 'Помилка реєстрації. Спробуйте ще раз.'
+        })
+      } else {
+        setErrors({
+          general: 'Помилка реєстрації. Спробуйте ще раз.'
+        })
+      }
     }
   }
 
@@ -155,6 +180,13 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* General Error Message */}
+        {errors.general && (
+          <div className="rounded-md bg-red-50 p-3 dark:bg-red-900/20">
+            <p className="text-sm text-red-800 dark:text-red-300">{errors.general}</p>
+          </div>
+        )}
+
         <div className="space-y-5">
           <h3 className="text-lg font-semibold text-neutral-900 dark:text-slate-100">
             Особиста інформація

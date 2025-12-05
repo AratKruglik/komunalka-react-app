@@ -21,7 +21,11 @@ export interface RegisterRequest {
 export interface AuthResponse {
   token: string;
   refreshToken: string;
-  expiresAt: string;
+  expiration: string; // API повертає "expiration", а не "expiresAt"
+  userId?: number;
+  username?: string;
+  email?: string;
+  role?: string;
   user?: {
     id: number;
     username: string;
@@ -58,13 +62,20 @@ export const authService = {
   login: async (data: LoginRequest, rememberMe = false): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>('/auth/login', data);
 
+    console.log('[authService] Login API response:', response);
+    console.log('[authService] Token:', response.token);
+    console.log('[authService] RefreshToken:', response.refreshToken);
+    console.log('[authService] Expiration:', response.expiration);
+
     // Вибираємо storage залежно від "запам'ятати мене"
     const storage = rememberMe ? localStorage : sessionStorage;
 
-    // Зберігаємо токени та expiresAt
+    // Зберігаємо токени та expiration
     storage.setItem('jwt_token', response.token);
     storage.setItem('refresh_token', response.refreshToken);
-    storage.setItem('expires_at', response.expiresAt);
+    storage.setItem('expires_at', response.expiration);
+
+    console.log('[authService] Tokens saved to', rememberMe ? 'localStorage' : 'sessionStorage');
 
     // Якщо rememberMe, також зберігаємо прапорець
     if (rememberMe) {
@@ -100,10 +111,10 @@ export const authService = {
       ? localStorage
       : sessionStorage;
 
-    // Оновлюємо токени та expiresAt
+    // Оновлюємо токени та expiration
     storage.setItem('jwt_token', response.token);
     storage.setItem('refresh_token', response.refreshToken);
-    storage.setItem('expires_at', response.expiresAt);
+    storage.setItem('expires_at', response.expiration);
 
     return response;
   },

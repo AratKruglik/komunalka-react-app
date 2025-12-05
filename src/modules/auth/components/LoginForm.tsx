@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { AppleIcon, FacebookIcon, GoogleIcon } from '../../../shared/components/ui'
-import { useAuth } from '../../../shared/contexts/AuthContext'
+import { useAuth } from '../../../shared/hooks'
 import * as React from "react";
 
 export function LoginForm() {

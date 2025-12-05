@@ -63,13 +63,13 @@ apiClient.interceptors.response.use(
             { refreshToken }
           );
 
-          const { token, refreshToken: newRefreshToken, expiresAt } = response.data;
+          const { token, refreshToken: newRefreshToken, expiration } = response.data;
 
           // Зберігаємо новий токен у те ж сховище, де був старий
           const storage = localStorage.getItem('jwt_token') ? localStorage : sessionStorage;
           storage.setItem('jwt_token', token);
           storage.setItem('refresh_token', newRefreshToken);
-          storage.setItem('expires_at', expiresAt);
+          storage.setItem('expires_at', expiration);
 
           // Повторити оригінальний запит з новим токеном
           originalRequest.headers.Authorization = `Bearer ${token}`;
