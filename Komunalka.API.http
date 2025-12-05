@@ -1,29 +1,32 @@
-# Komunalka API HTTP Client
-# Base URLs for different environments
+### Komunalka API HTTP Client
+# Base URLs for different environments (uncomment the one you need)
 @KomunalkaAPI_HostAddress = http://localhost:8080/api/v1
 # @KomunalkaAPI_HostAddress = http://localhost:5242/api/v1
 # @KomunalkaAPI_HostAddress = https://localhost:7095/api/v1
 
 # JWT Token variables (update these after successful login)
 # Example tokens from test user:
-@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwianRpIjoiNTE4ZTI0MTQtM2Y4OS00YzZkLWI1MzQtNDJhMzg1NDMzODY4IiwidW5pcXVlX25hbWUiOiJ0ZXN0dXNlciIsInJvbGUiOiJVc2VyIiwibmJmIjoxNzYxNzMzMTU3LCJleHAiOjE3NjE3MzQ5NTcsImlhdCI6MTc2MTczMzE1NywiaXNzIjoia29tdW5hbGthLWFwaSIsImF1ZCI6ImtvbXVuYWxrYS1jbGllbnQifQ.c_XtBhH8n_UvF4DWWMOo7TpoirJeVovOMTfpzPWBTMU
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwianRpIjoiNDA2NjM3NTUtOTA2OS00OGZjLWE4ZDUtMWQzYWI3NjdkNzhmIiwidW5pcXVlX25hbWUiOiJ0ZXN0dXNlciIsInJvbGUiOiJVc2VyIiwibmJmIjoxNzY0OTMyODc2LCJleHAiOjE3NjQ5MzQ2NzYsImlhdCI6MTc2NDkzMjg3NiwiaXNzIjoia29tdW5hbGthLWFwaSIsImF1ZCI6ImtvbXVuYWxrYS1jbGllbnQifQ.1pGnQzsQycW21X4wczQqYX8yU-7rujI91Y9pfXW3gv4
 @refresh_token = c0YCDucdInwaIXd9V4fHnztbrgblXUFGAfOR4Qi5ssI=
 
 ### Authentication Endpoints
 
+###
 # Register new user
 POST {{KomunalkaAPI_HostAddress}}/auth/register
 Content-Type: application/json
 
 {
   "username": "testuser",
+  "firstName": "Олена",
+  "lastName": "Петренко",
+  "phoneNumber": "+380501234567",
   "email": "test@example.com",
   "password": "Password123",
   "confirmPassword": "Password123"
 }
 
 ###
-
 # Login user
 POST {{KomunalkaAPI_HostAddress}}/auth/login
 Content-Type: application/json
@@ -34,7 +37,6 @@ Content-Type: application/json
 }
 
 ###
-
 # Refresh JWT Token
 POST {{KomunalkaAPI_HostAddress}}/auth/refresh-token
 Content-Type: application/json
@@ -44,7 +46,6 @@ Content-Type: application/json
 }
 
 ###
-
 # Revoke refresh token (requires authentication)
 POST {{KomunalkaAPI_HostAddress}}/auth/revoke-token
 Content-Type: application/json
@@ -55,27 +56,68 @@ Authorization: Bearer {{jwt_token}}
 }
 
 ###
-
 # Validate JWT token
 GET {{KomunalkaAPI_HostAddress}}/auth/validate-token
 Authorization: Bearer {{jwt_token}}
 
+# Expected 200 OK (sample)
+# {
+#   "isValid": true,
+#   "expiresAt": "2025-12-10T11:00:00Z",
+#   "claims": ["sub", "email", "role"]
+# }
+
 ### User Management Endpoints
 
+###
 # Get all users (requires authentication)
 GET {{KomunalkaAPI_HostAddress}}/users
 Accept: application/json
 Authorization: Bearer {{jwt_token}}
 
+# Expected 200 OK (sample)
+# [
+#   {
+#     "id": 1,
+#     "username": "testuser",
+#     "firstName": "Олена",
+#     "lastName": "Петренко",
+#     "phoneNumber": "+380501234567",
+#     "email": "test@example.com",
+#     "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
+#     "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
+#     "addresses": [],
+#     "createdAt": "2025-12-10T10:00:00Z",
+#     "updatedAt": "2025-12-10T10:00:00Z"
+#   }
+# ]
+
 ###
 
+###
 # Get user by ID (requires authentication)
 GET {{KomunalkaAPI_HostAddress}}/users/1
 Accept: application/json
 Authorization: Bearer {{jwt_token}}
 
+# Expected 200 OK (sample)
+# {
+#   "id": 1,
+#   "username": "testuser",
+#   "firstName": "Олена",
+#   "lastName": "Петренко",
+#   "phoneNumber": "+380501234567",
+#   "email": "test@example.com",
+#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
+#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
+#   "addresses": [],
+#   "createdAt": "2025-12-10T10:00:00Z",
+#   "updatedAt": "2025-12-10T10:00:00Z"
+# }
+
 ###
 
+###
 # Create new user (requires authentication)
 POST {{KomunalkaAPI_HostAddress}}/users
 Content-Type: application/json
@@ -87,18 +129,151 @@ Authorization: Bearer {{jwt_token}}
   "password": "password123"
 }
 
+# Expected 201 Created (sample)
+# {
+#   "id": 2,
+#   "username": "newuser",
+#   "email": "newuser@example.com",
+#   "avatarUrl": null,
+#   "avatarThumbnailUrl": null,
+#   "addresses": [],
+#   "createdAt": "2025-12-10T10:05:00Z",
+#   "updatedAt": "2025-12-10T10:05:00Z"
+# }
+
 ###
 
-# Update user (requires authentication)
+###
+# Update user without password change (requires authentication)
 PUT {{KomunalkaAPI_HostAddress}}/users/1
 Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 {
   "username": "updateduser",
-  "email": "updated@example.com",
-  "password": "newpassword123"
+  "firstName": "Олена",
+  "lastName": "Іваненко",
+  "phoneNumber": "+380501234567",
+  "email": "updated@example.com"
 }
+
+# Expected 200 OK (sample)
+# {
+#   "id": 1,
+#   "username": "updateduser",
+#   "firstName": "Олена",
+#   "lastName": "Іваненко",
+#   "phoneNumber": "+380501234567",
+#   "email": "updated@example.com",
+#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
+#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
+#   "addresses": [],
+#   "createdAt": "2025-12-10T10:00:00Z",
+#   "updatedAt": "2025-12-10T10:15:00Z"
+# }
+
+###
+
+# Update user WITH password change (requires authentication)
+# Password requirements:
+# - Minimum 8 characters
+# - At least 1 uppercase letter
+# - At least 1 lowercase letter
+# - At least 1 digit
+PUT {{KomunalkaAPI_HostAddress}}/users/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+  "username": "updateduser",
+  "firstName": "Олена",
+  "lastName": "Петренко",
+  "phoneNumber": "+380501234567",
+  "email": "updated@example.com",
+  "currentPassword": "Password123",
+  "newPassword": "NewPassword456",
+  "confirmNewPassword": "NewPassword456"
+}
+
+# Expected 200 OK (sample: same shape as user)
+# {
+#   "id": 1,
+#   "username": "updateduser",
+#   "firstName": "Олена",
+#   "lastName": "Петренко",
+#   "phoneNumber": "+380501234567",
+#   "email": "updated@example.com",
+#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
+#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
+#   "createdAt": "2025-12-10T10:00:00Z",
+#   "updatedAt": "2025-12-10T10:20:00Z"
+# }
+
+###
+
+# Update user WITH avatar upload (requires authentication)
+# Allowed image types: JPG, JPEG, PNG, GIF, HEIC; max size 2 MB
+# Replace ./path/to/avatar.jpg with an existing small test image on your machine
+PUT {{KomunalkaAPI_HostAddress}}/users/1
+Authorization: Bearer {{jwt_token}}
+Content-Type: multipart/form-data; boundary=AvatarBoundary
+
+--AvatarBoundary
+Content-Disposition: form-data; name="username"
+
+updateduser
+--AvatarBoundary
+Content-Disposition: form-data; name="firstName"
+
+Олена
+--AvatarBoundary
+Content-Disposition: form-data; name="lastName"
+
+Петренко
+--AvatarBoundary
+Content-Disposition: form-data; name="phoneNumber"
+
++380501234567
+--AvatarBoundary
+Content-Disposition: form-data; name="email"
+
+updated@example.com
+--AvatarBoundary
+Content-Disposition: form-data; name="avatar"; filename="avatar.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/avatar.jpg
+--AvatarBoundary--
+
+# Expected 200 OK (sample)
+# {
+#   "id": 1,
+#   "username": "updateduser",
+#   "firstName": "Олена",
+#   "lastName": "Петренко",
+#   "phoneNumber": "+380501234567",
+#   "email": "updated@example.com",
+#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
+#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
+#   "createdAt": "2025-12-10T10:00:00Z",
+#   "updatedAt": "2025-12-10T10:25:00Z"
+# }
+
+###
+
+# Get user avatar (optimized)
+GET {{KomunalkaAPI_HostAddress}}/users/1/avatar
+Authorization: Bearer {{jwt_token}}
+
+# Expected 200 OK: binary JPEG stream (optimized, oriented/stripped EXIF)
+
+###
+
+# Get user avatar (thumbnail)
+GET {{KomunalkaAPI_HostAddress}}/users/1/avatar/thumbnail
+Authorization: Bearer {{jwt_token}}
+
+# Expected 200 OK: binary JPEG thumbnail stream
 
 ###
 
@@ -643,6 +818,12 @@ GET http://localhost:8080/health/ready
 # - Most endpoints require JWT authentication via Bearer token
 # - Register a user first, then login to get JWT and refresh tokens
 # - Update jwt_token and refresh_token variables after login
+#
+# User Management:
+# - Update user endpoint (PUT /users/{id}) supports optional password change
+# - To change password, provide: currentPassword, newPassword, confirmNewPassword
+# - Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+# - Without password fields, only username and email are updated
 #
 # Docker URLs:
 # - API: http://localhost:8080
