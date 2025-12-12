@@ -3,6 +3,7 @@ import AddressesPage from './modules/addresses/pages/AddressesPage'
 import AddAddressPage from './modules/addresses/pages/AddAddressPage'
 import LoginPage from './modules/auth/pages/LoginPage'
 import RegisterPage from './modules/auth/pages/RegisterPage'
+import LogoutPage from './modules/auth/pages/LogoutPage'
 import DashboardPage from './modules/dashboard/pages/DashboardPage'
 import AddMeterPage from './modules/meters/pages/AddMeterPage'
 import AddressMetersPage from './modules/meters/pages/AddressMetersPage'
@@ -31,6 +32,7 @@ export function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/logout" element={<LogoutPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,9 +1,20 @@
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import { GuestLayout } from '../../../shared/components/layout/GuestLayout'
 import { Logo } from '../../../shared/components/ui'
+import { useAuth } from '../../../shared/hooks'
 import { LoginForm } from '../components/LoginForm'
 
 export default function LoginPage() {
+  const { state } = useAuth()
+
+  if (state.isLoading) {
+    return null
+  }
+
+  if (state.isAuthenticated) {
+    return <Navigate to="/" replace />
+  }
+
   return (
     <GuestLayout>
       <div className="w-full max-w-[448px]">
