@@ -132,7 +132,6 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
       <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
-          onClick={() => handleSocialRegister()}
           className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
@@ -142,7 +141,6 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
         <button
           type="button"
-          onClick={() => handleSocialRegister()}
           className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
@@ -152,7 +150,6 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
         <button
           type="button"
-          onClick={() => handleSocialRegister()}
           className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
