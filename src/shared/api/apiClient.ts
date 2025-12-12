@@ -1,13 +1,12 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-
-/**
- * API Configuration from environment variables
- */
-const API_CONFIG = {
-  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api/${import.meta.env.VITE_API_VERSION}`,
-  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '10000', 10),
-};
+import type {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  AxiosRequestHeaders,
+} from 'axios';
+import { API_CONFIG } from './config';
+import { authService } from './authService';
 
 /**
  * Create axios instance with default configuration
@@ -20,98 +19,76 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-/**
- * Request interceptor - добавляє JWT токен до кожного запиту
- */
-apiClient.interceptors.request.use(
-  (config) => {
-    // Шукаємо токен в обох сховищах
-    const token = localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token');
+const withAuthHeader = (headers: AxiosRequestHeaders | undefined, token?: string | null | undefined) => {
+  if (!token) return headers;
+  return {
+    ...(headers || {}),
+    Authorization: `Bearer ${token}`,
+  };
+};
 
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+const formatApiError = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    return {
+      message: error.response?.data?.message || error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    };
   }
-);
+  return error;
+};
 
 /**
- * Response interceptor - обробляє помилки авторизації
- */
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Якщо отримали 401 помилку і це не повторний запит
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Спроба оновити токен
-        const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
-
-        if (refreshToken) {
-          const response = await axios.post(
-            `${API_CONFIG.baseURL}/auth/refresh-token`,
-            { refreshToken }
-          );
-
-          const { token, refreshToken: newRefreshToken, expiration } = response.data;
-
-          // Зберігаємо новий токен у те ж сховище, де був старий
-          const storage = localStorage.getItem('jwt_token') ? localStorage : sessionStorage;
-          storage.setItem('jwt_token', token);
-          storage.setItem('refresh_token', newRefreshToken);
-          storage.setItem('expires_at', expiration);
-
-          // Повторити оригінальний запит з новим токеном
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // Якщо оновлення токена не вдалося, очистити токени і перенаправити на логін
-        localStorage.removeItem('jwt_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('expires_at');
-        localStorage.removeItem('remember_me');
-        sessionStorage.removeItem('jwt_token');
-        sessionStorage.removeItem('refresh_token');
-        sessionStorage.removeItem('expires_at');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
-/**
- * Generic API request wrapper
+ * Generic API request wrapper without interceptors.
+ * Adds Authorization header from authService and retries once on 401 with refresh flow.
  */
 export const apiRequest = async <T = unknown>(
   config: AxiosRequestConfig
 ): Promise<T> => {
+  let hasRetried = false;
+
+  const performRequest = async (token?: string | null): Promise<AxiosResponse<T>> => {
+    const headersWithAuth = withAuthHeader(config.headers as AxiosRequestHeaders | undefined, token);
+    return apiClient({
+      ...config,
+      headers: headersWithAuth,
+    });
+  };
+
+  const tryRefreshAndRetry = async () => {
+    if (hasRetried) {
+      throw formatApiError(new Error('Unauthorized'));
+    }
+    hasRetried = true;
+
+    const refreshToken = authService.getRefreshToken();
+    if (!refreshToken) {
+      authService.logout();
+      window.location.href = '/login';
+      throw formatApiError(new Error('No refresh token'));
+    }
+
+    try {
+      const refreshResponse = await authService.refreshToken(refreshToken);
+      return performRequest(refreshResponse.token);
+    } catch (refreshError) {
+      authService.logout();
+      window.location.href = '/login';
+      throw formatApiError(refreshError);
+    }
+  };
+
   try {
-    const response: AxiosResponse<T> = await apiClient(config);
+    const token = authService.getToken();
+    const response = await performRequest(token);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      // Обробка специфічних помилок API
-      throw {
-        message: error.response?.data?.message || error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      };
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      const retryResponse = await tryRefreshAndRetry();
+      return retryResponse.data;
     }
-    throw error;
+
+    throw formatApiError(error);
   }
 };
 

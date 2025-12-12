@@ -17,11 +17,11 @@ POST {{KomunalkaAPI_HostAddress}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser",
+  "username": "testuser2",
   "firstName": "Олена",
   "lastName": "Петренко",
   "phoneNumber": "+380501234567",
-  "email": "test@example.com",
+  "email": "test2@example.com",
   "password": "Password123",
   "confirmPassword": "Password123"
 }

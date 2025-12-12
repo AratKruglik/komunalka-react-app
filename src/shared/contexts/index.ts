@@ -4,4 +4,4 @@
  * Note: Hooks are now in src/shared/hooks/ following project conventions
  */
 
-export { AuthProvider, AuthContext } from './AuthContext';
+export { AuthProvider, AuthContext } from './auth';

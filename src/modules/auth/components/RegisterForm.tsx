@@ -81,6 +81,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
     try {
       // Використовуємо метод register з AuthContext
+      // rememberMe = true за замовчуванням для реєстрації (зберігається в localStorage)
       await register({
         username: formData.email, // Use email as username for now
         firstName: formData.firstName,
@@ -89,15 +90,11 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
         email: formData.email,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
-      })
-
-      console.log('Registration successful')
+      }, true) // Зберігаємо в localStorage за замовчуванням
 
       // Перенаправлення на головну сторінку
       navigate('/')
     } catch (error: unknown) {
-      console.error('Registration error:', error)
-
       // Обробка помилок
       if (error && typeof error === 'object' && 'message' in error) {
         setErrors({
@@ -109,10 +106,6 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
         })
       }
     }
-  }
-
-  const handleSocialRegister = (provider: 'google' | 'facebook' | 'apple') => {
-    console.log(`Register with ${provider}`)
   }
 
   return (
@@ -139,7 +132,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
       <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
-          onClick={() => handleSocialRegister('google')}
+          onClick={() => handleSocialRegister()}
           className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
@@ -149,7 +142,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
         <button
           type="button"
-          onClick={() => handleSocialRegister('facebook')}
+          onClick={() => handleSocialRegister()}
           className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >
@@ -159,7 +152,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
         <button
           type="button"
-          onClick={() => handleSocialRegister('apple')}
+          onClick={() => handleSocialRegister()}
           className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           disabled={isLoading}
         >

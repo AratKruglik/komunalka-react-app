@@ -44,12 +44,9 @@ export function LoginForm() {
       // Використовуємо метод login з AuthContext
       await login(email, password, rememberMe)
 
-      console.log('Login successful')
-
       // Перенаправлення на головну сторінку
       navigate('/')
     } catch (error: unknown) {
-      console.error('Login error:', error)
 
       // Обробка помилок
       if (error && typeof error === 'object' && 'message' in error) {

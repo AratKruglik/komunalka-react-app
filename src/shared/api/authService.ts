@@ -1,4 +1,5 @@
-import { api } from './apiClient';
+import axios from 'axios';
+import { API_CONFIG } from './config';
 
 /**
  * Типи для аутентифікації
@@ -49,106 +50,160 @@ export interface ValidateTokenResponse {
 /**
  * Сервіс для роботи з аутентифікацією
  */
+const authHttp = axios.create({
+  baseURL: API_CONFIG.baseURL,
+  timeout: API_CONFIG.timeout,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+type SameSite = 'Lax' | 'Strict' | 'None';
+
+function setCookie(
+  name: string,
+  value: string,
+  options: {
+    expires?: Date;
+    maxAge?: number;
+    path?: string;
+    sameSite?: SameSite;
+    secure?: boolean;
+  } = {}
+) {
+  const path = options.path ?? '/';
+  const sameSite = options.sameSite ?? 'Lax';
+  const secure = options.secure ?? window.location.protocol === 'https:';
+
+  let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=${path}; SameSite=${sameSite}`;
+
+  if (secure) {
+    cookie += '; Secure';
+  }
+  if (options.expires) {
+    cookie += `; Expires=${options.expires.toUTCString()}`;
+  }
+  if (typeof options.maxAge === 'number') {
+    cookie += `; Max-Age=${options.maxAge}`;
+  }
+
+  document.cookie = cookie;
+}
+
+function getCookie(name: string): string | null {
+  const encodedName = encodeURIComponent(name) + '=';
+  const parts = document.cookie.split('; ');
+  for (const part of parts) {
+    if (part.startsWith(encodedName)) {
+      return decodeURIComponent(part.substring(encodedName.length));
+    }
+  }
+  return null;
+}
+
+function deleteCookie(name: string) {
+  setCookie(name, '', { maxAge: -1 });
+}
+
+function saveAuthCookies(response: AuthResponse, rememberMe: boolean) {
+  const expiresAtDate = new Date(response.expiration);
+
+  if (rememberMe) {
+    setCookie('remember_me', 'true', { maxAge: 60 * 60 * 24 * 30 });
+    setCookie('jwt_token', response.token, { expires: expiresAtDate });
+    setCookie('refresh_token', response.refreshToken, { expires: expiresAtDate });
+    setCookie('expires_at', response.expiration, { expires: expiresAtDate });
+  } else {
+    deleteCookie('remember_me');
+    setCookie('jwt_token', response.token);
+    setCookie('refresh_token', response.refreshToken);
+    setCookie('expires_at', response.expiration);
+  }
+}
+
+function clearAuthCookies() {
+  deleteCookie('jwt_token');
+  deleteCookie('refresh_token');
+  deleteCookie('expires_at');
+  deleteCookie('remember_me');
+}
+
 export const authService = {
   /**
    * Реєстрація нового користувача
    */
-  register: (data: RegisterRequest) =>
-    api.post<AuthResponse>('/auth/register', data),
+  register: async (data: RegisterRequest, rememberMe = true): Promise<AuthResponse> => {
+    const response = await authHttp.post<AuthResponse>('/auth/register', data);
+    saveAuthCookies(response.data, rememberMe);
+    return response.data;
+  },
 
   /**
    * Вхід користувача
    */
   login: async (data: LoginRequest, rememberMe = false): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/login', data);
-
-    console.log('[authService] Login API response:', response);
-    console.log('[authService] Token:', response.token);
-    console.log('[authService] RefreshToken:', response.refreshToken);
-    console.log('[authService] Expiration:', response.expiration);
-
-    // Вибираємо storage залежно від "запам'ятати мене"
-    const storage = rememberMe ? localStorage : sessionStorage;
-
-    // Зберігаємо токени та expiration
-    storage.setItem('jwt_token', response.token);
-    storage.setItem('refresh_token', response.refreshToken);
-    storage.setItem('expires_at', response.expiration);
-
-    console.log('[authService] Tokens saved to', rememberMe ? 'localStorage' : 'sessionStorage');
-
-    // Якщо rememberMe, також зберігаємо прапорець
-    if (rememberMe) {
-      localStorage.setItem('remember_me', 'true');
-    }
-
-    return response;
+    const response = await authHttp.post<AuthResponse>('/auth/login', data);
+    saveAuthCookies(response.data, rememberMe);
+    return response.data;
   },
 
   /**
    * Вихід користувача
    */
   logout: () => {
-    localStorage.removeItem('jwt_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('expires_at');
-    localStorage.removeItem('remember_me');
-    sessionStorage.removeItem('jwt_token');
-    sessionStorage.removeItem('refresh_token');
-    sessionStorage.removeItem('expires_at');
+    clearAuthCookies();
   },
 
   /**
    * Оновлення JWT токена
    */
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>('/auth/refresh-token', {
+    const response = await authHttp.post<AuthResponse>('/auth/refresh-token', {
       refreshToken,
     });
 
-    // Визначаємо, яке сховище використовувати
-    const storage = localStorage.getItem('remember_me') === 'true'
-      ? localStorage
-      : sessionStorage;
+    const rememberMe = getCookie('remember_me') === 'true';
+    saveAuthCookies(response.data, rememberMe);
 
-    // Оновлюємо токени та expiration
-    storage.setItem('jwt_token', response.token);
-    storage.setItem('refresh_token', response.refreshToken);
-    storage.setItem('expires_at', response.expiration);
-
-    return response;
+    return response.data;
   },
 
   /**
    * Відкликання refresh токена
    */
   revokeToken: (refreshToken: string) =>
-    api.post('/auth/revoke-token', { refreshToken }),
+    authHttp.post('/auth/revoke-token', { refreshToken }),
 
   /**
    * Валідація JWT токена
    */
-  validateToken: () => api.get<ValidateTokenResponse>('/auth/validate-token'),
+  validateToken: () => authHttp.get<ValidateTokenResponse>('/auth/validate-token').then(r => r.data),
 
   /**
    * Перевірка, чи користувач залогінений
    */
   isAuthenticated: (): boolean => {
-    const token = localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token');
-    return !!token;
+    return !!getCookie('jwt_token');
   },
 
   /**
    * Отримання токена
    */
   getToken: (): string | null => {
-    return localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token');
+    return getCookie('jwt_token');
   },
 
   /**
    * Отримання refresh токена
    */
   getRefreshToken: (): string | null => {
-    return localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+    return getCookie('refresh_token');
+  },
+
+  /**
+   * Отримання часу експірації access токена
+   */
+  getExpiresAt: (): string | null => {
+    return getCookie('expires_at');
   },
 };
