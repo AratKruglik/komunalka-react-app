@@ -1,15 +1,12 @@
 import axios from 'axios';
-import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  AxiosRequestHeaders,
-} from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_CONFIG } from './config';
 import { authService } from './authService';
+import { formatApiError, withAuthHeader } from './utils';
 
 /**
  * Create axios instance with default configuration
+ * This is a singleton - created once and reused
  */
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_CONFIG.baseURL,
@@ -19,81 +16,78 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-const withAuthHeader = (headers: AxiosRequestHeaders | undefined, token?: string | null | undefined) => {
-  if (!token) return headers;
-  return {
-    ...(headers || {}),
-    Authorization: `Bearer ${token}`,
-  };
-};
-
-const formatApiError = (error: unknown) => {
-  if (axios.isAxiosError(error)) {
-    return {
-      message: error.response?.data?.message || error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-    };
-  }
-  return error;
-};
+/**
+ * Perform API request with automatic token injection and 401 handling
+ * Attempts to refresh token on 401 and retries once
+ *
+ * @param config - Axios request configuration
+ * @returns Response data
+ * @throws Formatted API error
+ */
+async function performRequest<T>(config: AxiosRequestConfig, token?: string | null): Promise<AxiosResponse<T>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const headersWithAuth = withAuthHeader(config.headers as any, token);
+  return apiClient<T>({
+    ...config,
+    headers: headersWithAuth,
+  });
+}
 
 /**
- * Generic API request wrapper without interceptors.
- * Adds Authorization header from authService and retries once on 401 with refresh flow.
+ * Attempt to refresh token and retry request
+ *
+ * @param config - Original request configuration
+ * @throws Error if refresh fails or no refresh token available
  */
-export const apiRequest = async <T = unknown>(
-  config: AxiosRequestConfig
-): Promise<T> => {
+async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  const refreshToken = authService.getRefreshToken();
+
+  if (!refreshToken) {
+    authService.logout();
+    window.location.href = '/login';
+    throw formatApiError(new Error('No refresh token'));
+  }
+
+  try {
+    const refreshResponse = await authService.refreshToken(refreshToken);
+    return performRequest<T>(config, refreshResponse.token);
+  } catch (refreshError) {
+    authService.logout();
+    window.location.href = '/login';
+    throw formatApiError(refreshError);
+  }
+}
+
+/**
+ * Generic API request wrapper
+ * Adds Authorization header from authService and retries once on 401 with refresh flow
+ *
+ * @param config - Axios request configuration
+ * @returns Promise with response data
+ * @throws Formatted error object
+ */
+export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promise<T> {
   let hasRetried = false;
-
-  const performRequest = async (token?: string | null): Promise<AxiosResponse<T>> => {
-    const headersWithAuth = withAuthHeader(config.headers as AxiosRequestHeaders | undefined, token);
-    return apiClient({
-      ...config,
-      headers: headersWithAuth,
-    });
-  };
-
-  const tryRefreshAndRetry = async () => {
-    if (hasRetried) {
-      throw formatApiError(new Error('Unauthorized'));
-    }
-    hasRetried = true;
-
-    const refreshToken = authService.getRefreshToken();
-    if (!refreshToken) {
-      authService.logout();
-      window.location.href = '/login';
-      throw formatApiError(new Error('No refresh token'));
-    }
-
-    try {
-      const refreshResponse = await authService.refreshToken(refreshToken);
-      return performRequest(refreshResponse.token);
-    } catch (refreshError) {
-      authService.logout();
-      window.location.href = '/login';
-      throw formatApiError(refreshError);
-    }
-  };
 
   try {
     const token = authService.getToken();
-    const response = await performRequest(token);
+    const response = await performRequest<T>(config, token);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error) && error.response?.status === 401) {
-      const retryResponse = await tryRefreshAndRetry();
+    // Handle 401 Unauthorized - attempt token refresh
+    if (axios.isAxiosError(error) && error.response?.status === 401 && !hasRetried) {
+      hasRetried = true;
+      const retryResponse = await refreshAndRetry<T>(config);
       return retryResponse.data;
     }
 
     throw formatApiError(error);
   }
-};
+}
 
 /**
- * Helper methods для різних HTTP методів
+ * Convenience methods for different HTTP verbs
+ * These wrap apiRequest with specific method configurations
  */
 export const api = {
   get: <T = unknown>(url: string, config?: AxiosRequestConfig) =>

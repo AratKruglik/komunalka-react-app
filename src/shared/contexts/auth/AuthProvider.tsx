@@ -1,14 +1,16 @@
-import {
-  createContext,
-  useReducer,
-  useEffect,
-  useCallback,
-  useRef,
-  type ReactNode,
-} from 'react';
+import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { authService } from '../../api';
 import type { AuthContextValue } from './types';
 import { authReducer, initialState } from './reducer';
+import {
+  scheduleTokenRefresh,
+  clearTokenRefreshTimeout,
+  refreshToken,
+  loginAction,
+  registerAction,
+  initializeAuth,
+  handleVisibilityChange,
+} from './utils';
 
 /**
  * Auth context - separated for better performance
@@ -19,6 +21,8 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
 /**
  * Authentication Provider Component
  * Manages authentication state, token refresh timers, and provides auth methods
+ *
+ * This component is now streamlined - all business logic is extracted into utility functions
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
@@ -26,237 +30,101 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isRefreshingRef = useRef(false);
 
   /**
-   * Schedule automatic token refresh before expiration
-   * Refreshes 2 minutes before token expires
+   * Logout user and clear all data
+   * Stable reference - no dependencies needed
    */
-  const scheduleTokenRefresh = useCallback((expiresAt: string) => {
-    // Clear any existing timeout
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-      refreshTimeoutRef.current = null;
-    }
-
-    const expirationTime = new Date(expiresAt).getTime();
-    const currentTime = Date.now();
-    const timeUntilExpiry = expirationTime - currentTime;
-
-    // Refresh 2 minutes (120000ms) before expiration
-    const refreshBuffer = 2 * 60 * 1000;
-    const timeUntilRefresh = timeUntilExpiry - refreshBuffer;
-
-    // Only schedule if we have time before expiry
-    if (timeUntilRefresh > 0) {
-      refreshTimeoutRef.current = setTimeout(async () => {
-        await refreshTokenManually();
-      }, timeUntilRefresh);
-    } else if (timeUntilExpiry > 0) {
-      // Token expires soon, try to refresh immediately
-      refreshTokenManually();
-    } else {
-      // Token already expired
-      logout();
-    }
+  const logout = useCallback(() => {
+    clearTokenRefreshTimeout(refreshTimeoutRef);
+    authService.logout();
+    dispatch({ type: 'LOGOUT' });
   }, []);
 
   /**
-   * Refresh the authentication token
+   * Wrapper for refreshToken that captures refs, state, and callbacks
+   * Note: circular dependency with scheduleRefresh is resolved via ref pattern
    */
   const refreshTokenManually = useCallback(async () => {
-    // Prevent concurrent refresh requests
-    if (isRefreshingRef.current) {
-      return;
-    }
+    // We'll pass scheduleRefresh via the ref pattern in scheduleTokenRefresh
+    const scheduleRefreshFn = (expiresAt: string) => {
+      scheduleTokenRefresh(expiresAt, refreshTimeoutRef, refreshTokenManually, logout);
+    };
+    await refreshToken(isRefreshingRef, state.refreshToken, dispatch, scheduleRefreshFn, logout);
+  }, [state.refreshToken, logout]);
 
-    const currentRefreshToken = state.refreshToken || authService.getRefreshToken();
-
-    if (!currentRefreshToken) {
-      logout();
-      return;
-    }
-
-    try {
-      isRefreshingRef.current = true;
-      dispatch({ type: 'REFRESH_START' });
-
-      const response = await authService.refreshToken(currentRefreshToken);
-
-      dispatch({
-        type: 'REFRESH_SUCCESS',
-        payload: {
-          token: response.token,
-          refreshToken: response.refreshToken,
-          expiresAt: response.expiration,
-          user: response.user,
-        },
-      });
-
-      // Schedule next refresh
-      scheduleTokenRefresh(response.expiration);
-    } catch (error) {
-      dispatch({ type: 'REFRESH_ERROR' });
-      authService.logout();
-    } finally {
-      isRefreshingRef.current = false;
-    }
-  }, [state.refreshToken, scheduleTokenRefresh]);
+  /**
+   * Wrapper for scheduleTokenRefresh that captures refs and callbacks
+   */
+  const scheduleRefresh = useCallback(
+    (expiresAt: string) => {
+      scheduleTokenRefresh(expiresAt, refreshTimeoutRef, refreshTokenManually, logout);
+    },
+    [refreshTokenManually, logout]
+  );
 
   /**
    * Login user with email and password
    */
-  const login = useCallback(async (email: string, password: string, rememberMe = false) => {
-    try {
-      dispatch({ type: 'AUTH_START' });
-
-      const response = await authService.login({ email, password }, rememberMe);
-
-      // Update state
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: {
-          user: response.user || null,
-          token: response.token,
-          refreshToken: response.refreshToken,
-          expiresAt: response.expiration,
-        },
-      });
-
-      // Schedule token refresh
-      scheduleTokenRefresh(response.expiration);
-    } catch (error) {
-      const errorMessage = error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : 'Login failed';
-      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
-      throw error;
-    }
-  }, [scheduleTokenRefresh]);
+  const login = useCallback(
+    async (email: string, password: string, rememberMe = false) => {
+      await loginAction({ email, password, rememberMe }, dispatch, scheduleRefresh);
+    },
+    [scheduleRefresh]
+  );
 
   /**
    * Register new user
    */
-  const register = useCallback(async (data: {
-    username: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }, rememberMe = true) => {
-    try {
-      dispatch({ type: 'AUTH_START' });
-
-      const response = await authService.register(data, rememberMe);
-
-      // Update state
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: {
-          user: response.user || null,
-          token: response.token,
-          refreshToken: response.refreshToken,
-          expiresAt: response.expiration,
-        },
-      });
-
-      // Schedule token refresh
-      scheduleTokenRefresh(response.expiration);
-    } catch (error) {
-      const errorMessage = error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : 'Registration failed';
-      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
-      throw error;
-    }
-  }, [scheduleTokenRefresh]);
-
-  /**
-   * Logout user and clear all data
-   */
-  const logout = useCallback(() => {
-    // Clear refresh timeout
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-      refreshTimeoutRef.current = null;
-    }
-
-    authService.logout();
-
-    // Update state
-    dispatch({ type: 'LOGOUT' });
-  }, []);
+  const register = useCallback(
+    async (
+      data: {
+        username: string;
+        firstName: string;
+        lastName: string;
+        phoneNumber: string;
+        email: string;
+        password: string;
+        confirmPassword: string;
+      },
+      rememberMe = true
+    ) => {
+      await registerAction({ ...data, rememberMe }, dispatch, scheduleRefresh);
+    },
+    [scheduleRefresh]
+  );
 
   /**
    * Initialize auth state from storage on mount
    */
   useEffect(() => {
-    const initializeAuth = async () => {
-      const token = authService.getToken();
-      const refreshToken = authService.getRefreshToken();
-      const expiresAt = authService.getExpiresAt();
-
-      if (token && refreshToken && expiresAt) {
-        const expirationTime = new Date(expiresAt).getTime();
-        const currentTime = Date.now();
-
-        // Check if token is still valid
-        if (expirationTime > currentTime) {
-          // Token is valid, restore session
-          dispatch({
-            type: 'SET_TOKENS',
-            payload: { token, refreshToken, expiresAt },
-          });
-
-          // Schedule refresh
-          scheduleTokenRefresh(expiresAt);
-        } else {
-          // Token expired, try to refresh
-          await refreshTokenManually();
-        }
-      } else {
-        // No valid session
-        dispatch({ type: 'LOGOUT' });
-      }
-    };
-
-    initializeAuth();
-  }, [scheduleTokenRefresh, refreshTokenManually]);
+    initializeAuth(dispatch, scheduleRefresh, refreshTokenManually);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   /**
    * Handle visibility change (tab sleep/wake)
    * Check token validity when tab becomes visible
    */
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && state.isAuthenticated && state.expiresAt) {
-        const expirationTime = new Date(state.expiresAt).getTime();
-        const currentTime = Date.now();
-        const timeUntilExpiry = expirationTime - currentTime;
-
-        // If token expires in less than 5 minutes, refresh immediately
-        if (timeUntilExpiry < 5 * 60 * 1000 && timeUntilExpiry > 0) {
-          refreshTokenManually();
-        } else if (timeUntilExpiry <= 0) {
-          logout();
-        } else {
-          // Reschedule refresh based on current time
-          scheduleTokenRefresh(state.expiresAt);
-        }
-      }
+    const visibilityChangeHandler = () => {
+      handleVisibilityChange(
+        state.isAuthenticated,
+        state.expiresAt,
+        refreshTokenManually,
+        logout,
+        scheduleRefresh
+      );
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [state.isAuthenticated, state.expiresAt, refreshTokenManually, logout, scheduleTokenRefresh]);
+    document.addEventListener('visibilitychange', visibilityChangeHandler);
+    return () => document.removeEventListener('visibilitychange', visibilityChangeHandler);
+  }, [state.isAuthenticated, state.expiresAt, refreshTokenManually, logout, scheduleRefresh]);
 
   /**
    * Cleanup on unmount
    */
   useEffect(() => {
     return () => {
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
-      }
+      clearTokenRefreshTimeout(refreshTimeoutRef);
     };
   }, []);
 
