@@ -1,3 +1,4 @@
+import { AuthActionType } from '../actionTypes';
 import { authService } from '../../../api';
 import type { AuthDispatch, ScheduleTokenRefreshFn, RefreshTokenManuallyFn } from './types';
 
@@ -26,7 +27,7 @@ export async function initializeAuth(
     if (expirationTime > currentTime) {
       // Token is valid, restore session
       dispatch({
-        type: 'SET_TOKENS',
+        type: AuthActionType.SET_TOKENS,
         payload: { token, refreshToken, expiresAt },
       });
 
@@ -38,6 +39,6 @@ export async function initializeAuth(
     }
   } else {
     // No valid session
-    dispatch({ type: 'LOGOUT' });
+    dispatch({ type: AuthActionType.LOGOUT });
   }
 }

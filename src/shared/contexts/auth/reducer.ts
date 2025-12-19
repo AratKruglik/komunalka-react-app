@@ -1,3 +1,4 @@
+import { AuthActionType } from './actionTypes';
 import type { AuthState, AuthAction } from './types';
 
 /**
@@ -19,14 +20,14 @@ export const initialState: AuthState = {
  */
 export function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
-    case 'AUTH_START':
+    case AuthActionType.AUTH_START:
       return {
         ...state,
         isLoading: true,
         error: null,
       };
 
-    case 'AUTH_SUCCESS':
+    case AuthActionType.AUTH_SUCCESS:
       return {
         ...state,
         user: action.payload.user,
@@ -38,7 +39,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         error: null,
       };
 
-    case 'AUTH_ERROR':
+    case AuthActionType.AUTH_ERROR:
       return {
         ...state,
         user: null,
@@ -50,7 +51,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         error: action.payload,
       };
 
-    case 'SET_TOKENS':
+    case AuthActionType.SET_TOKENS:
       return {
         ...state,
         token: action.payload.token,
@@ -60,19 +61,19 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         isLoading: false,
       };
 
-    case 'LOGOUT':
+    case AuthActionType.LOGOUT:
       return {
         ...initialState,
         isLoading: false,
       };
 
-    case 'REFRESH_START':
+    case AuthActionType.REFRESH_START:
       return {
         ...state,
         error: null,
       };
 
-    case 'REFRESH_SUCCESS':
+    case AuthActionType.REFRESH_SUCCESS:
       return {
         ...state,
         token: action.payload.token,
@@ -84,7 +85,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         error: null,
       };
 
-    case 'REFRESH_ERROR':
+    case AuthActionType.REFRESH_ERROR:
       return {
         ...initialState,
         isLoading: false,

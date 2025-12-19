@@ -1,3 +1,4 @@
+import { AuthActionType } from '../actionTypes';
 import { authService } from '../../../api';
 import type { AuthDispatch, IsRefreshingRef, ScheduleTokenRefreshFn, LogoutFn } from './types';
 
@@ -32,12 +33,12 @@ export async function refreshToken(
 
   try {
     isRefreshingRef.current = true;
-    dispatch({ type: 'REFRESH_START' });
+    dispatch({ type: AuthActionType.REFRESH_START });
 
     const response = await authService.refreshToken(refreshTokenValue);
 
     dispatch({
-      type: 'REFRESH_SUCCESS',
+      type: AuthActionType.REFRESH_SUCCESS,
       payload: {
         token: response.token,
         refreshToken: response.refreshToken,
@@ -49,7 +50,7 @@ export async function refreshToken(
     // Schedule next refresh
     scheduleTokenRefresh(response.expiration);
   } catch {
-    dispatch({ type: 'REFRESH_ERROR' });
+    dispatch({ type: AuthActionType.REFRESH_ERROR });
     authService.logout();
   } finally {
     isRefreshingRef.current = false;

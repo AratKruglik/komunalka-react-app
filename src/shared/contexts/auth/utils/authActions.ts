@@ -1,3 +1,4 @@
+import { AuthActionType } from '../actionTypes';
 import { authService } from '../../../api';
 import type { AuthDispatch, ScheduleTokenRefreshFn } from './types';
 
@@ -40,13 +41,13 @@ export async function loginAction(
   const { email, password, rememberMe = false } = params;
 
   try {
-    dispatch({ type: 'AUTH_START' });
+    dispatch({ type: AuthActionType.AUTH_START });
 
     const response = await authService.login({ email, password }, rememberMe);
 
     // Update state
     dispatch({
-      type: 'AUTH_SUCCESS',
+      type: AuthActionType.AUTH_SUCCESS,
       payload: {
         user: response.user || null,
         token: response.token,
@@ -62,7 +63,7 @@ export async function loginAction(
       error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
         : 'Login failed';
-    dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+    dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage });
     throw error;
   }
 }
@@ -83,13 +84,13 @@ export async function registerAction(
   const { rememberMe = true, ...registrationData } = params;
 
   try {
-    dispatch({ type: 'AUTH_START' });
+    dispatch({ type: AuthActionType.AUTH_START });
 
     const response = await authService.register(registrationData, rememberMe);
 
     // Update state
     dispatch({
-      type: 'AUTH_SUCCESS',
+      type: AuthActionType.AUTH_SUCCESS,
       payload: {
         user: response.user || null,
         token: response.token,
@@ -105,7 +106,7 @@ export async function registerAction(
       error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
         : 'Registration failed';
-    dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
+    dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage });
     throw error;
   }
 }

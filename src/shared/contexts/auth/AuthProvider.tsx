@@ -1,5 +1,6 @@
 import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { authService } from '../../api';
+import { AuthActionType } from './actionTypes';
 import type { AuthContextValue } from './types';
 import { authReducer, initialState } from './reducer';
 import {
@@ -37,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     clearTokenRefreshTimeout(refreshTimeoutRef);
     authService.logout();
-    dispatch({ type: 'LOGOUT' });
+    dispatch({ type: AuthActionType.LOGOUT });
   }, []);
 
   /**
