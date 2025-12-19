@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { AppleIcon, FacebookIcon, GoogleIcon } from '../../../shared/components/ui'
+import { ROUTES } from '../../../shared/constants'
 import { useAuth } from '../../../shared/hooks'
 import * as React from "react";
 
@@ -45,7 +46,7 @@ export function LoginForm() {
       await login(email, password, rememberMe)
 
       // Перенаправлення на головну сторінку
-      navigate('/')
+      navigate(ROUTES.HOME)
     } catch (error: unknown) {
 
       // Обробка помилок
@@ -115,7 +116,7 @@ export function LoginForm() {
               Пароль
             </label>
             <a
-              href="/forgot-password"
+              href={ROUTES.FORGOT_PASSWORD}
               className="text-xs text-[#DAA520] transition-colors hover:text-[#B8860B]"
             >
               Забули пароль?

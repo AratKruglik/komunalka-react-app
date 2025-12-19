@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_CONFIG } from './config';
+import { API_ENDPOINTS } from '../constants';
 
 /**
  * Типи для аутентифікації
@@ -93,12 +94,8 @@ function setCookie(
 function getCookie(name: string): string | null {
   const encodedName = encodeURIComponent(name) + '=';
   const parts = document.cookie.split('; ');
-  for (const part of parts) {
-    if (part.startsWith(encodedName)) {
-      return decodeURIComponent(part.substring(encodedName.length));
-    }
-  }
-  return null;
+  const cookie = parts.find(part => part.startsWith(encodedName));
+  return cookie ? decodeURIComponent(cookie.substring(encodedName.length)) : null;
 }
 
 function deleteCookie(name: string) {
@@ -107,18 +104,17 @@ function deleteCookie(name: string) {
 
 function saveAuthCookies(response: AuthResponse, rememberMe: boolean) {
   const expiresAtDate = new Date(response.expiration);
+  const cookieOptions = rememberMe ? { expires: expiresAtDate } : {};
 
   if (rememberMe) {
     setCookie('remember_me', 'true', { maxAge: 60 * 60 * 24 * 30 });
-    setCookie('jwt_token', response.token, { expires: expiresAtDate });
-    setCookie('refresh_token', response.refreshToken, { expires: expiresAtDate });
-    setCookie('expires_at', response.expiration, { expires: expiresAtDate });
   } else {
     deleteCookie('remember_me');
-    setCookie('jwt_token', response.token);
-    setCookie('refresh_token', response.refreshToken);
-    setCookie('expires_at', response.expiration);
   }
+
+  setCookie('jwt_token', response.token, cookieOptions);
+  setCookie('refresh_token', response.refreshToken, cookieOptions);
+  setCookie('expires_at', response.expiration, cookieOptions);
 }
 
 function clearAuthCookies() {
@@ -133,7 +129,7 @@ export const authService = {
    * Реєстрація нового користувача
    */
   register: async (data: RegisterRequest, rememberMe = true): Promise<AuthResponse> => {
-    const response = await authHttp.post<AuthResponse>('/auth/register', data);
+    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
     saveAuthCookies(response.data, rememberMe);
     return response.data;
   },
@@ -142,7 +138,7 @@ export const authService = {
    * Вхід користувача
    */
   login: async (data: LoginRequest, rememberMe = false): Promise<AuthResponse> => {
-    const response = await authHttp.post<AuthResponse>('/auth/login', data);
+    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, data);
     saveAuthCookies(response.data, rememberMe);
     return response.data;
   },
@@ -158,7 +154,7 @@ export const authService = {
    * Оновлення JWT токена
    */
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
-    const response = await authHttp.post<AuthResponse>('/auth/refresh-token', {
+    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.REFRESH, {
       refreshToken,
     });
 
@@ -172,12 +168,12 @@ export const authService = {
    * Відкликання refresh токена
    */
   revokeToken: (refreshToken: string) =>
-    authHttp.post('/auth/revoke-token', { refreshToken }),
+    authHttp.post(API_ENDPOINTS.AUTH.REVOKE, { refreshToken }),
 
   /**
    * Валідація JWT токена
    */
-  validateToken: () => authHttp.get<ValidateTokenResponse>('/auth/validate-token').then(r => r.data),
+  validateToken: () => authHttp.get<ValidateTokenResponse>(API_ENDPOINTS.AUTH.VALIDATE).then(r => r.data),
 
   /**
    * Перевірка, чи користувач залогінений

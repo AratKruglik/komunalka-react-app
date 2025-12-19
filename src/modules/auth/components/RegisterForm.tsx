@@ -6,6 +6,7 @@ import {
   getPasswordStrength,
   defaultPasswordRequirements,
 } from '../../../shared/components/ui'
+import { ROUTES } from '../../../shared/constants'
 import { useAuth } from '../../../shared/hooks'
 
 interface RegisterFormProps {
@@ -93,7 +94,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
       }, true) // Зберігаємо в localStorage за замовчуванням
 
       // Перенаправлення на головну сторінку
-      navigate('/')
+      navigate(ROUTES.HOME)
     } catch (error: unknown) {
       // Обробка помилок
       if (error && typeof error === 'object' && 'message' in error) {
@@ -342,7 +343,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
               <span className="text-sm leading-5 text-neutral-800 dark:text-slate-300">
                 Я погоджуюся з{' '}
                 <a
-                  href="/terms"
+                  href={ROUTES.TERMS}
                   className="text-primary hover:text-amber-700 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
                 >
                   умовами використання
@@ -365,7 +366,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
               <span className="text-sm leading-5 text-neutral-800 dark:text-slate-300">
                 Я погоджуюся з{' '}
                 <a
-                  href="/privacy"
+                  href={ROUTES.PRIVACY}
                   className="text-primary hover:text-amber-700 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
                 >
                   політикою конфіденційності
@@ -413,7 +414,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
           <p className="text-sm text-neutral-600 dark:text-slate-300">
             Вже маєте акаунт?{' '}
             <a
-              href="/login"
+              href={ROUTES.LOGIN}
               className="font-medium text-primary hover:text-amber-700 hover:underline dark:text-amber-300 dark:hover:text-amber-200"
             >
               Увійти

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router';
 import { ProtectedRoute } from './shared/components/ProtectedRoute';
 import { PublicRoute } from './shared/components/PublicRoute';
+import { ROUTES } from './shared/constants';
 import AddressesPage from './modules/addresses/pages/AddressesPage';
 import AddAddressPage from './modules/addresses/pages/AddAddressPage';
 import LoginPage from './modules/auth/pages/LoginPage';
@@ -25,22 +26,22 @@ export function App() {
         <Route element={<RootLayout />}>
           {/* Public routes - redirect to dashboard if authenticated */}
           <Route element={<PublicRoute />}>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path={ROUTES.LOGIN} element={<LoginPage />} />
+            <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
           </Route>
 
           {/* Protected routes - require authentication */}
           <Route element={<ProtectedRoute />}>
             <Route index element={<DashboardPage />} />
-            <Route path="/addresses" element={<AddressesPage />} />
-            <Route path="/addresses/new" element={<AddAddressPage />} />
-            <Route path="/meters" element={<AddressMetersPage />} />
-            <Route path="/meters/new" element={<AddMeterPage />} />
-            <Route path="/readings/new" element={<AddReadingsPage />} />
-            <Route path="/providers" element={<ProvidersPage />} />
-            <Route path="/providers/new" element={<AddProviderPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/logout" element={<LogoutPage />} />
+            <Route path={ROUTES.ADDRESSES} element={<AddressesPage />} />
+            <Route path={ROUTES.ADDRESSES_NEW} element={<AddAddressPage />} />
+            <Route path={ROUTES.METERS} element={<AddressMetersPage />} />
+            <Route path={ROUTES.METERS_NEW} element={<AddMeterPage />} />
+            <Route path={ROUTES.READINGS_NEW} element={<AddReadingsPage />} />
+            <Route path={ROUTES.PROVIDERS} element={<ProvidersPage />} />
+            <Route path={ROUTES.PROVIDERS_NEW} element={<AddProviderPage />} />
+            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+            <Route path={ROUTES.LOGOUT} element={<LogoutPage />} />
           </Route>
         </Route>
       </Routes>

@@ -12,6 +12,7 @@ export interface PasswordRequirement {
   test: (password: string) => boolean
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const defaultPasswordRequirements: PasswordRequirement[] = [
   { label: 'Мінімум 8 символів', test: (p) => p.length >= 8 },
   { label: 'Мінімум 1 велика літера', test: (p) => /[A-Z]/.test(p) },
@@ -28,6 +29,7 @@ const passwordStrengthStyles: Record<
   strong: { width: '100%', barClass: 'bg-emerald-500 dark:bg-emerald-400', textClass: 'text-emerald-600 dark:text-emerald-200', label: 'Надійний' },
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const getPasswordStrength = (
   password: string,
   requirements: PasswordRequirement[] = defaultPasswordRequirements,

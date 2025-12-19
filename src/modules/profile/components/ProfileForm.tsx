@@ -76,6 +76,7 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
       if (!previous.avatar) {
         return previous
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { avatar, ...rest } = previous
       return rest
     })

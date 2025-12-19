@@ -16,6 +16,7 @@ import {
  * Auth context - separated for better performance
  * Export for use in custom hooks
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 /**
@@ -31,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * Logout user and clear all data
-   * Stable reference - no dependencies needed
+   * Stable function - uses refs only
    */
   const logout = useCallback(() => {
     clearTokenRefreshTimeout(refreshTimeoutRef);
@@ -40,26 +41,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   /**
-   * Wrapper for refreshToken that captures refs, state, and callbacks
-   * Note: circular dependency with scheduleRefresh is resolved via ref pattern
+   * Schedule token refresh
+   * Stable function - uses refs for callbacks to avoid circular dependencies
    */
-  const refreshTokenManually = useCallback(async () => {
-    // We'll pass scheduleRefresh via the ref pattern in scheduleTokenRefresh
-    const scheduleRefreshFn = (expiresAt: string) => {
-      scheduleTokenRefresh(expiresAt, refreshTimeoutRef, refreshTokenManually, logout);
-    };
-    await refreshToken(isRefreshingRef, state.refreshToken, dispatch, scheduleRefreshFn, logout);
-  }, [state.refreshToken, logout]);
+  const scheduleRefresh = useCallback((expiresAt: string) => {
+    scheduleTokenRefresh(
+      expiresAt,
+      refreshTimeoutRef,
+      // Pass current callbacks via ref to avoid circular deps
+      () => refreshTokenManuallyRef.current?.() ?? Promise.resolve(),
+      logout
+    );
+  }, [logout]);
 
   /**
-   * Wrapper for scheduleTokenRefresh that captures refs and callbacks
+   * Manual token refresh
+   * Stored in ref to avoid circular dependencies with scheduleRefresh
    */
-  const scheduleRefresh = useCallback(
-    (expiresAt: string) => {
-      scheduleTokenRefresh(expiresAt, refreshTimeoutRef, refreshTokenManually, logout);
-    },
-    [refreshTokenManually, logout]
-  );
+  const refreshTokenManuallyRef = useRef<(() => Promise<void>) | null>(null);
+
+  const refreshTokenManually = useCallback(async () => {
+    await refreshToken(isRefreshingRef, state.refreshToken, dispatch, scheduleRefresh, logout);
+  }, [state.refreshToken, scheduleRefresh, logout]);
+
+  // Update ref when function changes
+  refreshTokenManuallyRef.current = refreshTokenManually;
 
   /**
    * Login user with email and password
@@ -96,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Initialize auth state from storage on mount
    */
   useEffect(() => {
-    initializeAuth(dispatch, scheduleRefresh, refreshTokenManually);
+    void initializeAuth(dispatch, scheduleRefresh, refreshTokenManually);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
