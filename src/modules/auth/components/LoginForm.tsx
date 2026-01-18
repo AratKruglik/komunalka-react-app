@@ -48,8 +48,6 @@ export function LoginForm() {
       // Перенаправлення на головну сторінку
       navigate(ROUTES.HOME)
     } catch (error: unknown) {
-
-      // Обробка помилок
       if (error && typeof error === 'object' && 'message' in error) {
         setErrors({
           general: (error as { message: string }).message || 'Помилка входу. Перевірте дані та спробуйте ще раз.'

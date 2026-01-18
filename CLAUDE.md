@@ -98,6 +98,40 @@ Add to `shared/` when:
 - React 19 with latest features (no legacy ReactDOM.render)
 - ESLint configured for React hooks and React Refresh
 
+## Styling Guidelines
+
+### Tailwind Variants (DRY Principle)
+
+When Tailwind classes are reused across multiple elements (3+ occurrences), extract them using `tailwind-variants`:
+
+```tsx
+import { tv } from 'tailwind-variants'
+
+// ✅ Good: Reusable styles with tv()
+const socialButton = tv({
+  base: [
+    'flex items-center justify-center gap-3',
+    'rounded-lg border border-neutral-200 bg-white',
+    'px-4 py-2.5 text-sm font-medium',
+    'transition-colors hover:bg-neutral-50',
+  ],
+})
+
+// Usage
+<button className={socialButton()}>Google</button>
+<button className={socialButton()}>Facebook</button>
+
+// ❌ Avoid: Duplicated long className strings
+<button className="flex items-center justify-center gap-3 rounded-lg border...">Google</button>
+<button className="flex items-center justify-center gap-3 rounded-lg border...">Facebook</button>
+```
+
+Benefits:
+- **Maintainability**: Change styles in one place
+- **Readability**: Array format allows grouping related classes
+- **Extensibility**: Easy to add `variants` and `compoundVariants` later
+- **Type Safety**: Use `VariantProps<typeof component>` for typed props
+
 ## Development Workflow
 
 **IMPORTANT: All frontend development tasks must be handled by the senior-frontend-engineer agent.**

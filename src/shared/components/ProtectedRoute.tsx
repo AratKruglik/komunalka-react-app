@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../hooks';
+import { ROUTES } from '../constants';
 
 /**
  * ProtectedRoute Component
@@ -25,7 +26,7 @@ export function ProtectedRoute() {
 
   // Redirect to login if not authenticated
   if (!state.isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   // Render child routes if authenticated

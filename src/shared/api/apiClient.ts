@@ -3,6 +3,7 @@ import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { API_CONFIG } from './config';
 import { authService } from './authService';
 import { formatApiError, withAuthHeader } from './utils';
+import { ROUTES } from '../constants';
 
 /**
  * Create axios instance with default configuration
@@ -44,7 +45,7 @@ async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResp
 
   if (!refreshToken) {
     authService.logout();
-    window.location.href = '/login';
+    window.location.href = ROUTES.LOGIN;
     throw formatApiError(new Error('No refresh token'));
   }
 
@@ -53,7 +54,7 @@ async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResp
     return performRequest<T>(config, refreshResponse.token);
   } catch (refreshError) {
     authService.logout();
-    window.location.href = '/login';
+    window.location.href = ROUTES.LOGIN;
     throw formatApiError(refreshError);
   }
 }

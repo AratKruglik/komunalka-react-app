@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
+import { tv } from 'tailwind-variants'
 import { Logo, Button, GoogleIcon, FacebookIcon, AppleIcon } from '../../../shared/components/ui'
 import {
   PasswordInput,
@@ -12,6 +13,17 @@ import { useAuth } from '../../../shared/hooks'
 interface RegisterFormProps {
   className?: string
 }
+
+const socialButton = tv({
+  base: [
+    'flex w-full flex-1 items-center justify-center gap-3',
+    'rounded-lg border border-neutral-200 bg-white',
+    'px-4 py-2.5 text-sm font-medium text-neutral-900',
+    'transition-colors hover:bg-neutral-50',
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary',
+    'dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
+  ],
+})
 
 export function RegisterForm({ className = '' }: RegisterFormProps) {
   const navigate = useNavigate()
@@ -81,8 +93,6 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
     }
 
     try {
-      // Використовуємо метод register з AuthContext
-      // rememberMe = true за замовчуванням для реєстрації (зберігається в localStorage)
       await register({
         username: formData.email, // Use email as username for now
         firstName: formData.firstName,
@@ -96,7 +106,6 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
       // Перенаправлення на головну сторінку
       navigate(ROUTES.HOME)
     } catch (error: unknown) {
-      // Обробка помилок
       if (error && typeof error === 'object' && 'message' in error) {
         setErrors({
           general: (error as { message: string }).message || 'Помилка реєстрації. Спробуйте ще раз.'
@@ -133,7 +142,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
       <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
-          className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+          className={socialButton()}
           disabled={isLoading}
         >
           <GoogleIcon className="h-4 w-4" />
@@ -142,7 +151,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
         <button
           type="button"
-          className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+          className={socialButton()}
           disabled={isLoading}
         >
           <FacebookIcon className="h-4 w-4" />
@@ -151,7 +160,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
 
         <button
           type="button"
-          className="flex w-full flex-1 items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-900 transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+          className={socialButton()}
           disabled={isLoading}
         >
           <AppleIcon className="h-5 w-5" />
