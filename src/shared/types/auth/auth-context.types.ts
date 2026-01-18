@@ -1,0 +1,20 @@
+import type { AuthState } from './auth-state.types';
+
+/**
+ * Authentication context value interface
+ */
+export interface AuthContextValue {
+  state: AuthState;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  logout: () => void;
+  register: (data: {
+    username: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }, rememberMe?: boolean) => Promise<void>;
+  refreshTokenManually: () => Promise<void>;
+}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { AppleIcon, FacebookIcon, GoogleIcon } from '../../../shared/components/ui'
+import { ROUTES } from '../../../shared/constants'
 import { useAuth } from '../../../shared/hooks'
 import * as React from "react";
 
@@ -44,14 +45,9 @@ export function LoginForm() {
       // Використовуємо метод login з AuthContext
       await login(email, password, rememberMe)
 
-      console.log('Login successful')
-
       // Перенаправлення на головну сторінку
-      navigate('/')
+      navigate(ROUTES.HOME)
     } catch (error: unknown) {
-      console.error('Login error:', error)
-
-      // Обробка помилок
       if (error && typeof error === 'object' && 'message' in error) {
         setErrors({
           general: (error as { message: string }).message || 'Помилка входу. Перевірте дані та спробуйте ще раз.'
@@ -118,7 +114,7 @@ export function LoginForm() {
               Пароль
             </label>
             <a
-              href="/forgot-password"
+              href={ROUTES.FORGOT_PASSWORD}
               className="text-xs text-[#DAA520] transition-colors hover:text-[#B8860B]"
             >
               Забули пароль?

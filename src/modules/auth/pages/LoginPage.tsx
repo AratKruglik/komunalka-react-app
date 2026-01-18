@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { GuestLayout } from '../../../shared/components/layout/GuestLayout'
 import { Logo } from '../../../shared/components/ui'
+import { ROUTES } from '../../../shared/constants'
 import { LoginForm } from '../components/LoginForm'
 
 export default function LoginPage() {
@@ -24,7 +25,7 @@ export default function LoginPage() {
               Вхід
             </button>
             <Link
-              to="/register"
+              to={ROUTES.REGISTER}
               className="flex-1 border-b-2 border-transparent px-4 py-3 text-center text-base font-medium text-gray-400 transition-colors hover:text-gray-600 dark:text-slate-400 dark:hover:text-slate-200"
             >
               Реєстрація

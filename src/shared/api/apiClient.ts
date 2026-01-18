@@ -1,16 +1,13 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-
-/**
- * API Configuration from environment variables
- */
-const API_CONFIG = {
-  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api/${import.meta.env.VITE_API_VERSION}`,
-  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '10000', 10),
-};
+import { API_CONFIG } from './config';
+import { authService } from './authService';
+import { formatApiError, withAuthHeader } from './utils';
+import { ROUTES } from '../constants';
 
 /**
  * Create axios instance with default configuration
+ * This is a singleton - created once and reused
  */
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_CONFIG.baseURL,
@@ -21,102 +18,77 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 /**
- * Request interceptor - добавляє JWT токен до кожного запиту
+ * Perform API request with automatic token injection and 401 handling
+ * Attempts to refresh token on 401 and retries once
+ *
+ * @param config - Axios request configuration
+ * @returns Response data
+ * @throws Formatted API error
  */
-apiClient.interceptors.request.use(
-  (config) => {
-    // Шукаємо токен в обох сховищах
-    const token = localStorage.getItem('jwt_token') || sessionStorage.getItem('jwt_token');
-
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+async function performRequest<T>(config: AxiosRequestConfig, token?: string | null): Promise<AxiosResponse<T>> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const headersWithAuth = withAuthHeader(config.headers as any, token);
+  return apiClient<T>({
+    ...config,
+    headers: headersWithAuth,
+  });
+}
 
 /**
- * Response interceptor - обробляє помилки авторизації
+ * Attempt to refresh token and retry request
+ *
+ * @param config - Original request configuration
+ * @throws Error if refresh fails or no refresh token available
  */
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
-  async (error) => {
-    const originalRequest = error.config;
+async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  const refreshToken = authService.getRefreshToken();
 
-    // Якщо отримали 401 помилку і це не повторний запит
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Спроба оновити токен
-        const refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
-
-        if (refreshToken) {
-          const response = await axios.post(
-            `${API_CONFIG.baseURL}/auth/refresh-token`,
-            { refreshToken }
-          );
-
-          const { token, refreshToken: newRefreshToken, expiration } = response.data;
-
-          // Зберігаємо новий токен у те ж сховище, де був старий
-          const storage = localStorage.getItem('jwt_token') ? localStorage : sessionStorage;
-          storage.setItem('jwt_token', token);
-          storage.setItem('refresh_token', newRefreshToken);
-          storage.setItem('expires_at', expiration);
-
-          // Повторити оригінальний запит з новим токеном
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // Якщо оновлення токена не вдалося, очистити токени і перенаправити на логін
-        localStorage.removeItem('jwt_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('expires_at');
-        localStorage.removeItem('remember_me');
-        sessionStorage.removeItem('jwt_token');
-        sessionStorage.removeItem('refresh_token');
-        sessionStorage.removeItem('expires_at');
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
+  if (!refreshToken) {
+    authService.logout();
+    window.location.href = ROUTES.LOGIN;
+    throw formatApiError(new Error('No refresh token'));
   }
-);
+
+  try {
+    const refreshResponse = await authService.refreshToken(refreshToken);
+    return performRequest<T>(config, refreshResponse.token);
+  } catch (refreshError) {
+    authService.logout();
+    window.location.href = ROUTES.LOGIN;
+    throw formatApiError(refreshError);
+  }
+}
 
 /**
  * Generic API request wrapper
+ * Adds Authorization header from authService and retries once on 401 with refresh flow
+ *
+ * @param config - Axios request configuration
+ * @returns Promise with response data
+ * @throws Formatted error object
  */
-export const apiRequest = async <T = unknown>(
-  config: AxiosRequestConfig
-): Promise<T> => {
+export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promise<T> {
+  let hasRetried = false;
+
   try {
-    const response: AxiosResponse<T> = await apiClient(config);
+    const token = authService.getToken();
+    const response = await performRequest<T>(config, token);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      // Обробка специфічних помилок API
-      throw {
-        message: error.response?.data?.message || error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      };
+    // Handle 401 Unauthorized - attempt token refresh
+    if (axios.isAxiosError(error) && error.response?.status === 401 && !hasRetried) {
+      hasRetried = true;
+      const retryResponse = await refreshAndRetry<T>(config);
+      return retryResponse.data;
     }
-    throw error;
+
+    throw formatApiError(error);
   }
-};
+}
 
 /**
- * Helper methods для різних HTTP методів
+ * Convenience methods for different HTTP verbs
+ * These wrap apiRequest with specific method configurations
  */
 export const api = {
   get: <T = unknown>(url: string, config?: AxiosRequestConfig) =>
