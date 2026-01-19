@@ -8,6 +8,8 @@
   --color-primary-dark: #FFC700;
   --color-primary-light: #FFE44D;
   --color-primary-bg: #FFF0A0;
+  --color-primary-active: #FFB700;
+  --color-primary-stroke: #FFA500;
 
   --color-secondary: #8b5cf6;
   --color-secondary-dark: #7c3aed;
@@ -34,7 +36,15 @@
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
+  --color-error-dark: #D92D20;
   --color-info: #3b82f6;
+
+  /* Link Colors (goldenrod variants) */
+  --color-link: #DAA520;
+  --color-link-hover: #B8860B;
+
+  /* Badge Colors */
+  --color-badge-danger: #FF4D4F;
 
   /* Background Colors */
   --color-bg-primary: #ffffff;
@@ -46,6 +56,7 @@
   --color-text-secondary: #6b7280;
   --color-text-tertiary: #9ca3af;
   --color-text-dark: #333333;
+  --color-text-placeholder: #adaebc;
 
   /* Border Colors */
   --color-border-primary: #e5e7eb;

@@ -12,24 +12,24 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 
 const variantTokens: Record<AlertVariant, { accent: string; background: string; border: string }> = {
   info: {
-    accent: '#3b82f6',
-    background: 'rgba(59, 130, 246, 0.12)',
-    border: 'rgba(59, 130, 246, 0.3)',
+    accent: 'var(--color-info)',
+    background: 'color-mix(in srgb, var(--color-info) 12%, transparent)',
+    border: 'color-mix(in srgb, var(--color-info) 30%, transparent)',
   },
   success: {
-    accent: '#10b981',
-    background: 'rgba(16, 185, 129, 0.12)',
-    border: 'rgba(16, 185, 129, 0.3)',
+    accent: 'var(--color-success)',
+    background: 'color-mix(in srgb, var(--color-success) 12%, transparent)',
+    border: 'color-mix(in srgb, var(--color-success) 30%, transparent)',
   },
   warning: {
-    accent: '#f59e0b',
-    background: 'rgba(245, 158, 11, 0.12)',
-    border: 'rgba(245, 158, 11, 0.3)',
+    accent: 'var(--color-warning)',
+    background: 'color-mix(in srgb, var(--color-warning) 12%, transparent)',
+    border: 'color-mix(in srgb, var(--color-warning) 30%, transparent)',
   },
   danger: {
-    accent: '#ef4444',
-    background: 'rgba(239, 68, 68, 0.12)',
-    border: 'rgba(239, 68, 68, 0.3)',
+    accent: 'var(--color-error)',
+    background: 'color-mix(in srgb, var(--color-error) 12%, transparent)',
+    border: 'color-mix(in srgb, var(--color-error) 30%, transparent)',
   },
 }
 

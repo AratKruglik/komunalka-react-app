@@ -1,7 +1,7 @@
 import { Plus, Home, Receipt } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Button } from '../../../shared/components/ui'
+import { Button, card } from '../../../shared/components/ui'
 
 export function QuickActions() {
   const navigate = useNavigate()
@@ -37,7 +37,7 @@ export function QuickActions() {
   ]
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-5 lg:p-6">
+    <section className={card()}>
       <header className="mb-3 sm:mb-4">
         <h2 className="text-base font-semibold leading-6 text-neutral-900 dark:text-slate-50 sm:text-lg sm:leading-7 lg:text-xl">
           Швидкі дії

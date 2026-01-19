@@ -5,7 +5,7 @@ import {
   getServiceIcon,
 } from '../../../shared/constants/services'
 import type { MeterType } from '../../../shared/constants/meterTypes'
-import { Button } from '../../../shared/components/ui'
+import { Button, card, iconContainer } from '../../../shared/components/ui'
 import type { PaymentReminderViewModel } from '../../../shared/viewModels'
 
 interface PaymentRemindersProps {
@@ -66,7 +66,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
   }
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-5 lg:p-6">
+    <section className={card()}>
       {/* Header with responsive layout */}
       <header className="mb-4 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-base font-semibold leading-6 text-neutral-900 dark:text-slate-50 sm:text-lg sm:leading-7 lg:text-xl">
@@ -91,7 +91,7 @@ export function PaymentReminders({ reminders }: PaymentRemindersProps) {
             >
               <div className="flex items-start gap-3">
                 <div
-                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${styles.iconBg} dark:bg-slate-700`}
+                  className={`${iconContainer({ size: 'lg' })} ${styles.iconBg} dark:bg-slate-700`}
                 >
                   <ServiceIcon className={`h-5 w-5 ${styles.iconColor} dark:text-slate-100`} />
                 </div>

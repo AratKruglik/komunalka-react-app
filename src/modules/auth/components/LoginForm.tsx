@@ -1,10 +1,20 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { tv } from 'tailwind-variants'
 import { AppleIcon, FacebookIcon, GoogleIcon } from '../../../shared/components/ui'
 import { ROUTES } from '../../../shared/constants'
 import { useAuth } from '../../../shared/hooks'
 import * as React from "react";
+
+const socialButton = tv({
+  base: [
+    'flex items-center justify-center',
+    'rounded-md border border-gray-300 bg-white',
+    'py-2.5 transition-colors hover:bg-gray-50',
+    'dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700',
+  ],
+})
 
 export function LoginForm() {
   const navigate = useNavigate()
@@ -91,7 +101,7 @@ export function LoginForm() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-4 text-base text-[#333333] placeholder:text-[#adaebc] transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
+              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-4 text-base text-text-dark placeholder:text-text-placeholder transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
               placeholder="ваша@пошта.com"
               autoComplete="email"
               disabled={isLoading}
@@ -115,7 +125,7 @@ export function LoginForm() {
             </label>
             <a
               href={ROUTES.FORGOT_PASSWORD}
-              className="text-xs text-[#DAA520] transition-colors hover:text-[#B8860B]"
+              className="text-xs text-link transition-colors hover:text-link-hover"
             >
               Забули пароль?
             </a>
@@ -129,7 +139,7 @@ export function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-12 text-base text-[#333333] placeholder:text-[#adaebc] transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
+              className="w-full rounded-md border-[0.5px] border-gray-300 bg-white py-2.5 pl-11 pr-12 text-base text-text-dark placeholder:text-text-placeholder transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-amber-300 dark:focus:ring-amber-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500"
               placeholder="••••••••"
               autoComplete="current-password"
               disabled={isLoading}
@@ -177,7 +187,7 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-md bg-primary px-4 py-2.5 text-base font-medium text-[#333333] transition-colors hover:bg-primary-dark active:bg-[#FFB700] disabled:cursor-not-allowed disabled:bg-gray-300"
+          className="w-full rounded-md bg-primary px-4 py-2.5 text-base font-medium text-text-dark transition-colors hover:bg-primary-dark active:bg-primary-active disabled:cursor-not-allowed disabled:bg-gray-300"
         >
           {isLoading ? 'Вхід...' : 'Увійти'}
         </button>
@@ -199,7 +209,7 @@ export function LoginForm() {
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <button
           type="button"
-          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+          className={socialButton()}
           disabled={isLoading}
           aria-label="Увійти через Google"
         >
@@ -208,7 +218,7 @@ export function LoginForm() {
 
         <button
           type="button"
-          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+          className={socialButton()}
           disabled={isLoading}
           aria-label="Увійти через Facebook"
         >
@@ -217,7 +227,7 @@ export function LoginForm() {
 
         <button
           type="button"
-          className="flex items-center justify-center rounded-md border border-gray-300 bg-white py-2.5 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+          className={socialButton()}
           disabled={isLoading}
           aria-label="Увійти через Apple"
         >

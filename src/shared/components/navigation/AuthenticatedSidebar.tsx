@@ -14,7 +14,7 @@ import {
   User,
   X,
 } from 'lucide-react'
-import { Logo } from '../ui'
+import { Logo, iconContainer } from '../ui'
 import type { LucideIcon } from 'lucide-react'
 
 export interface SidebarItem {
@@ -194,7 +194,7 @@ function SidebarNavLink({
               <div
                 className={`flex h-10 items-center gap-2.5 px-3 text-sm transition-colors sm:h-11 sm:gap-3 sm:px-4 sm:text-base lg:h-12 ${
                   isActive
-                    ? 'bg-[#FFF0A0] font-medium text-[#333333] dark:bg-amber-300 dark:text-slate-900'
+                    ? 'bg-primary-bg font-medium text-text-dark dark:bg-amber-300 dark:text-slate-900'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:active:bg-slate-700'
                 }`}
               >
@@ -205,7 +205,7 @@ function SidebarNavLink({
                   className={`ml-auto inline-flex flex-shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold sm:px-2 sm:text-xs ${
                     item.badgeTone === 'info'
                       ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100'
-                      : 'bg-[#FFF0A0] text-[#333333] dark:bg-amber-200 dark:text-slate-900'
+                      : 'bg-primary-bg text-text-dark dark:bg-amber-200 dark:text-slate-900'
                   }`}
                 >
               {item.badge}
@@ -235,7 +235,7 @@ function MobileUserSection({
       {/* User Info Section */}
       <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         {/* Avatar or initials */}
-        <div className="grid h-10 w-10 flex-shrink-0 place-items-center overflow-hidden rounded-full bg-gray-200 text-sm font-semibold text-gray-900 dark:bg-slate-700 dark:text-slate-50 sm:h-11 sm:w-11">
+        <div className={`${iconContainer({ size: 'md' })} overflow-hidden bg-gray-200 text-sm font-semibold text-gray-900 dark:bg-slate-700 dark:text-slate-50`}>
           {user.avatarUrl ? (
             <img
               src={user.avatarUrl}
@@ -275,9 +275,9 @@ function MobileUserSection({
                 <div
                   className={`flex h-10 items-center gap-2.5 px-3 text-sm transition-colors sm:h-11 sm:gap-3 sm:px-4 sm:text-base ${
                     isActive && !isDanger
-                      ? 'bg-[#FFF0A0] font-medium text-[#333333] dark:bg-amber-300 dark:text-slate-900'
+                      ? 'bg-primary-bg font-medium text-text-dark dark:bg-amber-300 dark:text-slate-900'
                       : isDanger
-                        ? 'text-[#D92D20] hover:bg-red-50 active:bg-red-100 dark:text-red-300 dark:hover:bg-red-950/40 dark:active:bg-red-950/50'
+                        ? 'text-error-dark hover:bg-red-50 active:bg-red-100 dark:text-red-300 dark:hover:bg-red-950/40 dark:active:bg-red-950/50'
                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:active:bg-slate-700'
                   }`}
                 >

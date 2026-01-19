@@ -1,4 +1,4 @@
-import { Button } from '../../../shared/components/ui'
+import { Button, card, iconContainer } from '../../../shared/components/ui'
 import type { Reading } from '../types'
 
 interface RecentReadingsTableProps {
@@ -16,7 +16,7 @@ export function RecentReadingsTable({ readings }: RecentReadingsTableProps) {
   }
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-5 lg:p-6">
+    <section className={card()}>
       {/* Header with responsive layout */}
       <header className="mb-4 flex flex-col gap-2 sm:mb-5 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-base font-semibold leading-6 text-neutral-900 dark:text-slate-50 sm:text-lg sm:leading-7 lg:text-xl">
@@ -52,7 +52,7 @@ export function RecentReadingsTable({ readings }: RecentReadingsTableProps) {
               {/* Service name and icon */}
               <div className="mb-3 flex items-center gap-3">
                 <span
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${reading.serviceIconBg}`}
+                  className={`${iconContainer({ size: 'md' })} ${reading.serviceIconBg}`}
                 >
                   <Icon className={`h-4 w-4 ${reading.serviceIconColor}`} />
                 </span>
@@ -129,7 +129,7 @@ export function RecentReadingsTable({ readings }: RecentReadingsTableProps) {
                   <td className="py-4 pr-4">
                     <div className="flex items-center gap-3">
                       <span
-                        className={`grid h-10 w-10 place-items-center rounded-full ${reading.serviceIconBg}`}
+                        className={`${iconContainer({ size: 'md' })} ${reading.serviceIconBg}`}
                       >
                         <Icon className={`h-4 w-4 ${reading.serviceIconColor}`} />
                       </span>

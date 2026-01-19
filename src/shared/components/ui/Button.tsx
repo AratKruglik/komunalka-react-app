@@ -69,7 +69,7 @@ const button = tv({
       variant: 'outline',
       tone: 'primary',
       className:
-        'border-gray-300 text-[#333333] hover:bg-gray-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800',
+        'border-gray-300 text-text-dark hover:bg-gray-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800',
     },
     {
       variant: 'outline',

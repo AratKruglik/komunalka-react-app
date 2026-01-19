@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Bell, ChevronDown, Menu } from 'lucide-react'
+import { iconContainer } from '../ui'
 import { ThemeToggle } from './ThemeToggle'
 
 export interface TopbarUser {
@@ -66,7 +67,7 @@ export function AuthenticatedTopbar({
           >
             <Bell className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.6} />
             {notificationsCount > 0 ? (
-              <span className="absolute right-0 top-0 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[#FF4D4F] px-1 text-[10px] font-semibold leading-none text-white sm:right-0.5 sm:top-0.5">
+              <span className="absolute right-0 top-0 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-badge-danger px-1 text-[10px] font-semibold leading-none text-white sm:right-0.5 sm:top-0.5">
                 {notificationsCount > 9 ? '9+' : notificationsCount}
               </span>
             ) : null}
@@ -143,12 +144,12 @@ function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
         aria-expanded={open}
         className={`${
           isCompact
-            ? 'grid h-10 w-10 place-items-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm hover:shadow dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
+            ? `${iconContainer({ size: 'md' })} border border-gray-200 bg-white text-gray-700 shadow-sm hover:shadow dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100`
             : 'inline-flex items-center gap-3 rounded-full bg-white px-3 py-1.5 text-left shadow-sm transition-colors hover:shadow-md dark:bg-slate-900 dark:text-slate-100'
         } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary`}
       >
         <span
-          className={`grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-gray-200 text-xs font-semibold text-gray-900 dark:bg-slate-700 dark:text-slate-50 ${
+          className={`${iconContainer({ size: 'sm' })} overflow-hidden bg-gray-200 text-xs font-semibold text-gray-900 dark:bg-slate-700 dark:text-slate-50 ${
             isCompact ? 'h-9 w-9' : ''
           }`}
         >

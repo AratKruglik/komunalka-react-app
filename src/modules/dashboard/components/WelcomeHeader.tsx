@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState, type ChangeEvent } from 'react'
 import { Plus } from 'lucide-react'
-import { Button, Label, Select } from '../../../shared/components/ui'
+import { Button, Label, Select, card } from '../../../shared/components/ui'
 import type { DashboardAddressOption } from '../types'
 
 interface WelcomeHeaderProps {
@@ -64,7 +64,7 @@ export function WelcomeHeader({
   }
 
   return (
-    <section className="rounded-xl border border-neutral-200/80 bg-white px-3.5 py-4 shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:px-5 sm:py-5 lg:px-6 lg:py-6">
+    <section className={card({ border: 'subtle', padding: 'welcome' })}>
       {/* Mobile: stack, Desktop: row with space-between */}
       <div className="flex flex-col gap-4 sm:gap-5 lg:flex-row lg:items-center lg:justify-between">
         {/* Left side: Welcome text and address selector */}
