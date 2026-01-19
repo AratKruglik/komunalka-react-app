@@ -20,36 +20,45 @@ import {
   defaultPasswordRequirements,
   getPasswordStrength,
 } from '@shared/components/ui/form/PasswordInput'
+import { useProfile } from '../hooks'
 
 interface ProfileFormProps {
   onCancel?: () => void
 }
 
-// Mock user data - TODO: Replace with actual API call to GET /api/v1/users/{id}
-const mockUserData = {
-  username: 'olena_petrenko',
-  email: 'olena@example.com',
-  firstName: 'Олена',
-  lastName: 'Петренко',
-  phone: '501234567',
-  avatarUrl: null,
-}
-
 const AVATAR_SIZE_LIMIT = 5 * 1024 * 1024
 
 export function ProfileForm({ onCancel }: ProfileFormProps) {
+  const { user, isLoading: isProfileLoading, error: profileError, isSuccess, updateProfile, clearError } = useProfile()
+
   const [formData, setFormData] = useState({
-    username: mockUserData.username,
-    email: mockUserData.email,
-    firstName: mockUserData.firstName,
-    lastName: mockUserData.lastName,
-    phone: mockUserData.phone,
+    username: '',
+    email: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   })
 
-  const initialAvatarPreview = mockUserData.avatarUrl ?? null
+  // Sync form with user data from context
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        username: user.username || '',
+        email: user.email || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        phone: user.phoneNumber || '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      })
+    }
+  }, [user])
+
+  const initialAvatarPreview = user?.avatarUrl ?? null
   const initialAvatarLabel = initialAvatarPreview ? 'Поточний аватар' : null
 
   const [avatarFileName, setAvatarFileName] = useState<string | null>(initialAvatarLabel)
@@ -59,9 +68,32 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
   const avatarObjectUrlRef = useRef<string | null>(null)
 
-  const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [successMessage, setSuccessMessage] = useState('')
+
+  // Use loading state from useProfile
+  const isLoading = isProfileLoading
+
+  // Clear success message when isSuccess becomes true
+  useEffect(() => {
+    if (isSuccess) {
+      setSuccessMessage('Профіль успішно оновлено!')
+      // Clear password fields after a successful update
+      setFormData((prevData) => ({
+        ...prevData,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      }))
+    }
+  }, [isSuccess])
+
+  // Display profile error from API
+  useEffect(() => {
+    if (profileError) {
+      setErrors({ submit: profileError })
+    }
+  }, [profileError])
 
   useEffect(() => {
     return () => {
@@ -128,7 +160,7 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
     event.preventDefault()
     setErrors({})
     setSuccessMessage('')
-    setIsLoading(true)
+    clearError()
 
     const newErrors: Record<string, string> = {}
 
@@ -190,50 +222,20 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
-      setIsLoading(false)
       return
     }
 
-    try {
-      // TODO: Replace with actual API call to PUT /api/v1/users/{id}
-      // Example payload:
-      // {
-      //   username: formData.username,
-      //   email: formData.email,
-      //   firstName: formData.firstName,
-      //   lastName: formData.lastName,
-      //   phone: formData.phone,
-      //   password: formData.newPassword (only if changing password)
-      // }
-      console.log('Profile update attempt:', {
-        username: formData.username,
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phone: formData.phone,
-        avatarUpdated: Boolean(avatarFile),
-        avatarFileName,
-        passwordChanged: isChangingPassword,
-      })
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      // Clear password fields after successful update
-      setFormData({
-        ...formData,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      })
-
-      setSuccessMessage('Профіль успішно оновлено!')
-    } catch (error) {
-      console.error('Profile update error:', error)
-      setErrors({ submit: 'Не вдалося оновити профіль. Спробуйте пізніше.' })
-    } finally {
-      setIsLoading(false)
-    }
+    // Call updateProfile from useProfile hook
+    await updateProfile({
+      username: formData.username,
+      email: formData.email,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      phoneNumber: formData.phone,
+      password: isChangingPassword ? formData.newPassword : undefined,
+      // TODO: Add avatar file upload support when backend is ready
+      // avatarFile: avatarFile,
+    })
   }
 
   return (

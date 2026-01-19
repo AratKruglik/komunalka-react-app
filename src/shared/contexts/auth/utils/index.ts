@@ -3,11 +3,11 @@
  * Centralizes all auth utility functions for easy importing
  */
 
-export { scheduleTokenRefresh, clearTokenRefreshTimeout } from './tokenRefreshScheduler';
-export { refreshToken } from './tokenRefresher';
-export { loginAction, registerAction } from './authActions';
-export { initializeAuth } from './authInitializer';
-export { handleVisibilityChange } from './visibilityHandler';
+export { scheduleTokenRefresh, clearTokenRefreshTimeout } from './tokenRefreshScheduler'
+export { refreshToken } from './tokenRefresher'
+export { loginAction, registerAction } from './authActions'
+export { initializeAuth } from './authInitializer'
+export { handleVisibilityChange } from './visibilityHandler'
 
 export type {
   AuthDispatch,
@@ -16,4 +16,4 @@ export type {
   ScheduleTokenRefreshFn,
   RefreshTokenManuallyFn,
   LogoutFn,
-} from './types';
+} from './types'

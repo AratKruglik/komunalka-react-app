@@ -5,7 +5,7 @@ import { tv } from 'tailwind-variants'
 import { AppleIcon, FacebookIcon, GoogleIcon } from '@shared/components/ui'
 import { ROUTES } from '@shared/constants'
 import { useAuth } from '@shared/hooks'
-import * as React from "react";
+import * as React from "react"
 
 const socialButton = tv({
   base: [

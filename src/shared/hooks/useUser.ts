@@ -1,4 +1,4 @@
-import { useAuth } from './useAuth';
+import { useAuth } from './useAuth'
 
 /**
  * Utility hook to get just the current user
@@ -23,6 +23,6 @@ import { useAuth } from './useAuth';
  * ```
  */
 export function useUser() {
-  const { state } = useAuth();
-  return state.user;
+  const { state } = useAuth()
+  return state.user
 }

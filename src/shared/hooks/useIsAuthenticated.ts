@@ -1,4 +1,4 @@
-import { useAuth } from './useAuth';
+import { useAuth } from './useAuth'
 
 /**
  * Utility hook to check if user is authenticated
@@ -20,6 +20,6 @@ import { useAuth } from './useAuth';
  * ```
  */
 export function useIsAuthenticated() {
-  const { state } = useAuth();
-  return state.isAuthenticated;
+  const { state } = useAuth()
+  return state.isAuthenticated
 }

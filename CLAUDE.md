@@ -137,11 +137,39 @@ Benefits:
 **IMPORTANT: All frontend development tasks must be handled by the senior-frontend-engineer agent.**
 
 When working on this project:
-- **Always** use the `senior-frontend-engineer` agent for any frontend-related tasks
+- **Always** use the `fe-e` agent for any frontend-related tasks
 - This includes: component creation, styling, refactoring, bug fixes, feature implementation, layout changes, etc.
 - The agent has deep expertise in React, TypeScript, and modern frontend practices
 - Do not implement frontend changes directly - delegate all frontend work to the agent
 - The agent will ensure consistency with the project's architecture and best practices
+
+## MCP Tools Usage
+
+### Context7 MCP (Documentation)
+
+**REQUIRED: Before implementing or planning any task, fetch up-to-date documentation.**
+
+- Use `mcp__context7__resolve-library-id` to find the library ID
+- Use `mcp__context7__query-docs` to get current documentation and examples
+- Always check documentation for: React, React Router, Tailwind CSS, tailwind-variants, Vite, TypeScript, and any other libraries used
+- This ensures you're using the latest APIs and best practices, not outdated patterns
+
+### GitHub MCP
+
+**REQUIRED: Always use GitHub MCP for all GitHub operations.**
+
+- Use `mcp__github__*` tools for: creating PRs, managing issues, reading repository content, searching code
+- Do NOT use `gh` CLI commands — always prefer MCP tools
+- Available operations: create/update PRs, list/search issues, get file contents, create branches, etc.
+
+## Git Commit & PR Guidelines
+
+**CRITICAL: Never mention AI assistance in commits or PRs.**
+
+- Do NOT include "Generated with Claude", "Co-Authored-By: Claude", "AI-assisted", or any similar references
+- Do NOT mention any AI tools (Claude, Gemini, ChatGPT, Copilot, etc.) in commit messages or PR descriptions
+- Write commit messages and PR descriptions as if written by a human developer
+- Focus on what was changed and why, not how it was created
 
 ## Feature Requirements
 

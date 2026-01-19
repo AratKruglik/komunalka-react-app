@@ -1,5 +1,5 @@
-import { AuthActionType } from './actionTypes';
-import type { AuthState, AuthAction } from './types';
+import { AuthActionType } from './actionTypes'
+import type { AuthState, AuthAction } from './types'
 
 /**
  * Initial authentication state
@@ -12,7 +12,7 @@ export const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: true, // Start as true to check for existing session
   error: null,
-};
+}
 
 /**
  * Auth reducer function following React best practices
@@ -25,7 +25,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         ...state,
         isLoading: true,
         error: null,
-      };
+      }
 
     case AuthActionType.AUTH_SUCCESS:
       return {
@@ -37,7 +37,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         isAuthenticated: true,
         isLoading: false,
         error: null,
-      };
+      }
 
     case AuthActionType.AUTH_ERROR:
       return {
@@ -49,7 +49,7 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         isAuthenticated: false,
         isLoading: false,
         error: action.payload,
-      };
+      }
 
     case AuthActionType.SET_TOKENS:
       return {
@@ -59,19 +59,19 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         expiresAt: action.payload.expiresAt,
         isAuthenticated: true,
         isLoading: false,
-      };
+      }
 
     case AuthActionType.LOGOUT:
       return {
         ...initialState,
         isLoading: false,
-      };
+      }
 
     case AuthActionType.REFRESH_START:
       return {
         ...state,
         error: null,
-      };
+      }
 
     case AuthActionType.REFRESH_SUCCESS:
       return {
@@ -83,15 +83,21 @@ export function authReducer(state: AuthState, action: AuthAction): AuthState {
         isAuthenticated: true,
         isLoading: false,
         error: null,
-      };
+      }
 
     case AuthActionType.REFRESH_ERROR:
       return {
         ...initialState,
         isLoading: false,
-      };
+      }
+
+    case AuthActionType.UPDATE_USER:
+      return {
+        ...state,
+        user: action.payload,
+      }
 
     default:
-      return state;
+      return state
   }
 }

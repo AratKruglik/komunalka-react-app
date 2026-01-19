@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from 'axios'
 
 /**
  * API Error interface
@@ -22,7 +22,7 @@ export function formatApiError(error: unknown): ApiError | unknown {
       message: error.response?.data?.message || error.message,
       status: error.response?.status,
       data: error.response?.data,
-    };
+    }
   }
-  return error;
+  return error
 }

@@ -1,4 +1,4 @@
-import type { User } from './user.types';
+import type { User } from './user.types'
 
 /**
  * Authentication state interface

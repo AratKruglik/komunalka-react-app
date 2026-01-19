@@ -1,6 +1,6 @@
-import { Navigate, Outlet } from 'react-router';
-import { useAuth } from '../hooks';
-import { ROUTES } from '../constants';
+import { Navigate, Outlet } from 'react-router'
+import { useAuth } from '../hooks'
+import { ROUTES } from '../constants'
 
 /**
  * PublicRoute Component
@@ -17,18 +17,18 @@ import { ROUTES } from '../constants';
  * ```
  */
 export function PublicRoute() {
-  const { state } = useAuth();
+  const { state } = useAuth()
 
   // Show nothing while checking authentication status
   if (state.isLoading) {
-    return null;
+    return null
   }
 
   // Redirect to dashboard if already authenticated
   if (state.isAuthenticated) {
-    return <Navigate to={ROUTES.HOME} replace />;
+    return <Navigate to={ROUTES.HOME} replace />
   }
 
   // Render child routes if not authenticated
-  return <Outlet />;
+  return <Outlet />
 }

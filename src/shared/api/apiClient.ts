@@ -1,9 +1,9 @@
-import axios from 'axios';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { API_CONFIG } from './config';
-import { authService } from './authService';
-import { formatApiError, withAuthHeader } from './utils';
-import { ROUTES } from '../constants';
+import axios from 'axios'
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { API_CONFIG } from './config'
+import { authService } from './authService'
+import { formatApiError, withAuthHeader } from './utils'
+import { ROUTES } from '../constants'
 
 /**
  * Create axios instance with default configuration
@@ -15,7 +15,7 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
 /**
  * Perform API request with automatic token injection and 401 handling
@@ -27,11 +27,11 @@ const apiClient: AxiosInstance = axios.create({
  */
 async function performRequest<T>(config: AxiosRequestConfig, token?: string | null): Promise<AxiosResponse<T>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const headersWithAuth = withAuthHeader(config.headers as any, token);
+  const headersWithAuth = withAuthHeader(config.headers as any, token)
   return apiClient<T>({
     ...config,
     headers: headersWithAuth,
-  });
+  })
 }
 
 /**
@@ -41,21 +41,21 @@ async function performRequest<T>(config: AxiosRequestConfig, token?: string | nu
  * @throws Error if refresh fails or no refresh token available
  */
 async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
-  const refreshToken = authService.getRefreshToken();
+  const refreshToken = authService.getRefreshToken()
 
   if (!refreshToken) {
-    authService.logout();
-    window.location.href = ROUTES.LOGIN;
-    throw formatApiError(new Error('No refresh token'));
+    authService.logout()
+    window.location.href = ROUTES.LOGIN
+    throw formatApiError(new Error('No refresh token'))
   }
 
   try {
-    const refreshResponse = await authService.refreshToken(refreshToken);
-    return performRequest<T>(config, refreshResponse.token);
+    const refreshResponse = await authService.refreshToken(refreshToken)
+    return performRequest<T>(config, refreshResponse.token)
   } catch (refreshError) {
-    authService.logout();
-    window.location.href = ROUTES.LOGIN;
-    throw formatApiError(refreshError);
+    authService.logout()
+    window.location.href = ROUTES.LOGIN
+    throw formatApiError(refreshError)
   }
 }
 
@@ -68,21 +68,21 @@ async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResp
  * @throws Formatted error object
  */
 export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promise<T> {
-  let hasRetried = false;
+  let hasRetried = false
 
   try {
-    const token = authService.getToken();
-    const response = await performRequest<T>(config, token);
-    return response.data;
+    const token = authService.getToken()
+    const response = await performRequest<T>(config, token)
+    return response.data
   } catch (error) {
     // Handle 401 Unauthorized - attempt token refresh
     if (axios.isAxiosError(error) && error.response?.status === 401 && !hasRetried) {
-      hasRetried = true;
-      const retryResponse = await refreshAndRetry<T>(config);
-      return retryResponse.data;
+      hasRetried = true
+      const retryResponse = await refreshAndRetry<T>(config)
+      return retryResponse.data
     }
 
-    throw formatApiError(error);
+    throw formatApiError(error)
   }
 }
 
@@ -105,6 +105,6 @@ export const api = {
 
   delete: <T = unknown>(url: string, config?: AxiosRequestConfig) =>
     apiRequest<T>({ ...config, method: 'DELETE', url }),
-};
+}
 
-export default apiClient;
+export default apiClient
