@@ -8,14 +8,10 @@ import { RecentReadingsTable } from '../components/RecentReadingsTable'
 import { PaymentReminders } from '../components/PaymentReminders'
 import { QuickActions } from '../components/QuickActions'
 import { useAddresses } from '@modules/addresses/hooks'
+import { useMetersByAddress } from '@modules/meters/hooks'
+import { useReadingsByAddress } from '@modules/readings/hooks'
 import { useUser } from '@shared/hooks'
-import {
-  MOCK_PROVIDERS,
-  getMetersByAddressId,
-  getReadingsByMeterId,
-  getReadingsByAddressId,
-  getProviderById,
-} from '@shared/data/mockDatabase'
+import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
 import {
   toDashboardAddressOptionViewModel,
   toServiceDataViewModel,
@@ -42,36 +38,33 @@ export default function DashboardPage() {
     }
   }, [addresses, selectedAddressId])
 
+  // Fetch meters and readings from API
+  const { meters } = useMetersByAddress(selectedAddressId)
+  const { readings: allReadings } = useReadingsByAddress(selectedAddressId)
+
   // Generate address options for dropdown
   const addressOptions = useMemo(
     () => addresses.map(toDashboardAddressOptionViewModel),
     [addresses]
   )
 
-  // Get meters and readings for selected address
-  const meters = useMemo(
-    () => selectedAddressId ? getMetersByAddressId(selectedAddressId) : [],
-    [selectedAddressId]
-  )
-
-  const allReadings = useMemo(
-    () => selectedAddressId ? getReadingsByAddressId(selectedAddressId) : [],
-    [selectedAddressId]
-  )
-
   // Generate service cards data
   const services = useMemo(() => {
     return meters.map((meter) => {
-      const readings = getReadingsByMeterId(meter.id)
-      const provider = getProviderById(meter.providerId)
+      // Get readings for this meter from all readings
+      const meterReadings = allReadings
+        .filter((r) => r.meterId === meter.id)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.providerId)
       if (!provider) return null
 
-      const latestReading = readings[0] // Already sorted by date desc
-      const previousReading = readings[1]
+      const latestReading = meterReadings[0]
+      const previousReading = meterReadings[1]
 
       return toServiceDataViewModel(meter, provider, latestReading, previousReading)
     }).filter(Boolean) as ReturnType<typeof toServiceDataViewModel>[]
-  }, [meters])
+  }, [meters, allReadings])
 
   // Generate chart data (last 6 months)
   const chartData = useMemo(() => {
@@ -98,7 +91,7 @@ export default function DashboardPage() {
       const meter = meters.find((m) => m.id === reading.meterId)
       if (!meter) return null
 
-      const provider = getProviderById(meter.providerId)
+      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.providerId)
       if (!provider) return null
 
       return toReadingViewModel(reading, meter, provider)
@@ -109,11 +102,14 @@ export default function DashboardPage() {
   const paymentReminders = useMemo(() => {
     // Calculate due dates based on provider's reminderDay
     return meters.slice(0, 3).map((meter) => {
-      const provider = getProviderById(meter.providerId)
+      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.providerId)
       if (!provider || !provider.reminderDay) return null
 
-      const readings = getReadingsByMeterId(meter.id)
-      const latestReading = readings[0]
+      // Get readings for this meter from allReadings
+      const meterReadings = allReadings
+        .filter((r) => r.meterId === meter.id)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      const latestReading = meterReadings[0]
 
       // Calculate due date for current month
       const today = new Date()
@@ -130,7 +126,7 @@ export default function DashboardPage() {
         dueDate.toISOString().split('T')[0]
       )
     }).filter(Boolean) as ReturnType<typeof toPaymentReminderViewModel>[]
-  }, [meters])
+  }, [meters, allReadings])
 
   return (
     <AuthenticatedLayout

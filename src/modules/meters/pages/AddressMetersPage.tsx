@@ -17,15 +17,20 @@ import {
   Select,
 } from '@shared/components/ui'
 import { useAddresses } from '@modules/addresses/hooks'
+import { useMetersByAddress } from '@modules/meters/hooks'
+import { useReadingsByAddress } from '@modules/readings/hooks'
 import { METER_TYPE_OPTIONS, type MeterType } from '@shared/constants/meterTypes'
+import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
+import {
+  toAddressMetersSnapshotViewModel,
+  type MeterTypeGroupViewModel,
+} from '@shared/viewModels'
 import { MeterTypeTabs } from '../components/MeterTypeTabs'
-import { MOCK_ADDRESS_METERS } from '../data/mockAddressMeters'
-import type { MeterTypeGroup } from '../types'
 
 type QuickFormState = Record<
   MeterType,
   {
-    meterId: string
+    meterId: number
     value: string
     periodLabel: string
   }
@@ -54,8 +59,10 @@ const meterStatusStyles: Record<
   },
 }
 
+type HistoryStatus = 'accepted' | 'processing' | 'error'
+
 const historyStatusMap: Record<
-  MeterTypeGroup['history'][number]['status'],
+  HistoryStatus,
   {
     label: string
     badgeTone: 'success' | 'warning' | 'danger'
@@ -72,26 +79,43 @@ export default function AddressMetersPage() {
 
   const addressOptions = useMemo(() => {
     return addresses.map((address) => ({
-      value: String(address.id),
+      value: address.id,
       label: `${address.street}, ${address.building}, кв. ${address.apartment}`,
     }))
   }, [addresses])
 
-  const [selectedAddressId, setSelectedAddressId] = useState('')
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
 
   // Set initial address when addresses load
   useEffect(() => {
-    if (addressOptions.length > 0 && !selectedAddressId) {
+    if (addressOptions.length > 0 && selectedAddressId === null) {
       setSelectedAddressId(addressOptions[0].value)
     }
   }, [addressOptions, selectedAddressId])
+
+  // Fetch meters and readings from API
+  const { meters, isLoading: isLoadingMeters } = useMetersByAddress(selectedAddressId)
+  const { readings, isLoading: isLoadingReadings } = useReadingsByAddress(selectedAddressId)
+
   const [activeMeterType, setActiveMeterType] = useState<MeterType>('electricity')
   const [quickForms, setQuickForms] = useState<QuickFormState>({} as QuickFormState)
   const [submissionState, setSubmissionState] = useState<{ type: MeterType; message: string } | null>(null)
 
+  // Build snapshot from API data
   const addressSnapshot = useMemo(() => {
-    return MOCK_ADDRESS_METERS.find((snapshot) => snapshot.addressId === selectedAddressId) ?? null
-  }, [selectedAddressId])
+    if (selectedAddressId === null || meters.length === 0) {
+      return null
+    }
+
+    return toAddressMetersSnapshotViewModel(
+      selectedAddressId,
+      meters,
+      readings,
+      MOCK_PROVIDERS,
+    )
+  }, [selectedAddressId, meters, readings])
+
+  const isLoading = isLoadingMeters || isLoadingReadings
 
   const availableGroups = useMemo(() => {
     if (!addressSnapshot) {
@@ -99,7 +123,7 @@ export default function AddressMetersPage() {
     }
     return meterTypeOrder
       .map((type) => addressSnapshot.groups[type])
-      .filter((group): group is MeterTypeGroup => Boolean(group))
+      .filter((group): group is MeterTypeGroupViewModel => Boolean(group))
   }, [addressSnapshot])
 
   useEffect(() => {
@@ -153,7 +177,7 @@ export default function AddressMetersPage() {
     }
     const group = availableGroups.find((entry) => entry.type === type)
     if (!group) {
-      return { meterId: '', value: '', periodLabel: '' }
+      return { meterId: 0, value: '', periodLabel: '' }
     }
     return {
       meterId: group.quickDraft.meterId,
@@ -162,7 +186,10 @@ export default function AddressMetersPage() {
     }
   }
 
-  const handleQuickFormChange = (type: MeterType, partial: Partial<QuickFormState[MeterType]>) => {
+  const handleQuickFormChange = (
+    type: MeterType,
+    partial: Partial<QuickFormState[MeterType]>,
+  ) => {
     setQuickForms((previous) => ({
       ...previous,
       [type]: {
@@ -261,7 +288,10 @@ export default function AddressMetersPage() {
 
     const meterOptions = currentGroup.meters
     const periodOptions = Array.from(
-      new Set([currentGroup.quickDraft.monthLabel, ...currentGroup.latestReadings.map((reading) => reading.monthLabel)]),
+      new Set([
+        currentGroup.quickDraft.monthLabel,
+        ...currentGroup.latestReadings.map((reading) => reading.monthLabel),
+      ]),
     )
 
     return (
@@ -275,9 +305,9 @@ export default function AddressMetersPage() {
           </Label>
           <Select
             id="quick-meter"
-            value={quickFormState.meterId}
+            value={String(quickFormState.meterId)}
             onChange={(event) =>
-              handleQuickFormChange(currentGroup.type, { meterId: event.target.value })
+              handleQuickFormChange(currentGroup.type, { meterId: Number(event.target.value) })
             }
             className="mt-1"
           >
@@ -447,8 +477,8 @@ export default function AddressMetersPage() {
               </Label>
               <Select
                 id="address-select"
-                value={selectedAddressId}
-                onChange={(event) => setSelectedAddressId(event.target.value)}
+                value={selectedAddressId ?? ''}
+                onChange={(event) => setSelectedAddressId(Number(event.target.value))}
                 wrapperClassName="w-full"
               >
                 {addressOptions.map((address) => (
@@ -457,7 +487,9 @@ export default function AddressMetersPage() {
                   </option>
                 ))}
               </Select>
-              {addressSnapshot === null ? (
+              {isLoading ? (
+                <FormMessage>Завантаження...</FormMessage>
+              ) : addressSnapshot === null && selectedAddressId !== null ? (
                 <FormMessage variant="error">
                   Для цієї адреси поки що немає збережених лічильників.
                 </FormMessage>

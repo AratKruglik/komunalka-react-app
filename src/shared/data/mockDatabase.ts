@@ -1,22 +1,25 @@
 /**
- * Централізована база mock-даних для всього додатку.
+ * Centralized mock database for the entire application.
  *
- * ВАЖЛИВО ПРО МОВИ:
- * - Всі ключі об'єктів, поля та enum values - АНГЛІЙСЬКОЮ
- * - Українські тексти - ТІЛЬКИ в полях для відображення (name, description, location, etc.)
+ * NOTE: This mock data is preserved for testing purposes.
+ * Production components use real API calls via hooks (useMeters, useReadings).
  *
- * Структура:
- * - 13 адрес з реалістичними українськими даними
- * - 4 провайдери комунальних послуг
- * - 41 лічильник для всіх адрес (2-5 на адресу)
- * - Історичні показники (6 місяців для кожного лічильника, мінімізовано з 12)
+ * Language conventions:
+ * - All object keys, fields, and enum values - ENGLISH
+ * - Ukrainian texts - ONLY in display fields (name, description, location, etc.)
  *
- * Foreign Key зв'язки:
+ * Structure:
+ * - 13 addresses with realistic Ukrainian data
+ * - 4 utility service providers
+ * - 41 meters across all addresses (2-5 per address)
+ * - Historical readings (6 months per meter)
+ *
+ * Foreign Key relationships:
  * - Meter.addressId → Address.id
  * - Meter.providerId → Provider.id
  * - Reading.meterId → Meter.id
  *
- * Використання числових ID:
+ * Numeric ID ranges:
  * - Address: 1-13
  * - Provider: 1-4
  * - Meter: 100-140
@@ -244,11 +247,11 @@ export const MOCK_ADDRESSES: Address[] = [
 ]
 
 // =============================================================================
-// METERS (3-5 лічильників на адресу)
+// METERS (3-5 meters per address)
 // =============================================================================
 
 export const MOCK_METERS: Meter[] = [
-  // === Адреса 1: Київ, Хрещатик, 22 (4 лічильники) ===
+  // === Address 1: Kyiv, Khreshchatyk, 22 (4 meters) ===
   {
     id: generateMeterId(), // 100
     addressId: 1,
@@ -298,7 +301,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2025-08-19',
   },
 
-  // === Адреса 2: Львів, Галицька, 12 (5 лічильників) ===
+  // === Address 2: Kyiv, Darnytska, 5 (5 meters) ===
   {
     id: generateMeterId(), // 104
     addressId: 2,
@@ -360,7 +363,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2026-10-02',
   },
 
-  // === Адреса 3: Харків, Науки, 45 (3 лічильники) ===
+  // === Address 3: Lviv, Nezalezhnosti, 10 (3 meters) ===
   {
     id: generateMeterId(), // 109
     addressId: 3,
@@ -398,7 +401,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2027-06-22',
   },
 
-  // === Адреса 4: Одеса, Дерибасівська, 8 (4 лічильники) ===
+  // === Address 4: Kyiv, Prorizna, 18 (4 meters) ===
   {
     id: generateMeterId(), // 112
     addressId: 4,
@@ -448,7 +451,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-07-20',
   },
 
-  // === Адреса 5: Харків, Сумська, 64 (4 лічильники) ===
+  // === Address 5: Kharkiv, Sumska, 64 (4 meters) ===
   {
     id: generateMeterId(), // 116
     addressId: 5,
@@ -498,7 +501,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-06-10',
   },
 
-  // === Адреса 6: Одеса, Дерибасівська, 12 (2 лічильники) ===
+  // === Address 6: Odesa, Derybasivska, 12 (2 meters) ===
   {
     id: generateMeterId(), // 120
     addressId: 6,
@@ -524,7 +527,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-06-20',
   },
 
-  // === Адреса 7: Дніпро, Шевченка, 45 (3 лічильники) ===
+  // === Address 7: Dnipro, Shevchenka, 45 (3 meters) ===
   {
     id: generateMeterId(), // 122
     addressId: 7,
@@ -562,7 +565,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-08-01',
   },
 
-  // === Адреса 8: Львів, Січових Стрільців, 33 (5 лічильників) ===
+  // === Address 8: Lviv, Sichovykh Striltsiv, 33 (5 meters) ===
   {
     id: generateMeterId(), // 125
     addressId: 8,
@@ -624,7 +627,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-09-05',
   },
 
-  // === Адреса 9: Київ, просп. Бандери, 28 (2 лічильники) ===
+  // === Address 9: Kyiv, Bandery Ave, 28 (2 meters) ===
   {
     id: generateMeterId(), // 130
     addressId: 9,
@@ -650,7 +653,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-09-15',
   },
 
-  // === Адреса 10: Вінниця, Соборна, 7 (3 лічильники) ===
+  // === Address 10: Vinnytsia, Soborna, 7 (3 meters) ===
   {
     id: generateMeterId(), // 132
     addressId: 10,
@@ -688,7 +691,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-10-20',
   },
 
-  // === Адреса 11: Полтава, Героїв Крут, 51 (4 лічильники) ===
+  // === Address 11: Poltava, Heroiv Krut, 51 (4 meters) ===
   {
     id: generateMeterId(), // 135
     addressId: 11,
@@ -738,7 +741,7 @@ export const MOCK_METERS: Meter[] = [
     nextCheckDate: '2028-12-01',
   },
 
-  // === Адреса 12: Чернігів, Мазепи, 15 (2 лічильники) ===
+  // === Address 12: Chernihiv, Mazepy, 15 (2 meters) ===
   {
     id: generateMeterId(), // 139
     addressId: 12,
@@ -763,17 +766,14 @@ export const MOCK_METERS: Meter[] = [
     status: 'active',
     nextCheckDate: '2028-12-10',
   },
-
-  // === Адреса 13: Харків, Науки, 45 (переміщено з адреси 3) - вже є meters 109-111 ===
-  // Ці лічильники вже створені вище як 109, 110, 111
 ]
 
 // =============================================================================
-// READINGS (мінімальна історія - 6 місяців замість 12)
+// READINGS (6 months of history per meter)
 // =============================================================================
 
 /**
- * Helper функція для створення показників за період
+ * Helper function to create readings for a given period
  */
 function createReadingsForMeter(
   meterId: number,
@@ -784,7 +784,7 @@ function createReadingsForMeter(
   let currentValue = startValue
   const now = new Date()
 
-  // Створюємо показники за останні N місяців (кількість = довжина monthlyIncrements)
+  // Create readings for the last N months (count = monthlyIncrements.length)
   for (let i = monthlyIncrements.length - 1; i >= 0; i--) {
     const monthsAgo = i
     const date = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 25)
@@ -798,7 +798,7 @@ function createReadingsForMeter(
       date: date.toISOString().split('T')[0],
       value: currentValue,
       consumption: increment,
-      submittedAt: new Date(date.getTime() + 3600000).toISOString(), // +1 година
+      submittedAt: new Date(date.getTime() + 3600000).toISOString(), // +1 hour
       status: i === 0 ? 'processing' : 'accepted',
       note: i === 0 ? 'Очікує підтвердження' : undefined,
     })
@@ -808,143 +808,143 @@ function createReadingsForMeter(
 }
 
 export const MOCK_READINGS: Reading[] = [
-  // Meter 100: Адреса 1 - Електроенергія (6 місяців)
+  // Meter 100: Address 1 - Electricity (6 months)
   ...createReadingsForMeter(100, 4200, [151, 144, 147, 152, 149, 154]),
 
-  // Meter 101: Адреса 1 - Газ (6 місяців)
+  // Meter 101: Address 1 - Gas (6 months)
   ...createReadingsForMeter(101, 560, [6, 5, 7, 9, 11, 8]),
 
-  // Meter 102: Адреса 1 - Холодна вода (6 місяців)
+  // Meter 102: Address 1 - Cold Water (6 months)
   ...createReadingsForMeter(102, 103, [2, 3, 2, 3, 2, 3]),
 
-  // Meter 103: Адреса 1 - Гаряча вода (6 місяців)
+  // Meter 103: Address 1 - Hot Water (6 months)
   ...createReadingsForMeter(103, 67, [5, 6, 5, 6, 5, 5]),
 
-  // Meter 104: Адреса 2 - Електроенергія (6 місяців)
+  // Meter 104: Address 2 - Electricity (6 months)
   ...createReadingsForMeter(104, 2300, [107, 114, 109, 112, 108, 115]),
 
-  // Meter 105: Адреса 2 - Газ (6 місяців)
+  // Meter 105: Address 2 - Gas (6 months)
   ...createReadingsForMeter(105, 180, [24, 20, 18, 16, 22, 19]),
 
-  // Meter 106: Адреса 2 - Холодна вода (6 місяців)
+  // Meter 106: Address 2 - Cold Water (6 months)
   ...createReadingsForMeter(106, 45, [3, 4, 3, 4, 3, 4]),
 
-  // Meter 107: Адреса 2 - Гаряча вода (6 місяців)
+  // Meter 107: Address 2 - Hot Water (6 months)
   ...createReadingsForMeter(107, 58, [1, 2, 1, 2, 1, 2]),
 
-  // Meter 108: Адреса 2 - Опалення (6 місяців)
+  // Meter 108: Address 2 - Heat (6 months)
   ...createReadingsForMeter(108, 28, [3.0, 4.1, 4.5, 3.8, 3.2, 2.8]),
 
-  // Meter 109: Адреса 3 - Електроенергія (6 місяців)
+  // Meter 109: Address 3 - Electricity (6 months)
   ...createReadingsForMeter(109, 680, [63, 65, 70, 58, 62, 67]),
 
-  // Meter 110: Адреса 3 - Газ (6 місяців)
+  // Meter 110: Address 3 - Gas (6 months)
   ...createReadingsForMeter(110, 175, [5, 7, 8, 6, 9, 7]),
 
-  // Meter 111: Адреса 3 - Холодна вода (6 місяців)
+  // Meter 111: Address 3 - Cold Water (6 months)
   ...createReadingsForMeter(111, 88, [4, 5, 4, 5, 4, 4]),
 
-  // Meter 112: Адреса 4 - Електроенергія (6 місяців)
+  // Meter 112: Address 4 - Electricity (6 months)
   ...createReadingsForMeter(112, 420, [88, 92, 85, 90, 95, 87]),
 
-  // Meter 113: Адреса 4 - Газ (6 місяців)
+  // Meter 113: Address 4 - Gas (6 months)
   ...createReadingsForMeter(113, 65, [6, 8, 7, 9, 8, 7]),
 
-  // Meter 114: Адреса 4 - Холодна вода (6 місяців)
+  // Meter 114: Address 4 - Cold Water (6 months)
   ...createReadingsForMeter(114, 32, [3, 3, 4, 3, 4, 3]),
 
-  // Meter 115: Адреса 4 - Гаряча вода (6 місяців)
+  // Meter 115: Address 4 - Hot Water (6 months)
   ...createReadingsForMeter(115, 18, [2, 2, 3, 2, 3, 2]),
 
-  // Meter 116: Адреса 5 - Електроенергія (6 місяців)
+  // Meter 116: Address 5 - Electricity (6 months)
   ...createReadingsForMeter(116, 2850, [102, 98, 105, 100, 97, 103]),
 
-  // Meter 117: Адреса 5 - Газ (6 місяців)
+  // Meter 117: Address 5 - Gas (6 months)
   ...createReadingsForMeter(117, 340, [8, 7, 9, 8, 10, 7]),
 
-  // Meter 118: Адреса 5 - Холодна вода (6 місяців)
+  // Meter 118: Address 5 - Cold Water (6 months)
   ...createReadingsForMeter(118, 112, [3, 4, 3, 4, 3, 3]),
 
-  // Meter 119: Адреса 5 - Гаряча вода (6 місяців)
+  // Meter 119: Address 5 - Hot Water (6 months)
   ...createReadingsForMeter(119, 45, [2, 3, 2, 3, 2, 2]),
 
-  // Meter 120: Адреса 6 - Електроенергія (6 місяців)
+  // Meter 120: Address 6 - Electricity (6 months)
   ...createReadingsForMeter(120, 1240, [85, 88, 82, 90, 87, 85]),
 
-  // Meter 121: Адреса 6 - Холодна вода (6 місяців)
+  // Meter 121: Address 6 - Cold Water (6 months)
   ...createReadingsForMeter(121, 67, [2, 3, 2, 3, 2, 3]),
 
-  // Meter 122: Адреса 7 - Електроенергія (6 місяців)
+  // Meter 122: Address 7 - Electricity (6 months)
   ...createReadingsForMeter(122, 1560, [95, 92, 98, 94, 96, 93]),
 
-  // Meter 123: Адреса 7 - Газ (6 місяців)
+  // Meter 123: Address 7 - Gas (6 months)
   ...createReadingsForMeter(123, 285, [7, 8, 6, 9, 7, 8]),
 
-  // Meter 124: Адреса 7 - Гаряча вода (6 місяців)
+  // Meter 124: Address 7 - Hot Water (6 months)
   ...createReadingsForMeter(124, 52, [3, 4, 3, 4, 3, 3]),
 
-  // Meter 125: Адреса 8 - Електроенергія (6 місяців)
+  // Meter 125: Address 8 - Electricity (6 months)
   ...createReadingsForMeter(125, 1890, [110, 115, 108, 112, 114, 111]),
 
-  // Meter 126: Адреса 8 - Газ (6 місяців)
+  // Meter 126: Address 8 - Gas (6 months)
   ...createReadingsForMeter(126, 420, [12, 10, 14, 11, 13, 12]),
 
-  // Meter 127: Адреса 8 - Холодна вода (6 місяців)
+  // Meter 127: Address 8 - Cold Water (6 months)
   ...createReadingsForMeter(127, 98, [4, 5, 4, 5, 4, 4]),
 
-  // Meter 128: Адреса 8 - Гаряча вода (6 місяців)
+  // Meter 128: Address 8 - Hot Water (6 months)
   ...createReadingsForMeter(128, 73, [2, 3, 2, 3, 2, 3]),
 
-  // Meter 129: Адреса 8 - Опалення (6 місяців)
+  // Meter 129: Address 8 - Heat (6 months)
   ...createReadingsForMeter(129, 15, [2.8, 3.5, 3.2, 2.9, 3.1, 2.7]),
 
-  // Meter 130: Адреса 9 - Електроенергія (6 місяців)
+  // Meter 130: Address 9 - Electricity (6 months)
   ...createReadingsForMeter(130, 950, [68, 72, 65, 70, 69, 71]),
 
-  // Meter 131: Адреса 9 - Газ (6 місяців)
+  // Meter 131: Address 9 - Gas (6 months)
   ...createReadingsForMeter(131, 190, [5, 6, 7, 5, 6, 6]),
 
-  // Meter 132: Адреса 10 - Електроенергія (6 місяців)
+  // Meter 132: Address 10 - Electricity (6 months)
   ...createReadingsForMeter(132, 1340, [88, 92, 85, 90, 89, 91]),
 
-  // Meter 133: Адреса 10 - Холодна вода (6 місяців)
+  // Meter 133: Address 10 - Cold Water (6 months)
   ...createReadingsForMeter(133, 78, [3, 4, 3, 4, 3, 4]),
 
-  // Meter 134: Адреса 10 - Гаряча вода (6 місяців)
+  // Meter 134: Address 10 - Hot Water (6 months)
   ...createReadingsForMeter(134, 56, [2, 3, 2, 3, 2, 2]),
 
-  // Meter 135: Адреса 11 - Електроенергія (6 місяців)
+  // Meter 135: Address 11 - Electricity (6 months)
   ...createReadingsForMeter(135, 1680, [98, 102, 95, 100, 99, 101]),
 
-  // Meter 136: Адреса 11 - Газ (6 місяців)
+  // Meter 136: Address 11 - Gas (6 months)
   ...createReadingsForMeter(136, 310, [8, 9, 7, 10, 8, 9]),
 
-  // Meter 137: Адреса 11 - Холодна вода (6 місяців)
+  // Meter 137: Address 11 - Cold Water (6 months)
   ...createReadingsForMeter(137, 92, [4, 5, 4, 5, 4, 4]),
 
-  // Meter 138: Адреса 11 - Гаряча вода (6 місяців)
+  // Meter 138: Address 11 - Hot Water (6 months)
   ...createReadingsForMeter(138, 64, [3, 4, 3, 4, 3, 3]),
 
-  // Meter 139: Адреса 12 - Електроенергія (6 місяців)
+  // Meter 139: Address 12 - Electricity (6 months)
   ...createReadingsForMeter(139, 780, [55, 58, 52, 60, 57, 56]),
 
-  // Meter 140: Адреса 12 - Холодна вода (6 місяців)
+  // Meter 140: Address 12 - Cold Water (6 months)
   ...createReadingsForMeter(140, 43, [2, 3, 2, 3, 2, 2]),
 ]
 
 // =============================================================================
-// HELPER FUNCTIONS
+// HELPER FUNCTIONS (for testing purposes)
 // =============================================================================
 
 /**
- * Отримати всі лічильники для конкретної адреси
+ * Get all meters for a specific address
  */
 export function getMetersByAddressId(addressId: number): Meter[] {
   return MOCK_METERS.filter((meter) => meter.addressId === addressId)
 }
 
 /**
- * Отримати всі показники для конкретного лічильника
+ * Get all readings for a specific meter
  */
 export function getReadingsByMeterId(meterId: number): Reading[] {
   return MOCK_READINGS.filter((reading) => reading.meterId === meterId).sort(
@@ -953,36 +953,36 @@ export function getReadingsByMeterId(meterId: number): Reading[] {
 }
 
 /**
- * Отримати останній показник для лічильника
+ * Get the latest reading for a meter
  */
 export function getLatestReadingByMeterId(meterId: number): Reading | undefined {
   const readings = getReadingsByMeterId(meterId)
-  return readings[0] // Вже відсортовано по даті (найновіший перший)
+  return readings[0] // Already sorted by date (newest first)
 }
 
 /**
- * Отримати провайдера за ID
+ * Get provider by ID
  */
 export function getProviderById(providerId: number): Provider | undefined {
   return MOCK_PROVIDERS.find((provider) => provider.id === providerId)
 }
 
 /**
- * Отримати адресу за ID
+ * Get address by ID
  */
 export function getAddressById(addressId: number): Address | undefined {
   return MOCK_ADDRESSES.find((address) => address.id === addressId)
 }
 
 /**
- * Отримати лічильник за ID
+ * Get meter by ID
  */
 export function getMeterById(meterId: number): Meter | undefined {
   return MOCK_METERS.find((meter) => meter.id === meterId)
 }
 
 /**
- * Отримати всі показники для адреси (через всі лічильники цієї адреси)
+ * Get all readings for an address (via all meters of that address)
  */
 export function getReadingsByAddressId(addressId: number): Reading[] {
   const meters = getMetersByAddressId(addressId)
@@ -994,7 +994,7 @@ export function getReadingsByAddressId(addressId: number): Reading[] {
 }
 
 /**
- * Отримати статистику для адреси
+ * Get statistics for an address
  */
 export function getAddressStats(addressId: number): {
   totalMeters: number
@@ -1013,3 +1013,4 @@ export function getAddressStats(addressId: number): {
     pendingReadings,
   }
 }
+

@@ -30,3 +30,6 @@ routeTree.gen.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation (work in progress)
+docs/

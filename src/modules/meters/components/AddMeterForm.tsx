@@ -23,6 +23,8 @@ import {
 } from '@shared/constants/meterTypes'
 import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
 import { useAddresses } from '@modules/addresses/hooks'
+import { useCreateMeter } from '@modules/meters/hooks'
+import { toUtilityTypeId, type CreateMeterRequest } from '@modules/meters/types'
 import { formatTariffLabel, getPrimaryTariff } from '@shared/utils/providerTariffs'
 
 type SubmissionIntent = 'draft' | 'submit'
@@ -70,8 +72,10 @@ export interface AddMeterFormProps {
 
 export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const { addresses } = useAddresses()
+  const { createMeter, isLoading: isCreating, error: createError } = useCreateMeter()
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
   const photoInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
@@ -228,29 +232,47 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     updatePhotoState(null)
   }
 
-  const simulateSubmit = async (values: MeterFormValues, intent: SubmissionIntent) => {
-    await new Promise((resolve) => setTimeout(resolve, 600))
-
-    console.log('Meter form submission', {
-      intent,
-      ...values,
-      initialReading: values.initialReading ? Number(values.initialReading) : null,
-      tariffValue: values.tariffValue ? Number(values.tariffValue) : null,
-      photo: values.photo?.[0]?.name ?? null,
-    })
-
-    if (intent === 'submit') {
-      reset(defaultValues)
-      updatePhotoState(null)
-      if (photoInputRef.current) {
-        photoInputRef.current.value = ''
-      }
+  const submitToApi = async (values: MeterFormValues, intent: SubmissionIntent) => {
+    if (intent === 'draft') {
+      // Draft mode - just log for now
+      console.log('Saving draft:', values)
+      return
     }
+
+    // Build API request
+    const request: CreateMeterRequest = {
+      AddressId: Number(values.addressId),
+      UtilityTypeId: toUtilityTypeId(values.meterType as MeterType),
+      Name: values.meterType ? METER_TYPE_OPTIONS.find((o) => o.value === values.meterType)?.title ?? values.meterType : '',
+      SerialNumber: values.serialNumber,
+      InstallationDate: values.installationDate,
+      IsActive: true,
+      ModelName: values.manufacturer || undefined,
+      Location: values.installationLocation || undefined,
+      InitialReading: values.initialReading ? Number(values.initialReading) : undefined,
+      ServiceProviderId: values.providerId ? Number(values.providerId) : undefined,
+      Notes: values.notes || undefined,
+    }
+
+    // Get photo file if exists
+    const photoFile = values.photo?.[0] ?? undefined
+
+    await createMeter(request, photoFile)
+
+    setSubmitSuccess(true)
+    reset(defaultValues)
+    updatePhotoState(null)
+    if (photoInputRef.current) {
+      photoInputRef.current.value = ''
+    }
+
+    // Clear success message after delay
+    setTimeout(() => setSubmitSuccess(false), 3000)
   }
 
   const submitWithIntent = (intent: SubmissionIntent) =>
     handleSubmit(async (values) => {
-      await simulateSubmit(values, intent)
+      await submitToApi(values, intent)
     })
 
   const handleResetForm = () => {
@@ -550,15 +572,29 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               variant="outline"
               tone="primary"
               onClick={submitWithIntent('draft')}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isCreating}
             >
               Зберегти чернетку
             </Button>
-            <Button type="submit" loading={isSubmitting} loadingText="Збереження...">
+            <Button
+              type="submit"
+              loading={isSubmitting || isCreating}
+              loadingText="Збереження..."
+            >
               Зберегти лічильник
             </Button>
           </div>
         </CardFooter>
+        {createError && (
+          <div className="px-6 pb-4">
+            <FormMessage variant="error">{createError}</FormMessage>
+          </div>
+        )}
+        {submitSuccess && (
+          <div className="px-6 pb-4">
+            <FormMessage variant="success">Лічильник успішно створено!</FormMessage>
+          </div>
+        )}
       </Card>
     </form>
   )
