@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
-import { PageSectionHeader } from '../../../shared/components/pages'
+import { PageSectionHeader } from '@shared/components/pages'
 import {
   Button,
   Card,
@@ -14,15 +14,15 @@ import {
   RadioCard,
   Select,
   Textarea,
-} from '../../../shared/components/ui'
+} from '@shared/components/ui'
 import { CalendarDays, UploadCloud } from 'lucide-react'
 import {
   type MeterType,
   METER_TYPE_OPTIONS,
   METER_TYPE_UNITS,
-} from '../../../shared/constants/meterTypes'
-import { MOCK_ADDRESSES, MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
-import { formatTariffLabel, getPrimaryTariff } from '../../../shared/utils/providerTariffs'
+} from '@shared/constants/meterTypes'
+import { MOCK_ADDRESSES, MOCK_PROVIDERS } from '@shared/data/mockDatabase'
+import { formatTariffLabel, getPrimaryTariff } from '@shared/utils/providerTariffs'
 
 type SubmissionIntent = 'draft' | 'submit'
 

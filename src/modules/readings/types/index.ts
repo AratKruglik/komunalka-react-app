@@ -1,4 +1,4 @@
-import type { MeterType } from '../../../shared/constants/meterTypes'
+import type { MeterType } from '@shared/constants/meterTypes'
 
 export interface MeterReadingDraft {
   id: number

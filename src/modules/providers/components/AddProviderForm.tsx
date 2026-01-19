@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { PageSectionHeader } from '../../../shared/components/pages'
+import { PageSectionHeader } from '@shared/components/pages'
 import {
   Button,
   Card,
@@ -16,11 +16,11 @@ import {
   RadioCard,
   Select,
   Textarea,
-} from '../../../shared/components/ui'
-import { SERVICE_CONFIG } from '../../../shared/constants/services'
-import type { MeterType } from '../../../shared/constants/meterTypes'
-import { MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
-import type { BillingCycle, UtilityServiceType } from '../../../shared/types/providers'
+} from '@shared/components/ui'
+import { SERVICE_CONFIG } from '@shared/constants/services'
+import type { MeterType } from '@shared/constants/meterTypes'
+import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
+import type { BillingCycle, UtilityServiceType } from '@types/providers'
 
 type TariffFormValue = {
   id: string

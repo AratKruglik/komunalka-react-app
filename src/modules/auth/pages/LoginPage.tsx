@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
-import { GuestLayout } from '../../../shared/components/layout/GuestLayout'
-import { Logo } from '../../../shared/components/ui'
-import { ROUTES } from '../../../shared/constants'
+import { GuestLayout } from '@shared/components/layout/GuestLayout'
+import { Logo } from '@shared/components/ui'
+import { ROUTES } from '@shared/constants'
 import { LoginForm } from '../components/LoginForm'
 
 export default function LoginPage() {
@@ -21,7 +21,7 @@ export default function LoginPage() {
 
           {/* Tabs */}
           <div className="flex border-b border-gray-200 dark:border-slate-800">
-            <button className="flex-1 border-b-2 border-[#333333] px-4 py-3 text-base font-medium text-[#333333] dark:border-amber-300 dark:text-amber-200">
+            <button className="flex-1 border-b-2 border-text-dark px-4 py-3 text-base font-medium text-text-dark dark:border-amber-300 dark:text-amber-200">
               Вхід
             </button>
             <Link

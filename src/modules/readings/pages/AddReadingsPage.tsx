@@ -1,21 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus } from 'lucide-react'
-import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
-import { PageSectionHeader } from '../../../shared/components/pages'
-import { Button, Card, CardContent, Label, Select } from '../../../shared/components/ui'
+import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
+import { PageSectionHeader } from '@shared/components/pages'
+import { Button, Card, CardContent, Label, Select } from '@shared/components/ui'
 import {
   MOCK_ADDRESSES,
   MOCK_PROVIDERS,
   getMetersByAddressId,
   getReadingsByAddressId,
-} from '../../../shared/data/mockDatabase'
+} from '@shared/data/mockDatabase'
 import {
   toAddressSelectViewModel,
   toAddressReadingsSnapshotViewModel,
   type AddressReadingsSnapshotViewModel,
   type MeterReadingDraftViewModel,
-} from '../../../shared/viewModels'
+} from '@shared/viewModels'
 import { ReadingCard } from '../components/ReadingCard'
 import { ReadingSummaryTable } from '../components/ReadingSummaryTable'
 

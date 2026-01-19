@@ -1,4 +1,5 @@
 import { TrendingDown, TrendingUp } from 'lucide-react'
+import { card } from '@shared/components/ui'
 import type { ServiceData } from '../types'
 
 interface ServiceCardProps {
@@ -32,7 +33,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
   })()
 
   return (
-    <article className="flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-3.5 shadow-lg transition-shadow hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:gap-5 sm:p-4 lg:p-5">
+    <article className={`${card({ padding: 'sm' })} flex flex-col gap-4 transition-shadow hover:shadow-xl sm:gap-5`}>
       {/* Header: Icon + Name + Change badge */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3">

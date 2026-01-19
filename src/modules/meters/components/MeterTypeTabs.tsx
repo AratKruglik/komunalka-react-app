@@ -1,4 +1,4 @@
-import { type MeterType, METER_TYPE_OPTIONS } from '../../../shared/constants/meterTypes'
+import { type MeterType, METER_TYPE_OPTIONS } from '@shared/constants/meterTypes'
 
 export interface MeterTypeTab {
   value: MeterType

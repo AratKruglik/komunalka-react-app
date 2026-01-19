@@ -9,9 +9,9 @@ import {
   Label,
   PhotoDropzone,
   Select,
-} from '../../../shared/components/ui'
-import { SERVICE_CONFIG } from '../../../shared/constants/services'
-import type { MeterReadingDraftViewModel } from '../../../shared/viewModels'
+} from '@shared/components/ui'
+import { SERVICE_CONFIG } from '@shared/constants/services'
+import type { MeterReadingDraftViewModel } from '@shared/viewModels'
 
 interface ReadingCardProps {
   draft: MeterReadingDraftViewModel

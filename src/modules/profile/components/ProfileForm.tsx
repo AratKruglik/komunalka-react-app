@@ -15,11 +15,11 @@ import {
   Label,
   PasswordInput,
   PhotoDropzone,
-} from '../../../shared/components/ui'
+} from '@shared/components/ui'
 import {
   defaultPasswordRequirements,
   getPasswordStrength,
-} from '../../../shared/components/ui/form/PasswordInput'
+} from '@shared/components/ui/form/PasswordInput'
 
 interface ProfileFormProps {
   onCancel?: () => void
