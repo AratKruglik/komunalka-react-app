@@ -16,7 +16,7 @@ import {
   Label,
   Select,
 } from '@shared/components/ui'
-import { MOCK_ADDRESSES } from '@shared/data/mockDatabase'
+import { useAddresses } from '@modules/addresses/hooks'
 import { METER_TYPE_OPTIONS, type MeterType } from '@shared/constants/meterTypes'
 import { MeterTypeTabs } from '../components/MeterTypeTabs'
 import { MOCK_ADDRESS_METERS } from '../data/mockAddressMeters'
@@ -68,15 +68,23 @@ const historyStatusMap: Record<
 
 export default function AddressMetersPage() {
   const navigate = useNavigate()
+  const { addresses } = useAddresses()
 
   const addressOptions = useMemo(() => {
-    return MOCK_ADDRESSES.map((address) => ({
+    return addresses.map((address) => ({
       value: String(address.id),
       label: `${address.street}, ${address.building}, кв. ${address.apartment}`,
     }))
-  }, [])
+  }, [addresses])
 
-  const [selectedAddressId, setSelectedAddressId] = useState(addressOptions[0]?.value ?? '')
+  const [selectedAddressId, setSelectedAddressId] = useState('')
+
+  // Set initial address when addresses load
+  useEffect(() => {
+    if (addressOptions.length > 0 && !selectedAddressId) {
+      setSelectedAddressId(addressOptions[0].value)
+    }
+  }, [addressOptions, selectedAddressId])
   const [activeMeterType, setActiveMeterType] = useState<MeterType>('electricity')
   const [quickForms, setQuickForms] = useState<QuickFormState>({} as QuickFormState)
   const [submissionState, setSubmissionState] = useState<{ type: MeterType; message: string } | null>(null)

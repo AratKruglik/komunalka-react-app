@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import {
   AuthenticatedSidebar,
@@ -8,6 +8,7 @@ import {
   AuthenticatedTopbar,
   type TopbarUser,
 } from '../navigation/AuthenticatedTopbar'
+import { useUser } from '@shared/hooks'
 
 interface AuthenticatedLayoutProps {
   children: ReactNode
@@ -18,20 +19,34 @@ interface AuthenticatedLayoutProps {
   user?: TopbarUser
 }
 
-const defaultUser: TopbarUser = {
-  name: 'Олена Петренко',
-  email: 'olena@example.com',
-}
-
 export function AuthenticatedLayout({
   children,
   pageTitle = 'Мої адреси',
   pageSubtitle,
   notificationsCount = 0,
   sidebarSections,
-  user = defaultUser,
+  user: userProp,
 }: AuthenticatedLayoutProps) {
+  const authUser = useUser()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // Build user object from auth state or use provided prop
+  const user = useMemo<TopbarUser>(() => {
+    if (userProp) return userProp
+    if (authUser) {
+      const fullName = [authUser.firstName, authUser.lastName]
+        .filter(Boolean)
+        .join(' ') || authUser.username
+      return {
+        name: fullName,
+        email: authUser.email,
+      }
+    }
+    return {
+      name: 'Користувач',
+      email: '',
+    }
+  }, [userProp, authUser])
 
   const handleSidebarToggle = () => {
     setIsSidebarOpen((previous) => !previous)

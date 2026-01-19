@@ -21,7 +21,8 @@ import {
   METER_TYPE_OPTIONS,
   METER_TYPE_UNITS,
 } from '@shared/constants/meterTypes'
-import { MOCK_ADDRESSES, MOCK_PROVIDERS } from '@shared/data/mockDatabase'
+import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
+import { useAddresses } from '@modules/addresses/hooks'
 import { formatTariffLabel, getPrimaryTariff } from '@shared/utils/providerTariffs'
 
 type SubmissionIntent = 'draft' | 'submit'
@@ -68,6 +69,7 @@ export interface AddMeterFormProps {
 }
 
 export function AddMeterForm({ onCancel }: AddMeterFormProps) {
+  const { addresses } = useAddresses()
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const photoInputRef = useRef<HTMLInputElement | null>(null)
@@ -125,11 +127,11 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   }, [addressId, meterType, serialNumber, installationDate, initialReading, tariffValue])
 
   const addressOptions = useMemo(() => {
-    return MOCK_ADDRESSES.map((address) => ({
+    return addresses.map((address) => ({
       value: String(address.id),
       label: `${address.street}, ${address.building}, кв. ${address.apartment}`,
     }))
-  }, [])
+  }, [addresses])
 
   const handleMeterTypeSelect = (value: MeterType) => {
     setValue('meterType', value, { shouldValidate: true })
