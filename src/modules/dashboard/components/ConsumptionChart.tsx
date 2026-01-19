@@ -10,8 +10,8 @@ import {
   Legend,
 } from 'recharts'
 import type { ChartDataPoint, PeriodFilter } from '../types'
-import { Button } from '../../../shared/components/ui'
-import { SERVICE_CONFIG } from '../../../shared/constants/services'
+import { Button } from '@shared/components/ui'
+import { SERVICE_CONFIG } from '@shared/constants/services'
 
 interface ConsumptionChartProps {
   data: readonly ChartDataPoint[]

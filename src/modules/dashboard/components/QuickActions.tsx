@@ -1,7 +1,7 @@
 import { Plus, Home, Receipt } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { Button, card } from '../../../shared/components/ui'
+import { Button, card } from '@shared/components/ui'
 
 export function QuickActions() {
   const navigate = useNavigate()

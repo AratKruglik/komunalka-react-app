@@ -3,10 +3,10 @@ import type { LucideIcon } from 'lucide-react'
 import {
   SERVICE_CONFIG,
   getServiceIcon,
-} from '../../../shared/constants/services'
-import type { MeterType } from '../../../shared/constants/meterTypes'
-import { Button, card, iconContainer } from '../../../shared/components/ui'
-import type { PaymentReminderViewModel } from '../../../shared/viewModels'
+} from '@shared/constants/services'
+import type { MeterType } from '@shared/constants/meterTypes'
+import { Button, card, iconContainer } from '@shared/components/ui'
+import type { PaymentReminderViewModel } from '@shared/viewModels'
 
 interface PaymentRemindersProps {
   reminders: PaymentReminderViewModel[]

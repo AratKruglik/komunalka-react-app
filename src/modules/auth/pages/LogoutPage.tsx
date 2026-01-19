@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { useAuth } from '../../../shared/hooks'
+import { useAuth } from '@shared/hooks'
 
 export default function LogoutPage() {
   const { logout } = useAuth()

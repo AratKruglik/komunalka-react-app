@@ -1,19 +1,19 @@
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router';
-import { ProtectedRoute } from './shared/components/ProtectedRoute';
-import { PublicRoute } from './shared/components/PublicRoute';
-import { ROUTES } from './shared/constants';
-import AddressesPage from './modules/addresses/pages/AddressesPage';
-import AddAddressPage from './modules/addresses/pages/AddAddressPage';
-import LoginPage from './modules/auth/pages/LoginPage';
-import RegisterPage from './modules/auth/pages/RegisterPage';
-import LogoutPage from './modules/auth/pages/LogoutPage';
-import DashboardPage from './modules/dashboard/pages/DashboardPage';
-import AddMeterPage from './modules/meters/pages/AddMeterPage';
-import AddressMetersPage from './modules/meters/pages/AddressMetersPage';
-import ProvidersPage from './modules/providers/pages/ProvidersPage';
-import AddProviderPage from './modules/providers/pages/AddProviderPage';
-import AddReadingsPage from './modules/readings/pages/AddReadingsPage';
-import ProfilePage from './modules/profile/pages/ProfilePage';
+import { ProtectedRoute } from '@shared/components/ProtectedRoute';
+import { PublicRoute } from '@shared/components/PublicRoute';
+import { ROUTES } from '@shared/constants';
+import AddressesPage from '@modules/addresses/pages/AddressesPage';
+import AddAddressPage from '@modules/addresses/pages/AddAddressPage';
+import LoginPage from '@modules/auth/pages/LoginPage';
+import RegisterPage from '@modules/auth/pages/RegisterPage';
+import LogoutPage from '@modules/auth/pages/LogoutPage';
+import DashboardPage from '@modules/dashboard/pages/DashboardPage';
+import AddMeterPage from '@modules/meters/pages/AddMeterPage';
+import AddressMetersPage from '@modules/meters/pages/AddressMetersPage';
+import ProvidersPage from '@modules/providers/pages/ProvidersPage';
+import AddProviderPage from '@modules/providers/pages/AddProviderPage';
+import AddReadingsPage from '@modules/readings/pages/AddReadingsPage';
+import ProfilePage from '@modules/profile/pages/ProfilePage';
 
 function RootLayout() {
   return <Outlet />;

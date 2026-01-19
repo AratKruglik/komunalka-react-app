@@ -1,4 +1,4 @@
-import { Button, card, iconContainer } from '../../../shared/components/ui'
+import { Button, card, iconContainer } from '@shared/components/ui'
 import type { Reading } from '../types'
 
 interface RecentReadingsTableProps {

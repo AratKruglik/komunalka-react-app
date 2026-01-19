@@ -8,7 +8,7 @@ import {
   Tooltip,
   Label,
 } from 'recharts'
-import { Button } from '../../../shared/components/ui'
+import { Button } from '@shared/components/ui'
 import type {
   ExpenseDistributionByPeriod,
   ExpenseDistributionItem,

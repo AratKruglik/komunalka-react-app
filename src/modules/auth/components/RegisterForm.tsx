@@ -1,14 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { tv } from 'tailwind-variants'
-import { Logo, Button, GoogleIcon, FacebookIcon, AppleIcon } from '../../../shared/components/ui'
+import { Logo, Button, GoogleIcon, FacebookIcon, AppleIcon } from '@shared/components/ui'
 import {
   PasswordInput,
   getPasswordStrength,
   defaultPasswordRequirements,
-} from '../../../shared/components/ui'
-import { ROUTES } from '../../../shared/constants'
-import { useAuth } from '../../../shared/hooks'
+} from '@shared/components/ui'
+import { ROUTES } from '@shared/constants'
+import { useAuth } from '@shared/hooks'
 
 interface RegisterFormProps {
   className?: string

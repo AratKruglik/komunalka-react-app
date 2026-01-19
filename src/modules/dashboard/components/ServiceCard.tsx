@@ -1,5 +1,5 @@
 import { TrendingDown, TrendingUp } from 'lucide-react'
-import { card } from '../../../shared/components/ui'
+import { card } from '@shared/components/ui'
 import type { ServiceData } from '../types'
 
 interface ServiceCardProps {

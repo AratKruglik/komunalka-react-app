@@ -4,7 +4,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../../../shared/components/ui'
+} from '@shared/components/ui'
 import type { MeterReadingSummaryRow } from '../types'
 
 interface ReadingSummaryTableProps {

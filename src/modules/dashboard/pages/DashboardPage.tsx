@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
+import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
 import { WelcomeHeader } from '../components/WelcomeHeader'
 import { ServiceCard } from '../components/ServiceCard'
 import { ConsumptionChart } from '../components/ConsumptionChart'
@@ -14,7 +14,7 @@ import {
   getReadingsByMeterId,
   getReadingsByAddressId,
   getProviderById,
-} from '../../../shared/data/mockDatabase'
+} from '@shared/data/mockDatabase'
 import {
   toDashboardAddressOptionViewModel,
   toServiceDataViewModel,
@@ -24,7 +24,7 @@ import {
   toPaymentReminderViewModel,
   type PeriodFilter,
   type ExpenseDistributionByPeriod,
-} from '../../../shared/viewModels'
+} from '@shared/viewModels'
 
 export default function DashboardPage() {
   const [selectedAddressId, setSelectedAddressId] = useState(

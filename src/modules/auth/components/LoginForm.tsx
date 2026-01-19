@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { tv } from 'tailwind-variants'
-import { AppleIcon, FacebookIcon, GoogleIcon } from '../../../shared/components/ui'
-import { ROUTES } from '../../../shared/constants'
-import { useAuth } from '../../../shared/hooks'
+import { AppleIcon, FacebookIcon, GoogleIcon } from '@shared/components/ui'
+import { ROUTES } from '@shared/constants'
+import { useAuth } from '@shared/hooks'
 import * as React from "react";
 
 const socialButton = tv({

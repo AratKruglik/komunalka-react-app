@@ -8,7 +8,7 @@ import {
   MapPinned,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import { PageSectionHeader } from '../../../shared/components/pages'
+import { PageSectionHeader } from '@shared/components/pages'
 import {
   Button,
   Card,
@@ -21,7 +21,7 @@ import {
   RadioCard,
   Select,
   Textarea,
-} from '../../../shared/components/ui'
+} from '@shared/components/ui'
 
 type StepStatus = 'completed' | 'current' | 'upcoming'
 

@@ -1,8 +1,8 @@
 import { Pencil, Plug, Plus, Shield, Trash2 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
-import { PageSectionHeader } from '../../../shared/components/pages'
+import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
+import { PageSectionHeader } from '@shared/components/pages'
 import {
   Button,
   Card,
@@ -10,9 +10,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../../../shared/components/ui'
-import { MOCK_PROVIDERS } from '../../../shared/data/mockDatabase'
-import { formatTariffLabel } from '../../../shared/utils/providerTariffs'
+} from '@shared/components/ui'
+import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
+import { formatTariffLabel } from '@shared/utils/providerTariffs'
 
 export default function ProvidersPage() {
   const navigate = useNavigate()

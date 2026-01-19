@@ -1,6 +1,6 @@
 import { RegisterForm } from '../components/RegisterForm'
-import { GuestLayout } from '../../../shared/components/layout/GuestLayout'
-import { Card } from '../../../shared/components/ui'
+import { GuestLayout } from '@shared/components/layout/GuestLayout'
+import { Card } from '@shared/components/ui'
 
 export default function RegisterPage() {
   return (

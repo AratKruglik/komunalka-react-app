@@ -1,4 +1,4 @@
-import { METER_TYPE_UNITS, type MeterType } from '../../../shared/constants/meterTypes'
+import { METER_TYPE_UNITS, type MeterType } from '@shared/constants/meterTypes'
 import type {
   AddressMetersSnapshot,
   MeterHistoryRecord,

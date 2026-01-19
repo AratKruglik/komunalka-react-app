@@ -1,5 +1,5 @@
 import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNode } from 'react';
-import { authService } from '../../api';
+import { authService } from '@shared/api';
 import { AuthActionType } from './actionTypes';
 import type { AuthContextValue } from './types';
 import { authReducer, initialState } from './reducer';

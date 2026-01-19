@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
-import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
+import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
 import { AddProviderForm } from '../components/AddProviderForm'
 
 const breadcrumbs = [

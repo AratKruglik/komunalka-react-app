@@ -7,8 +7,8 @@ import {
 import {
   getServiceIcon,
   getServiceTagClasses,
-} from '../../../shared/constants/services'
-import { Button } from '../../../shared/components/ui'
+} from '@shared/constants/services'
+import { Button } from '@shared/components/ui'
 
 export type AddressBadgeVariant = 'primary' | 'muted' | 'outline'
 

@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useState, type ChangeEvent } from 'react'
 import { Plus } from 'lucide-react'
-import { Button, Label, Select, card } from '../../../shared/components/ui'
+import { Button, Label, Select, card } from '@shared/components/ui'
 import type { DashboardAddressOption } from '../types'
 
 interface WelcomeHeaderProps {

@@ -1,14 +1,14 @@
 import { Plus } from 'lucide-react'
 import { AddressCard } from './AddressCard'
-import { Button } from '../../../shared/components/ui'
+import { Button } from '@shared/components/ui'
 import {
   MOCK_ADDRESSES,
   getMetersByAddressId,
-} from '../../../shared/data/mockDatabase'
+} from '@shared/data/mockDatabase'
 import {
   toAddressCardViewModel,
   type AddressCardViewModel,
-} from '../../../shared/viewModels'
+} from '@shared/viewModels'
 
 interface AddressesListSectionProps {
   addresses?: AddressCardViewModel[]

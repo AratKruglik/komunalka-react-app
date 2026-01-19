@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus } from 'lucide-react'
-import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
-import { PageSectionHeader } from '../../../shared/components/pages'
+import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
+import { PageSectionHeader } from '@shared/components/pages'
 import {
   Badge,
   Button,
@@ -15,9 +15,9 @@ import {
   Input,
   Label,
   Select,
-} from '../../../shared/components/ui'
-import { MOCK_ADDRESSES } from '../../../shared/data/mockDatabase'
-import { METER_TYPE_OPTIONS, type MeterType } from '../../../shared/constants/meterTypes'
+} from '@shared/components/ui'
+import { MOCK_ADDRESSES } from '@shared/data/mockDatabase'
+import { METER_TYPE_OPTIONS, type MeterType } from '@shared/constants/meterTypes'
 import { MeterTypeTabs } from '../components/MeterTypeTabs'
 import { MOCK_ADDRESS_METERS } from '../data/mockAddressMeters'
 import type { MeterTypeGroup } from '../types'

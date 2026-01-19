@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { AuthenticatedLayout } from '../../../shared/components/layout/AuthenticatedLayout'
+import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
 import { AddressesListSection } from '../components/AddressesListSection'
 
 export default function AddressesPage() {

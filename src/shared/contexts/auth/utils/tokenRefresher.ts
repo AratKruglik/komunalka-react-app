@@ -1,5 +1,5 @@
 import { AuthActionType } from '../actionTypes';
-import { authService } from '../../../api';
+import { authService } from '@shared/api';
 import type { AuthDispatch, IsRefreshingRef, ScheduleTokenRefreshFn, LogoutFn } from './types';
 
 /**
