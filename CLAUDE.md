@@ -137,7 +137,7 @@ Benefits:
 **IMPORTANT: All frontend development tasks must be handled by the senior-frontend-engineer agent.**
 
 When working on this project:
-- **Always** use the `senior-frontend-engineer` agent for any frontend-related tasks
+- **Always** use the `fe-e` agent for any frontend-related tasks
 - This includes: component creation, styling, refactoring, bug fixes, feature implementation, layout changes, etc.
 - The agent has deep expertise in React, TypeScript, and modern frontend practices
 - Do not implement frontend changes directly - delegate all frontend work to the agent

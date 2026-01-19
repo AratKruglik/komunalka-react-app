@@ -19,5 +19,9 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      semi: ['error', 'never'],
+      '@typescript-eslint/no-extra-semi': 'off',
+    },
   },
 ])

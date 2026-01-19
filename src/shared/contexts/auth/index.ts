@@ -4,11 +4,11 @@
  */
 
 // Main exports
-export { AuthProvider, AuthContext } from './AuthProvider';
-export { useAuthContext } from './useAuthContext';
+export { AuthProvider, AuthContext } from './AuthProvider'
+export { useAuthContext } from './useAuthContext'
 
 // Type re-exports for convenience
-export type { User, AuthState, AuthAction, AuthContextValue } from './types';
+export type { User, AuthState, AuthAction, AuthContextValue } from './types'
 
 // Alias for backward compatibility (optional)
-export { useAuthContext as useAuth } from './useAuthContext';
+export { useAuthContext as useAuth } from './useAuthContext'

@@ -1,8 +1,9 @@
-import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNode } from 'react';
-import { authService } from '@shared/api';
-import { AuthActionType } from './actionTypes';
-import type { AuthContextValue } from './types';
-import { authReducer, initialState } from './reducer';
+import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNode } from 'react'
+import { authService, userService } from '@shared/api'
+import { AuthActionType } from './actionTypes'
+import type { AuthContextValue } from './types'
+import type { UpdateUserRequest, User } from '@types/auth'
+import { authReducer, initialState } from './reducer'
 import {
   scheduleTokenRefresh,
   clearTokenRefreshTimeout,
@@ -11,14 +12,14 @@ import {
   registerAction,
   initializeAuth,
   handleVisibilityChange,
-} from './utils';
+} from './utils'
 
 /**
  * Auth context - separated for better performance
  * Export for use in custom hooks
  */
 // eslint-disable-next-line react-refresh/only-export-components
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 /**
  * Authentication Provider Component
@@ -27,19 +28,19 @@ export const AuthContext = createContext<AuthContextValue | undefined>(undefined
  * This component is now streamlined - all business logic is extracted into utility functions
  */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(authReducer, initialState);
-  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isRefreshingRef = useRef(false);
+  const [state, dispatch] = useReducer(authReducer, initialState)
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isRefreshingRef = useRef(false)
 
   /**
    * Logout user and clear all data
    * Stable function - uses refs only
    */
   const logout = useCallback(() => {
-    clearTokenRefreshTimeout(refreshTimeoutRef);
-    authService.logout();
-    dispatch({ type: AuthActionType.LOGOUT });
-  }, []);
+    clearTokenRefreshTimeout(refreshTimeoutRef)
+    authService.logout()
+    dispatch({ type: AuthActionType.LOGOUT })
+  }, [])
 
   /**
    * Schedule token refresh
@@ -52,31 +53,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Pass current callbacks via ref to avoid circular deps
       () => refreshTokenManuallyRef.current?.() ?? Promise.resolve(),
       logout
-    );
-  }, [logout]);
+    )
+  }, [logout])
 
   /**
    * Manual token refresh
    * Stored in ref to avoid circular dependencies with scheduleRefresh
    */
-  const refreshTokenManuallyRef = useRef<(() => Promise<void>) | null>(null);
+  const refreshTokenManuallyRef = useRef<(() => Promise<void>) | null>(null)
 
   const refreshTokenManually = useCallback(async () => {
-    await refreshToken(isRefreshingRef, state.refreshToken, dispatch, scheduleRefresh, logout);
-  }, [state.refreshToken, scheduleRefresh, logout]);
+    await refreshToken(isRefreshingRef, state.refreshToken, dispatch, scheduleRefresh, logout)
+  }, [state.refreshToken, scheduleRefresh, logout])
 
   // Update ref when function changes
-  refreshTokenManuallyRef.current = refreshTokenManually;
+  refreshTokenManuallyRef.current = refreshTokenManually
 
   /**
    * Login user with email and password
    */
   const login = useCallback(
     async (email: string, password: string, rememberMe = false) => {
-      await loginAction({ email, password, rememberMe }, dispatch, scheduleRefresh);
+      await loginAction({ email, password, rememberMe }, dispatch, scheduleRefresh)
     },
     [scheduleRefresh]
-  );
+  )
 
   /**
    * Register new user
@@ -94,18 +95,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       rememberMe = true
     ) => {
-      await registerAction({ ...data, rememberMe }, dispatch, scheduleRefresh);
+      await registerAction({ ...data, rememberMe }, dispatch, scheduleRefresh)
     },
     [scheduleRefresh]
-  );
+  )
+
+  /**
+   * Update user profile
+   */
+  const updateProfile = useCallback(
+    async (data: UpdateUserRequest): Promise<User> => {
+      if (!state.user) {
+        throw new Error('User not authenticated')
+      }
+      const updatedUser = await userService.update(state.user.id, data)
+      dispatch({ type: AuthActionType.UPDATE_USER, payload: updatedUser })
+      return updatedUser
+    },
+    [state.user]
+  )
 
   /**
    * Initialize auth state from storage on mount
    */
   useEffect(() => {
-    void initializeAuth(dispatch, scheduleRefresh, refreshTokenManually);
+    void initializeAuth(dispatch, scheduleRefresh, refreshTokenManually)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
+  }, []) // Only run on mount
 
   /**
    * Handle visibility change (tab sleep/wake)
@@ -119,21 +135,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshTokenManually,
         logout,
         scheduleRefresh
-      );
-    };
+      )
+    }
 
-    document.addEventListener('visibilitychange', visibilityChangeHandler);
-    return () => document.removeEventListener('visibilitychange', visibilityChangeHandler);
-  }, [state.isAuthenticated, state.expiresAt, refreshTokenManually, logout, scheduleRefresh]);
+    document.addEventListener('visibilitychange', visibilityChangeHandler)
+    return () => document.removeEventListener('visibilitychange', visibilityChangeHandler)
+  }, [state.isAuthenticated, state.expiresAt, refreshTokenManually, logout, scheduleRefresh])
 
   /**
    * Cleanup on unmount
    */
   useEffect(() => {
     return () => {
-      clearTokenRefreshTimeout(refreshTimeoutRef);
-    };
-  }, []);
+      clearTokenRefreshTimeout(refreshTimeoutRef)
+    }
+  }, [])
 
   const value: AuthContextValue = {
     state,
@@ -141,7 +157,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     register,
     refreshTokenManually,
-  };
+    updateProfile,
+  }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

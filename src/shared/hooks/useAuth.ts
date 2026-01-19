@@ -1,4 +1,4 @@
-import { useAuthContext } from '../contexts/auth';
+import { useAuthContext } from '../contexts/auth'
 
 /**
  * Custom hook to access authentication context
@@ -18,5 +18,5 @@ import { useAuthContext } from '../contexts/auth';
  * ```
  */
 export function useAuth() {
-  return useAuthContext();
+  return useAuthContext()
 }

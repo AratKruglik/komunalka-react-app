@@ -1,6 +1,6 @@
-import { AuthActionType } from '../actionTypes';
-import { authService } from '@shared/api';
-import type { AuthDispatch, ScheduleTokenRefreshFn, RefreshTokenManuallyFn } from './types';
+import { AuthActionType } from '../actionTypes'
+import { authService } from '@shared/api'
+import type { AuthDispatch, ScheduleTokenRefreshFn, RefreshTokenManuallyFn } from './types'
 
 /**
  * Initialize auth state from storage on mount
@@ -15,13 +15,13 @@ export async function initializeAuth(
   scheduleTokenRefresh: ScheduleTokenRefreshFn,
   refreshTokenManually: RefreshTokenManuallyFn
 ): Promise<void> {
-  const token = authService.getToken();
-  const refreshToken = authService.getRefreshToken();
-  const expiresAt = authService.getExpiresAt();
+  const token = authService.getToken()
+  const refreshToken = authService.getRefreshToken()
+  const expiresAt = authService.getExpiresAt()
 
   if (token && refreshToken && expiresAt) {
-    const expirationTime = new Date(expiresAt).getTime();
-    const currentTime = Date.now();
+    const expirationTime = new Date(expiresAt).getTime()
+    const currentTime = Date.now()
 
     // Check if token is still valid
     if (expirationTime > currentTime) {
@@ -29,16 +29,16 @@ export async function initializeAuth(
       dispatch({
         type: AuthActionType.SET_TOKENS,
         payload: { token, refreshToken, expiresAt },
-      });
+      })
 
       // Schedule refresh
-      scheduleTokenRefresh(expiresAt);
+      scheduleTokenRefresh(expiresAt)
     } else {
       // Token expired, try to refresh
-      await refreshTokenManually();
+      await refreshTokenManually()
     }
   } else {
     // No valid session
-    dispatch({ type: AuthActionType.LOGOUT });
+    dispatch({ type: AuthActionType.LOGOUT })
   }
 }

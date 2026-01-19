@@ -1,6 +1,6 @@
-import { AuthActionType } from '../actionTypes';
-import { authService } from '@shared/api';
-import type { AuthDispatch, ScheduleTokenRefreshFn } from './types';
+import { AuthActionType } from '../actionTypes'
+import { authService } from '@shared/api'
+import type { AuthDispatch, ScheduleTokenRefreshFn } from './types'
 
 /**
  * Parameters for login action
@@ -38,12 +38,12 @@ export async function loginAction(
   dispatch: AuthDispatch,
   scheduleTokenRefresh: ScheduleTokenRefreshFn
 ): Promise<void> {
-  const { email, password, rememberMe = false } = params;
+  const { email, password, rememberMe = false } = params
 
   try {
-    dispatch({ type: AuthActionType.AUTH_START });
+    dispatch({ type: AuthActionType.AUTH_START })
 
-    const response = await authService.login({ email, password }, rememberMe);
+    const response = await authService.login({ email, password }, rememberMe)
 
     // Update state
     dispatch({
@@ -54,17 +54,17 @@ export async function loginAction(
         refreshToken: response.refreshToken,
         expiresAt: response.expiration,
       },
-    });
+    })
 
     // Schedule token refresh
-    scheduleTokenRefresh(response.expiration);
+    scheduleTokenRefresh(response.expiration)
   } catch (error) {
     const errorMessage =
       error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
-        : 'Login failed';
-    dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage });
-    throw error;
+        : 'Login failed'
+    dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage })
+    throw error
   }
 }
 
@@ -81,12 +81,12 @@ export async function registerAction(
   dispatch: AuthDispatch,
   scheduleTokenRefresh: ScheduleTokenRefreshFn
 ): Promise<void> {
-  const { rememberMe = true, ...registrationData } = params;
+  const { rememberMe = true, ...registrationData } = params
 
   try {
-    dispatch({ type: AuthActionType.AUTH_START });
+    dispatch({ type: AuthActionType.AUTH_START })
 
-    const response = await authService.register(registrationData, rememberMe);
+    const response = await authService.register(registrationData, rememberMe)
 
     // Update state
     dispatch({
@@ -97,16 +97,16 @@ export async function registerAction(
         refreshToken: response.refreshToken,
         expiresAt: response.expiration,
       },
-    });
+    })
 
     // Schedule token refresh
-    scheduleTokenRefresh(response.expiration);
+    scheduleTokenRefresh(response.expiration)
   } catch (error) {
     const errorMessage =
       error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
-        : 'Registration failed';
-    dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage });
-    throw error;
+        : 'Registration failed'
+    dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage })
+    throw error
   }
 }

@@ -11,7 +11,8 @@ export const AuthActionType = {
   REFRESH_START: 'REFRESH_START',
   REFRESH_SUCCESS: 'REFRESH_SUCCESS',
   REFRESH_ERROR: 'REFRESH_ERROR',
-} as const;
+  UPDATE_USER: 'UPDATE_USER',
+} as const
 
 /**
  * Type-safe action type values

@@ -1,6 +1,6 @@
-import { AuthActionType } from '../actionTypes';
-import { authService } from '@shared/api';
-import type { AuthDispatch, IsRefreshingRef, ScheduleTokenRefreshFn, LogoutFn } from './types';
+import { AuthActionType } from '../actionTypes'
+import { authService } from '@shared/api'
+import type { AuthDispatch, IsRefreshingRef, ScheduleTokenRefreshFn, LogoutFn } from './types'
 
 /**
  * Refresh the authentication token
@@ -21,21 +21,21 @@ export async function refreshToken(
 ): Promise<void> {
   // Prevent concurrent refresh requests
   if (isRefreshingRef.current) {
-    return;
+    return
   }
 
-  const refreshTokenValue = currentRefreshToken || authService.getRefreshToken();
+  const refreshTokenValue = currentRefreshToken || authService.getRefreshToken()
 
   if (!refreshTokenValue) {
-    logout();
-    return;
+    logout()
+    return
   }
 
   try {
-    isRefreshingRef.current = true;
-    dispatch({ type: AuthActionType.REFRESH_START });
+    isRefreshingRef.current = true
+    dispatch({ type: AuthActionType.REFRESH_START })
 
-    const response = await authService.refreshToken(refreshTokenValue);
+    const response = await authService.refreshToken(refreshTokenValue)
 
     dispatch({
       type: AuthActionType.REFRESH_SUCCESS,
@@ -45,14 +45,14 @@ export async function refreshToken(
         expiresAt: response.expiration,
         user: response.user,
       },
-    });
+    })
 
     // Schedule next refresh
-    scheduleTokenRefresh(response.expiration);
+    scheduleTokenRefresh(response.expiration)
   } catch {
-    dispatch({ type: AuthActionType.REFRESH_ERROR });
-    authService.logout();
+    dispatch({ type: AuthActionType.REFRESH_ERROR })
+    authService.logout()
   } finally {
-    isRefreshingRef.current = false;
+    isRefreshingRef.current = false
   }
 }

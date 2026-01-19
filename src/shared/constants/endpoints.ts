@@ -44,6 +44,13 @@ export const API_ENDPOINTS = {
     UPDATE_PROFILE: '/user/profile',
     CHANGE_PASSWORD: '/user/change-password',
   },
-} as const;
+  USERS: {
+    LIST: '/users',
+    CREATE: '/users',
+    GET: (id: number) => `/users/${id}`,
+    UPDATE: (id: number) => `/users/${id}`,
+    DELETE: (id: number) => `/users/${id}`,
+  },
+} as const
 
 export type ApiEndpoint = typeof API_ENDPOINTS;

@@ -1,6 +1,6 @@
-import { Navigate, Outlet } from 'react-router';
-import { useAuth } from '../hooks';
-import { ROUTES } from '../constants';
+import { Navigate, Outlet } from 'react-router'
+import { useAuth } from '../hooks'
+import { ROUTES } from '../constants'
 
 /**
  * ProtectedRoute Component
@@ -17,18 +17,18 @@ import { ROUTES } from '../constants';
  * ```
  */
 export function ProtectedRoute() {
-  const { state } = useAuth();
+  const { state } = useAuth()
 
   // Show nothing while checking authentication status
   if (state.isLoading) {
-    return null;
+    return null
   }
 
   // Redirect to login if not authenticated
   if (!state.isAuthenticated) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />
   }
 
   // Render child routes if authenticated
-  return <Outlet />;
+  return <Outlet />
 }

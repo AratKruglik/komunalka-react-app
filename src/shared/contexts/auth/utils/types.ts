@@ -1,5 +1,5 @@
-import type { Dispatch } from 'react';
-import type { AuthAction } from '../types';
+import type { Dispatch } from 'react'
+import type { AuthAction } from '../types'
 
 /**
  * Type for the dispatch function used in auth utils

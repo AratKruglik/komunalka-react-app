@@ -1,4 +1,4 @@
-import type { AxiosRequestHeaders } from 'axios';
+import type { AxiosRequestHeaders } from 'axios'
 
 /**
  * Add Authorization header to existing headers if token is provided
@@ -12,11 +12,11 @@ export function withAuthHeader(
   token?: string | null
 ): AxiosRequestHeaders {
   if (!token) {
-    return (headers || {}) as AxiosRequestHeaders;
+    return (headers || {}) as AxiosRequestHeaders
   }
 
   return {
     ...(headers || {}),
     Authorization: `Bearer ${token}`,
-  } as AxiosRequestHeaders;
+  } as AxiosRequestHeaders
 }

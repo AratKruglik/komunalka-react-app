@@ -1,4 +1,4 @@
-import type { RefreshTimeoutRef, RefreshTokenManuallyFn, LogoutFn } from './types';
+import type { RefreshTimeoutRef, RefreshTokenManuallyFn, LogoutFn } from './types'
 
 /**
  * Schedule automatic token refresh before expiration
@@ -17,29 +17,29 @@ export function scheduleTokenRefresh(
 ): void {
   // Clear any existing timeout
   if (refreshTimeoutRef.current) {
-    clearTimeout(refreshTimeoutRef.current);
-    refreshTimeoutRef.current = null;
+    clearTimeout(refreshTimeoutRef.current)
+    refreshTimeoutRef.current = null
   }
 
-  const expirationTime = new Date(expiresAt).getTime();
-  const currentTime = Date.now();
-  const timeUntilExpiry = expirationTime - currentTime;
+  const expirationTime = new Date(expiresAt).getTime()
+  const currentTime = Date.now()
+  const timeUntilExpiry = expirationTime - currentTime
 
   // Refresh 2 minutes (120000ms) before expiration
-  const refreshBuffer = 2 * 60 * 1000;
-  const timeUntilRefresh = timeUntilExpiry - refreshBuffer;
+  const refreshBuffer = 2 * 60 * 1000
+  const timeUntilRefresh = timeUntilExpiry - refreshBuffer
 
   // Only schedule if we have time before expiry
   if (timeUntilRefresh > 0) {
     refreshTimeoutRef.current = setTimeout(() => {
-      refreshTokenManually();
-    }, timeUntilRefresh);
+      refreshTokenManually()
+    }, timeUntilRefresh)
   } else if (timeUntilExpiry > 0) {
     // Token expires soon, try to refresh immediately
-    refreshTokenManually();
+    refreshTokenManually()
   } else {
     // Token already expired
-    logout();
+    logout()
   }
 }
 
@@ -50,7 +50,7 @@ export function scheduleTokenRefresh(
  */
 export function clearTokenRefreshTimeout(refreshTimeoutRef: RefreshTimeoutRef): void {
   if (refreshTimeoutRef.current) {
-    clearTimeout(refreshTimeoutRef.current);
-    refreshTimeoutRef.current = null;
+    clearTimeout(refreshTimeoutRef.current)
+    refreshTimeoutRef.current = null
   }
 }

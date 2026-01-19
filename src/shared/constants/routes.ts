@@ -18,7 +18,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/forgot-password',
   TERMS: '/terms',
   PRIVACY: '/privacy',
-} as const;
+} as const
 
 export type RouteKey = keyof typeof ROUTES;
 export type RouteValue = typeof ROUTES[RouteKey];

@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { API_CONFIG } from './config';
-import { API_ENDPOINTS } from '../constants';
+import axios from 'axios'
+import { API_CONFIG } from './config'
+import { API_ENDPOINTS } from '../constants'
 
 /**
  * Типи для аутентифікації
@@ -57,7 +57,7 @@ const authHttp = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
+})
 
 type SameSite = 'Lax' | 'Strict' | 'None';
 
@@ -72,56 +72,56 @@ function setCookie(
     secure?: boolean;
   } = {}
 ) {
-  const path = options.path ?? '/';
-  const sameSite = options.sameSite ?? 'Lax';
-  const secure = options.secure ?? window.location.protocol === 'https:';
+  const path = options.path ?? '/'
+  const sameSite = options.sameSite ?? 'Lax'
+  const secure = options.secure ?? window.location.protocol === 'https:'
 
-  let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=${path}; SameSite=${sameSite}`;
+  let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; Path=${path}; SameSite=${sameSite}`
 
   if (secure) {
-    cookie += '; Secure';
+    cookie += '; Secure'
   }
   if (options.expires) {
-    cookie += `; Expires=${options.expires.toUTCString()}`;
+    cookie += `; Expires=${options.expires.toUTCString()}`
   }
   if (typeof options.maxAge === 'number') {
-    cookie += `; Max-Age=${options.maxAge}`;
+    cookie += `; Max-Age=${options.maxAge}`
   }
 
-  document.cookie = cookie;
+  document.cookie = cookie
 }
 
 function getCookie(name: string): string | null {
-  const encodedName = encodeURIComponent(name) + '=';
-  const parts = document.cookie.split('; ');
-  const cookie = parts.find(part => part.startsWith(encodedName));
-  return cookie ? decodeURIComponent(cookie.substring(encodedName.length)) : null;
+  const encodedName = encodeURIComponent(name) + '='
+  const parts = document.cookie.split('; ')
+  const cookie = parts.find(part => part.startsWith(encodedName))
+  return cookie ? decodeURIComponent(cookie.substring(encodedName.length)) : null
 }
 
 function deleteCookie(name: string) {
-  setCookie(name, '', { maxAge: -1 });
+  setCookie(name, '', { maxAge: -1 })
 }
 
 function saveAuthCookies(response: AuthResponse, rememberMe: boolean) {
-  const expiresAtDate = new Date(response.expiration);
-  const cookieOptions = rememberMe ? { expires: expiresAtDate } : {};
+  const expiresAtDate = new Date(response.expiration)
+  const cookieOptions = rememberMe ? { expires: expiresAtDate } : {}
 
   if (rememberMe) {
-    setCookie('remember_me', 'true', { maxAge: 60 * 60 * 24 * 30 });
+    setCookie('remember_me', 'true', { maxAge: 60 * 60 * 24 * 30 })
   } else {
-    deleteCookie('remember_me');
+    deleteCookie('remember_me')
   }
 
-  setCookie('jwt_token', response.token, cookieOptions);
-  setCookie('refresh_token', response.refreshToken, cookieOptions);
-  setCookie('expires_at', response.expiration, cookieOptions);
+  setCookie('jwt_token', response.token, cookieOptions)
+  setCookie('refresh_token', response.refreshToken, cookieOptions)
+  setCookie('expires_at', response.expiration, cookieOptions)
 }
 
 function clearAuthCookies() {
-  deleteCookie('jwt_token');
-  deleteCookie('refresh_token');
-  deleteCookie('expires_at');
-  deleteCookie('remember_me');
+  deleteCookie('jwt_token')
+  deleteCookie('refresh_token')
+  deleteCookie('expires_at')
+  deleteCookie('remember_me')
 }
 
 export const authService = {
@@ -129,25 +129,25 @@ export const authService = {
    * Реєстрація нового користувача
    */
   register: async (data: RegisterRequest, rememberMe = true): Promise<AuthResponse> => {
-    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data);
-    saveAuthCookies(response.data, rememberMe);
-    return response.data;
+    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.REGISTER, data)
+    saveAuthCookies(response.data, rememberMe)
+    return response.data
   },
 
   /**
    * Вхід користувача
    */
   login: async (data: LoginRequest, rememberMe = false): Promise<AuthResponse> => {
-    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, data);
-    saveAuthCookies(response.data, rememberMe);
-    return response.data;
+    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.LOGIN, data)
+    saveAuthCookies(response.data, rememberMe)
+    return response.data
   },
 
   /**
    * Вихід користувача
    */
   logout: () => {
-    clearAuthCookies();
+    clearAuthCookies()
   },
 
   /**
@@ -156,12 +156,12 @@ export const authService = {
   refreshToken: async (refreshToken: string): Promise<AuthResponse> => {
     const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.AUTH.REFRESH, {
       refreshToken,
-    });
+    })
 
-    const rememberMe = getCookie('remember_me') === 'true';
-    saveAuthCookies(response.data, rememberMe);
+    const rememberMe = getCookie('remember_me') === 'true'
+    saveAuthCookies(response.data, rememberMe)
 
-    return response.data;
+    return response.data
   },
 
   /**
@@ -179,27 +179,27 @@ export const authService = {
    * Перевірка, чи користувач залогінений
    */
   isAuthenticated: (): boolean => {
-    return !!getCookie('jwt_token');
+    return !!getCookie('jwt_token')
   },
 
   /**
    * Отримання токена
    */
   getToken: (): string | null => {
-    return getCookie('jwt_token');
+    return getCookie('jwt_token')
   },
 
   /**
    * Отримання refresh токена
    */
   getRefreshToken: (): string | null => {
-    return getCookie('refresh_token');
+    return getCookie('refresh_token')
   },
 
   /**
    * Отримання часу експірації access токена
    */
   getExpiresAt: (): string | null => {
-    return getCookie('expires_at');
+    return getCookie('expires_at')
   },
-};
+}

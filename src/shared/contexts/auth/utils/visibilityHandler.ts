@@ -1,4 +1,4 @@
-import type { RefreshTokenManuallyFn, LogoutFn, ScheduleTokenRefreshFn } from './types';
+import type { RefreshTokenManuallyFn, LogoutFn, ScheduleTokenRefreshFn } from './types'
 
 /**
  * Handle visibility change (tab sleep/wake)
@@ -18,18 +18,18 @@ export function handleVisibilityChange(
   scheduleTokenRefresh: ScheduleTokenRefreshFn
 ): void {
   if (document.visibilityState === 'visible' && isAuthenticated && expiresAt) {
-    const expirationTime = new Date(expiresAt).getTime();
-    const currentTime = Date.now();
-    const timeUntilExpiry = expirationTime - currentTime;
+    const expirationTime = new Date(expiresAt).getTime()
+    const currentTime = Date.now()
+    const timeUntilExpiry = expirationTime - currentTime
 
     // If token expires in less than 5 minutes, refresh immediately
     if (timeUntilExpiry < 5 * 60 * 1000 && timeUntilExpiry > 0) {
-      refreshTokenManually();
+      refreshTokenManually()
     } else if (timeUntilExpiry <= 0) {
-      logout();
+      logout()
     } else {
       // Reschedule refresh based on current time
-      scheduleTokenRefresh(expiresAt);
+      scheduleTokenRefresh(expiresAt)
     }
   }
 }
