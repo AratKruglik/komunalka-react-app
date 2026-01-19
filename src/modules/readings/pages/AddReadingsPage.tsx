@@ -4,8 +4,8 @@ import { Plus } from 'lucide-react'
 import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
 import { PageSectionHeader } from '@shared/components/pages'
 import { Button, Card, CardContent, Label, Select } from '@shared/components/ui'
+import { useAddresses } from '@modules/addresses/hooks'
 import {
-  MOCK_ADDRESSES,
   MOCK_PROVIDERS,
   getMetersByAddressId,
   getReadingsByAddressId,
@@ -49,16 +49,28 @@ const buildFormState = (drafts: readonly MeterReadingDraftViewModel[]): MeterFor
 
 export default function AddReadingsPage() {
   const navigate = useNavigate()
-  const [selectedAddressId, setSelectedAddressId] = useState(MOCK_ADDRESSES[0]?.id ?? 1)
+  const { addresses } = useAddresses()
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
+
+  // Set initial address when addresses load
+  useEffect(() => {
+    if (addresses.length > 0 && selectedAddressId === null) {
+      setSelectedAddressId(addresses[0].id)
+    }
+  }, [addresses, selectedAddressId])
 
   // Generate address options for dropdown
   const addressOptions = useMemo(
-    () => MOCK_ADDRESSES.map(toAddressSelectViewModel),
-    []
+    () => addresses.map(toAddressSelectViewModel),
+    [addresses]
   )
 
   // Generate snapshot for selected address
   const snapshot = useMemo<AddressReadingsSnapshotViewModel | null>(() => {
+    if (selectedAddressId === null) {
+      return null
+    }
+
     const meters = getMetersByAddressId(selectedAddressId)
     const readings = getReadingsByAddressId(selectedAddressId)
 
@@ -254,9 +266,8 @@ export default function AddReadingsPage() {
               </Label>
               <Select
                 id="address-select"
-                value={selectedAddressId}
+                value={selectedAddressId ?? ''}
                 onChange={handleAddressChange}
-                wrapperClassName="w-full"
               >
                 {addressOptions.map((option) => (
                   <option key={option.id} value={option.id}>

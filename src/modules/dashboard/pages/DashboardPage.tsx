@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
 import { WelcomeHeader } from '../components/WelcomeHeader'
 import { ServiceCard } from '../components/ServiceCard'
@@ -7,8 +7,9 @@ import { ExpenseDistribution } from '../components/ExpenseDistribution'
 import { RecentReadingsTable } from '../components/RecentReadingsTable'
 import { PaymentReminders } from '../components/PaymentReminders'
 import { QuickActions } from '../components/QuickActions'
+import { useAddresses } from '@modules/addresses/hooks'
+import { useUser } from '@shared/hooks'
 import {
-  MOCK_ADDRESSES,
   MOCK_PROVIDERS,
   getMetersByAddressId,
   getReadingsByMeterId,
@@ -27,24 +28,34 @@ import {
 } from '@shared/viewModels'
 
 export default function DashboardPage() {
-  const [selectedAddressId, setSelectedAddressId] = useState(
-    MOCK_ADDRESSES[0]?.id ?? 1
-  )
+  const user = useUser()
+  const { addresses } = useAddresses()
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
+
+  // Get user's first name for greeting
+  const userName = user?.firstName || user?.username || 'Користувач'
+
+  // Set initial address when addresses load
+  useEffect(() => {
+    if (addresses.length > 0 && selectedAddressId === null) {
+      setSelectedAddressId(addresses[0].id)
+    }
+  }, [addresses, selectedAddressId])
 
   // Generate address options for dropdown
   const addressOptions = useMemo(
-    () => MOCK_ADDRESSES.map(toDashboardAddressOptionViewModel),
-    []
+    () => addresses.map(toDashboardAddressOptionViewModel),
+    [addresses]
   )
 
   // Get meters and readings for selected address
   const meters = useMemo(
-    () => getMetersByAddressId(selectedAddressId),
+    () => selectedAddressId ? getMetersByAddressId(selectedAddressId) : [],
     [selectedAddressId]
   )
 
   const allReadings = useMemo(
-    () => getReadingsByAddressId(selectedAddressId),
+    () => selectedAddressId ? getReadingsByAddressId(selectedAddressId) : [],
     [selectedAddressId]
   )
 
@@ -130,9 +141,9 @@ export default function DashboardPage() {
       <div className="space-y-4 sm:space-y-5 lg:space-y-6">
         {/* Welcome Header */}
         <WelcomeHeader
-          userName="Олена"
+          userName={userName}
           addresses={addressOptions}
-          selectedAddressId={selectedAddressId}
+          selectedAddressId={selectedAddressId ?? undefined}
           onAddressChange={setSelectedAddressId}
         />
 

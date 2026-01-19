@@ -8,6 +8,7 @@ import {
   MapPinned,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router'
 import { PageSectionHeader } from '@shared/components/pages'
 import {
   Button,
@@ -22,6 +23,8 @@ import {
   Select,
   Textarea,
 } from '@shared/components/ui'
+import { useCreateAddress } from '../hooks'
+import type { CreateAddressRequest } from '../types'
 
 type StepStatus = 'completed' | 'current' | 'upcoming'
 
@@ -120,13 +123,15 @@ const defaultValues: AddressFormValues = {
 }
 
 export function AddAddressForm({ onCancel }: AddAddressFormProps) {
+  const navigate = useNavigate()
+  const { createAddress, isLoading: isPending, error } = useCreateAddress()
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
     formState: { errors, isSubmitting },
-    reset,
   } = useForm<AddressFormValues>({
     defaultValues,
     mode: 'onSubmit',
@@ -140,14 +145,21 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
   }
 
   const onSubmit = async (data: AddressFormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const requestData: CreateAddressRequest = {
+      street: data.street,
+      building: data.buildingNumber,
+      apartment: data.unitNumber,
+      city: data.city,
+      district: data.region,
+      isPrimary: data.isPrimary,
+    }
 
-    console.log('Submitting address', {
-      ...data,
-      postalCode: Number(data.postalCode),
-    })
-
-    reset(defaultValues)
+    try {
+      await createAddress(requestData)
+      navigate('/addresses')
+    } catch {
+      // Error is handled by the hook
+    }
   }
 
   const selectedTypeTitle = useMemo(() => {
@@ -401,17 +413,23 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
         </CardContent>
 
         <CardFooter className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          {error ? (
+            <FormMessage variant="error" className="w-full">
+              Помилка: {error}
+            </FormMessage>
+          ) : null}
           <Button
             type="button"
             variant="outline"
             tone="neutral"
             onClick={onCancel}
+            disabled={isPending}
           >
             Скасувати
           </Button>
           <Button
             type="submit"
-            loading={isSubmitting}
+            loading={isPending || isSubmitting}
             loadingText="Збереження..."
             disabled={!isPropertyTypeSelected}
           >
