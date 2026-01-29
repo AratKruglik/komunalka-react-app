@@ -2,7 +2,7 @@ import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNo
 import { authService, userService } from '@shared/api'
 import { AuthActionType } from './actionTypes'
 import type { AuthContextValue } from './types'
-import type { UpdateUserRequest, User } from '@types/auth'
+import type { UpdateUserRequest, User } from '@shared/types/auth'
 import { authReducer, initialState } from './reducer'
 import {
   scheduleTokenRefresh,

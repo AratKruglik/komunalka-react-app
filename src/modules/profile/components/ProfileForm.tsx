@@ -58,7 +58,7 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
     }
   }, [user])
 
-  const initialAvatarPreview = user?.avatarUrl ?? null
+  const initialAvatarPreview: string | null = null
   const initialAvatarLabel = initialAvatarPreview ? 'Поточний аватар' : null
 
   const [avatarFileName, setAvatarFileName] = useState<string | null>(initialAvatarLabel)

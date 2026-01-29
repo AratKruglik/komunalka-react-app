@@ -20,7 +20,7 @@ import {
 import { SERVICE_CONFIG } from '@shared/constants/services'
 import type { MeterType } from '@shared/constants/meterTypes'
 import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
-import type { BillingCycle, UtilityServiceType } from '@types/providers'
+import type { BillingCycle, UtilityServiceType } from '@shared/types/providers'
 
 type TariffFormValue = {
   id: string
@@ -354,8 +354,8 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                         price: '',
                       })
                     }
-                    leftIcon={<Plus className="h-4 w-4" />}
                   >
+                    <Plus className="h-4 w-4" />
                     Додати тариф
                   </Button>
                 </div>
@@ -382,11 +382,11 @@ export function AddProviderForm({ onCancel }: AddProviderFormProps) {
                               type="button"
                               variant="ghost"
                               tone="neutral"
-                              size="xs"
+                              size="sm"
                               className="text-sm"
                               onClick={() => remove(index)}
-                              leftIcon={<Trash2 className="h-4 w-4" />}
                             >
+                              <Trash2 className="h-4 w-4" />
                               Видалити
                             </Button>
                           ) : (

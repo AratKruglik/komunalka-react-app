@@ -479,7 +479,6 @@ export default function AddressMetersPage() {
                 id="address-select"
                 value={selectedAddressId ?? ''}
                 onChange={(event) => setSelectedAddressId(Number(event.target.value))}
-                wrapperClassName="w-full"
               >
                 {addressOptions.map((address) => (
                   <option key={address.value} value={address.value}>

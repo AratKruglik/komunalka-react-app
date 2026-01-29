@@ -19,12 +19,13 @@ import { ReadingCard } from '../components/ReadingCard'
 import { ReadingSummaryTable } from '../components/ReadingSummaryTable'
 
 type MeterFormState = Record<
-  number, // Changed from string to number for meterId
+  number,
   {
     currentValue: string
     readingDate: string
     tariffId: string
     photo: {
+      file: File | null
       fileName: string | null
       previewUrl: string | null
     }
@@ -38,6 +39,7 @@ const buildFormState = (drafts: readonly MeterReadingDraftViewModel[]): MeterFor
       readingDate: draft.readingDate,
       tariffId: draft.tariffId,
       photo: {
+        file: null,
         fileName: draft.photo?.fileName ?? null,
         previewUrl: draft.photo?.previewUrl ?? null,
       },
@@ -158,7 +160,7 @@ export default function AddReadingsPage() {
       if (!file) {
         nextState[meterId] = {
           ...nextState[meterId],
-          photo: { fileName: null, previewUrl: null },
+          photo: { file: null, fileName: null, previewUrl: null },
         }
         return nextState
       }
@@ -169,6 +171,7 @@ export default function AddReadingsPage() {
       nextState[meterId] = {
         ...nextState[meterId],
         photo: {
+          file,
           fileName: file.name,
           previewUrl,
         },
@@ -186,7 +189,7 @@ export default function AddReadingsPage() {
         ...previous,
         [meterId]: {
           ...previous[meterId],
-          photo: { fileName: null, previewUrl: null },
+          photo: { file: null, fileName: null, previewUrl: null },
         },
       }
       const previousPreview = generatedPreviews.current[meterId]
@@ -214,13 +217,11 @@ export default function AddReadingsPage() {
       }
     })
 
-    // Collect photos
     const photos = new Map<number, File>()
     for (const draft of meterDrafts) {
       const formState = forms[draft.id]
-      if (formState?.photo?.previewUrl && generatedPreviews.current[draft.id]) {
-        // We need to get the actual file - for now we skip since we don't store files
-        // In a real implementation, we'd store the File objects
+      if (formState?.photo?.file) {
+        photos.set(draft.id, formState.photo.file)
       }
     }
 
