@@ -77,6 +77,31 @@ export async function mockMeters(page: Page, meters: unknown[], options: MockOpt
   });
 }
 
+export async function mockMetersByAddress(
+  page: Page,
+  metersMap: Record<number, unknown[]>,
+  options: MockOptions = {}
+): Promise<void> {
+  await page.route(`${API_BASE_URL}/meters*`, async (route: Route) => {
+    const url = new URL(route.request().url());
+    const addressId = url.searchParams.get('addressId');
+
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+
+    const meters = addressId ? metersMap[Number(addressId)] ?? [] : [];
+
+    await route.fulfill({
+      status: options.status ?? 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: meters,
+      }),
+    });
+  });
+}
+
 export async function mockReadings(page: Page, readings: unknown[], options: MockOptions = {}): Promise<void> {
   await page.route(`${API_BASE_URL}/readings*`, async (route: Route) => {
     if (options.delay) {
@@ -87,6 +112,59 @@ export async function mockReadings(page: Page, readings: unknown[], options: Moc
       contentType: 'application/json',
       body: JSON.stringify({
         data: readings,
+      }),
+    });
+  });
+}
+
+export async function mockReadingsByAddress(
+  page: Page,
+  readingsMap: Record<number, unknown[]>,
+  options: MockOptions = {}
+): Promise<void> {
+  await page.route(`${API_BASE_URL}/readings*`, async (route: Route) => {
+    const url = new URL(route.request().url());
+    const addressId = url.searchParams.get('addressId');
+
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+
+    const readings = addressId ? readingsMap[Number(addressId)] ?? [] : [];
+
+    await route.fulfill({
+      status: options.status ?? 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: readings,
+      }),
+    });
+  });
+}
+
+export async function mockCreateReading(page: Page, options: MockOptions = {}): Promise<void> {
+  await page.route(`${API_BASE_URL}/readings`, async (route: Route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+
+    const requestBody = route.request().postDataJSON();
+
+    await route.fulfill({
+      status: options.status ?? 201,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          id: Date.now(),
+          ...requestBody,
+          status: 'processing',
+          submissionDate: new Date().toISOString(),
+        },
       }),
     });
   });
@@ -109,4 +187,18 @@ export async function mockNetworkError(page: Page, urlPattern: string): Promise<
   await page.route(`${API_BASE_URL}${urlPattern}`, async (route: Route) => {
     await route.abort('failed');
   });
+}
+
+export async function mockAllMeterPageData(
+  page: Page,
+  data: {
+    addresses: unknown[];
+    meters: unknown[];
+    readings: unknown[];
+  },
+  options: MockOptions = {}
+): Promise<void> {
+  await mockAddresses(page, data.addresses, options);
+  await mockMeters(page, data.meters, options);
+  await mockReadings(page, data.readings, options);
 }
