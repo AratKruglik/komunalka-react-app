@@ -8,6 +8,8 @@ export interface User {
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  avatarUrl?: string;
+  avatarThumbnailUrl?: string;
 }
 
 /**

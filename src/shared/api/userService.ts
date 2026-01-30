@@ -9,6 +9,14 @@ import type { PaginationParams, PaginatedResponse } from './types'
  */
 export const userService = {
   /**
+   * Get current user profile
+   * @returns Current user data
+   */
+  getProfile: async (): Promise<User> => {
+    return api.get<User>(API_ENDPOINTS.USER.PROFILE)
+  },
+
+  /**
    * Get paginated list of users
    * @param params - Optional pagination and sorting parameters
    * @returns Paginated list of users

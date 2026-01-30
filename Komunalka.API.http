@@ -1,8 +1,8 @@
 ### Komunalka API HTTP Client
 # Base URLs for different environments (uncomment the one you need)
-@KomunalkaAPI_HostAddress = http://localhost:8080/api/v1
+#@KomunalkaAPI_HostAddress = http://localhost:8080/api/v1
 # @KomunalkaAPI_HostAddress = http://localhost:5242/api/v1
-# @KomunalkaAPI_HostAddress = https://localhost:7095/api/v1
+ @KomunalkaAPI_HostAddress = https://localhost:7095/api/v1
 
 # JWT Token variables (update these after successful login)
 # Example tokens from test user:

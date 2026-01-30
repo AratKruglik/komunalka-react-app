@@ -1,5 +1,5 @@
 import { AuthActionType } from '../actionTypes'
-import { authService } from '@shared/api'
+import { authService, userService } from '@shared/api'
 import type { AuthDispatch, ScheduleTokenRefreshFn } from './types'
 
 /**
@@ -58,6 +58,16 @@ export async function loginAction(
 
     // Schedule token refresh
     scheduleTokenRefresh(response.expiration)
+
+    // Load user profile if not included in login response
+    if (!response.user) {
+      try {
+        const user = await userService.getProfile()
+        dispatch({ type: AuthActionType.UPDATE_USER, payload: user })
+      } catch {
+        // Profile loading failed - user will be loaded on next page refresh
+      }
+    }
   } catch (error) {
     const errorMessage =
       error && typeof error === 'object' && 'message' in error
@@ -101,6 +111,16 @@ export async function registerAction(
 
     // Schedule token refresh
     scheduleTokenRefresh(response.expiration)
+
+    // Load user profile if not included in registration response
+    if (!response.user) {
+      try {
+        const user = await userService.getProfile()
+        dispatch({ type: AuthActionType.UPDATE_USER, payload: user })
+      } catch {
+        // Profile loading failed - user will be loaded on next page refresh
+      }
+    }
   } catch (error) {
     const errorMessage =
       error && typeof error === 'object' && 'message' in error
