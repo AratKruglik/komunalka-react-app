@@ -1,5 +1,11 @@
 export { BasePage } from './BasePage';
 export { LoginPage } from './LoginPage';
-export { AddressPage } from './AddressPage';
+export { RegisterPage } from './RegisterPage';
+export type { RegistrationData } from './RegisterPage';
+export { AddressPage, AddAddressPage } from './AddressPage';
 export { MeterPage } from './MeterPage';
 export { ReadingPage } from './ReadingPage';
+export { AddReadingsPage } from './AddReadingsPage';
+export { DashboardPage } from './DashboardPage';
+export { ProfilePage } from './ProfilePage';
+export { ProvidersPage, AddProviderPage } from './ProvidersPage';

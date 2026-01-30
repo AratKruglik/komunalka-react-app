@@ -1,7 +1,8 @@
 import { Page, BrowserContext } from '@playwright/test';
 import { mockLoginSuccess } from './api-mocks';
+import { MOCK_JWT_TOKEN, BASE_DOMAIN } from './constants';
 
-const BASE_DOMAIN = 'localhost';
+export { MOCK_JWT_TOKEN };
 
 function getFutureExpirationDate(): string {
   const date = new Date();
@@ -16,7 +17,7 @@ export function getAuthStorageState() {
     cookies: [
       {
         name: 'jwt_token',
-        value: 'mock-jwt-token',
+        value: MOCK_JWT_TOKEN,
         domain: BASE_DOMAIN,
         path: '/',
         expires: -1,
@@ -58,7 +59,7 @@ export async function authenticateUser(page: Page): Promise<void> {
   await context.addCookies([
     {
       name: 'jwt_token',
-      value: 'mock-jwt-token',
+      value: MOCK_JWT_TOKEN,
       domain: BASE_DOMAIN,
       path: '/',
     },
@@ -83,7 +84,7 @@ export async function authenticateContext(context: BrowserContext): Promise<void
   await context.addCookies([
     {
       name: 'jwt_token',
-      value: 'mock-jwt-token',
+      value: MOCK_JWT_TOKEN,
       domain: BASE_DOMAIN,
       path: '/',
     },

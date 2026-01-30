@@ -12,11 +12,11 @@ export class LoginPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.emailInput = page.getByLabel(/email/i);
-    this.passwordInput = page.getByLabel(/password|пароль/i);
-    this.submitButton = page.getByRole('button', { name: /login|увійти|sign in/i });
-    this.errorMessage = page.getByRole('alert');
-    this.registerLink = page.getByRole('link', { name: /register|реєстрація/i });
+    this.emailInput = page.getByLabel(/електронна пошта/i);
+    this.passwordInput = page.getByLabel(/пароль/i).first();
+    this.submitButton = page.getByRole('button', { name: 'Увійти', exact: true });
+    this.errorMessage = page.locator('.bg-red-50, [role="alert"]');
+    this.registerLink = page.getByRole('link', { name: /реєстрація/i });
   }
 
   async login(email: string, password: string): Promise<void> {
