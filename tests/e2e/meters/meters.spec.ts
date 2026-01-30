@@ -10,15 +10,11 @@ import {
   mockApiError,
   mockLoginSuccess,
 } from '../../helpers';
-import { getAuthStorageState } from '../../helpers';
 import {
   testAddresses,
   testMeters,
   testReadings,
-  testProviders,
 } from '../../fixtures/test-data';
-
-test.use({ storageState: getAuthStorageState() });
 
 test.describe('Meters Page', () => {
   let meterPage: MeterPage;

@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, BrowserContext } from '@playwright/test';
 import { mockLoginSuccess } from './api-mocks';
 
 const BASE_DOMAIN = 'localhost';
@@ -53,6 +53,31 @@ export async function authenticateUser(page: Page): Promise<void> {
   await mockLoginSuccess(page);
 
   const context = page.context();
+  const expiresAt = getFutureExpirationDate();
+
+  await context.addCookies([
+    {
+      name: 'jwt_token',
+      value: 'mock-jwt-token',
+      domain: BASE_DOMAIN,
+      path: '/',
+    },
+    {
+      name: 'refresh_token',
+      value: 'mock-refresh-token',
+      domain: BASE_DOMAIN,
+      path: '/',
+    },
+    {
+      name: 'expires_at',
+      value: expiresAt,
+      domain: BASE_DOMAIN,
+      path: '/',
+    },
+  ]);
+}
+
+export async function authenticateContext(context: BrowserContext): Promise<void> {
   const expiresAt = getFutureExpirationDate();
 
   await context.addCookies([

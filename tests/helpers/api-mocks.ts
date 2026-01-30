@@ -1,6 +1,6 @@
 import { Page, Route } from '@playwright/test';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 interface MockOptions {
   status?: number;
@@ -63,7 +63,20 @@ export async function mockAddresses(page: Page, addresses: unknown[], options: M
 }
 
 export async function mockMeters(page: Page, meters: unknown[], options: MockOptions = {}): Promise<void> {
-  await page.route(`${API_BASE_URL}/meters*`, async (route: Route) => {
+  await page.route(`${API_BASE_URL}/meter/**`, async (route: Route) => {
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+    await route.fulfill({
+      status: options.status ?? 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: meters,
+      }),
+    });
+  });
+
+  await page.route(new RegExp(`${API_BASE_URL}/meter$`), async (route: Route) => {
     if (options.delay) {
       await new Promise(resolve => setTimeout(resolve, options.delay));
     }
@@ -82,15 +95,16 @@ export async function mockMetersByAddress(
   metersMap: Record<number, unknown[]>,
   options: MockOptions = {}
 ): Promise<void> {
-  await page.route(`${API_BASE_URL}/meters*`, async (route: Route) => {
-    const url = new URL(route.request().url());
-    const addressId = url.searchParams.get('addressId');
+  await page.route(`${API_BASE_URL}/meter/address/*`, async (route: Route) => {
+    const url = route.request().url();
+    const match = url.match(/\/meter\/address\/(\d+)/);
+    const addressId = match ? parseInt(match[1], 10) : null;
 
     if (options.delay) {
       await new Promise(resolve => setTimeout(resolve, options.delay));
     }
 
-    const meters = addressId ? metersMap[Number(addressId)] ?? [] : [];
+    const meters = addressId !== null ? metersMap[addressId] ?? [] : [];
 
     await route.fulfill({
       status: options.status ?? 200,
@@ -103,7 +117,7 @@ export async function mockMetersByAddress(
 }
 
 export async function mockReadings(page: Page, readings: unknown[], options: MockOptions = {}): Promise<void> {
-  await page.route(`${API_BASE_URL}/readings*`, async (route: Route) => {
+  await page.route(`${API_BASE_URL}/meter-readings/**`, async (route: Route) => {
     if (options.delay) {
       await new Promise(resolve => setTimeout(resolve, options.delay));
     }
@@ -122,15 +136,16 @@ export async function mockReadingsByAddress(
   readingsMap: Record<number, unknown[]>,
   options: MockOptions = {}
 ): Promise<void> {
-  await page.route(`${API_BASE_URL}/readings*`, async (route: Route) => {
-    const url = new URL(route.request().url());
-    const addressId = url.searchParams.get('addressId');
+  await page.route(`${API_BASE_URL}/meter-readings/address/*`, async (route: Route) => {
+    const url = route.request().url();
+    const match = url.match(/\/meter-readings\/address\/(\d+)/);
+    const addressId = match ? parseInt(match[1], 10) : null;
 
     if (options.delay) {
       await new Promise(resolve => setTimeout(resolve, options.delay));
     }
 
-    const readings = addressId ? readingsMap[Number(addressId)] ?? [] : [];
+    const readings = addressId !== null ? readingsMap[addressId] ?? [] : [];
 
     await route.fulfill({
       status: options.status ?? 200,
@@ -143,7 +158,7 @@ export async function mockReadingsByAddress(
 }
 
 export async function mockCreateReading(page: Page, options: MockOptions = {}): Promise<void> {
-  await page.route(`${API_BASE_URL}/readings`, async (route: Route) => {
+  await page.route(`${API_BASE_URL}/meter-readings/batch`, async (route: Route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
       return;
@@ -199,6 +214,11 @@ export async function mockAllMeterPageData(
   options: MockOptions = {}
 ): Promise<void> {
   await mockAddresses(page, data.addresses, options);
-  await mockMeters(page, data.meters, options);
-  await mockReadings(page, data.readings, options);
+
+  const defaultAddressId = (data.addresses[0] as { id: number })?.id ?? 1;
+  const metersMap: Record<number, unknown[]> = { [defaultAddressId]: data.meters };
+  await mockMetersByAddress(page, metersMap, options);
+
+  const readingsMap: Record<number, unknown[]> = { [defaultAddressId]: data.readings };
+  await mockReadingsByAddress(page, readingsMap, options);
 }

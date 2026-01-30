@@ -32,24 +32,24 @@ export class MeterPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    this.addressSelect = page.getByLabel(/адреса/i);
+    this.addressSelect = page.getByRole('combobox', { name: /адреса/i });
     this.addMeterButton = page.getByRole('button', { name: /додати лічильник/i });
     this.loadingIndicator = page.getByText(/завантаження/i);
-    this.noMetersMessage = page.getByText(/поки що немає збережених лічильників/i);
+    this.noMetersMessage = page.getByText(/немає збережених лічильників/i);
 
-    this.totalMetersCount = page.locator('text=Всього лічильників').locator('..').locator('p.text-3xl');
-    this.activeMetersCount = page.locator('text=Активні').locator('..').locator('p.text-3xl');
-    this.pendingReadingsCount = page.locator('text=Очікують показань').locator('..').locator('p.text-3xl');
+    this.totalMetersCount = page.getByText('Всього лічильників').locator('..').locator('p').nth(1);
+    this.activeMetersCount = page.getByText('Активні').locator('..').locator('p').nth(1);
+    this.pendingReadingsCount = page.getByText('Очікують показань').locator('..').locator('p').nth(1);
 
     this.meterTypeTabs = page.locator('[class*="flex min-w-max gap-3"]');
     this.currentMeterTypeTitle = page.locator('section h3');
     this.metersList = page.locator('section').filter({ hasText: /лічильники?$/ }).locator('[class*="space-y-4"]');
 
-    this.quickFormMeterSelect = page.getByLabel(/лічильник/i);
-    this.quickFormPeriodSelect = page.getByLabel(/місяць/i);
-    this.quickFormValueInput = page.getByLabel(/нові показання/i);
+    this.quickFormMeterSelect = page.getByRole('combobox', { name: /лічильник/i });
+    this.quickFormPeriodSelect = page.getByRole('combobox', { name: /місяць/i });
+    this.quickFormValueInput = page.getByRole('spinbutton', { name: /нові показання/i });
     this.quickFormSubmitButton = page.getByRole('button', { name: /зберегти показання/i });
-    this.quickFormSuccessMessage = page.locator('[class*="FormMessage"]').filter({ hasText: /збережено/ });
+    this.quickFormSuccessMessage = page.getByText(/збережено як чернетку/i);
     this.quickFormPreviousValue = page.getByText(/останнє значення/i);
 
     this.historyTable = page.locator('[class*="divide-y divide-gray-100"]');
@@ -61,7 +61,7 @@ export class MeterPage extends BasePage {
   }
 
   async selectAddressByIndex(index: number): Promise<void> {
-    const options = await this.addressSelect.locator('option').all();
+    const options = await this.page.locator('select[id="address-select"] option').all();
     if (index < options.length) {
       const value = await options[index].getAttribute('value');
       if (value) {
@@ -71,7 +71,7 @@ export class MeterPage extends BasePage {
   }
 
   async getAddressOptions(): Promise<string[]> {
-    const options = await this.addressSelect.locator('option').allTextContents();
+    const options = await this.page.locator('select[id="address-select"] option').allTextContents();
     return options;
   }
 
