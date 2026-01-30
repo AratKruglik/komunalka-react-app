@@ -40,8 +40,6 @@ export const API_ENDPOINTS = {
     DELETE: (id: number) => `/providers/${id}`,
   },
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
     CHANGE_PASSWORD: '/user/change-password',
   },
   USERS: {

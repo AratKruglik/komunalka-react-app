@@ -1,5 +1,7 @@
 import { api } from './apiClient'
+import { authService } from './authService'
 import { API_ENDPOINTS } from '../constants'
+import { getUserIdFromToken } from '../utils/jwt'
 import type { User, UpdateUserRequest, CreateUserRequest, ChangePasswordRequest } from '../types/auth/user.types'
 import type { PaginationParams, PaginatedResponse } from './types'
 
@@ -9,11 +11,21 @@ import type { PaginationParams, PaginatedResponse } from './types'
  */
 export const userService = {
   /**
-   * Get current user profile
+   * Get current user profile by extracting userId from JWT token
    * @returns Current user data
    */
   getProfile: async (): Promise<User> => {
-    return api.get<User>(API_ENDPOINTS.USER.PROFILE)
+    const token = authService.getToken()
+    if (!token) {
+      throw new Error('No authentication token')
+    }
+
+    const userId = getUserIdFromToken(token)
+    if (!userId) {
+      throw new Error('Invalid token: no user ID')
+    }
+
+    return api.get<User>(API_ENDPOINTS.USERS.GET(userId))
   },
 
   /**

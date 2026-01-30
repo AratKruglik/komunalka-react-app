@@ -30,3 +30,5 @@ routeTree.gen.ts
 *.njsproj
 *.sln
 *.sw?
+
+playwright-report/
