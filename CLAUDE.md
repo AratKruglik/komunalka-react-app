@@ -29,6 +29,11 @@ pnpm run lint
 
 # Preview production build
 pnpm run preview
+
+# E2E tests
+pnpm run test:e2e
+pnpm run test:e2e:ui
+pnpm run test:e2e:debug
 ```
 
 **Note:** This project uses `pnpm` as the package manager.
@@ -39,10 +44,119 @@ pnpm run preview
 - **Routing:** React Router v7
 - **Build Tool:** Vite 7.1.7
 - **Language:** TypeScript 5.9.3
-- **Styling:** Tailwind CSS
-- **Component Variants:** tailwind-variants
+- **Styling:** Tailwind CSS + tailwind-variants
+- **E2E Testing:** Playwright
 - **Package Manager:** pnpm
 - **Linting:** ESLint 9.36.0 with TypeScript and React plugins
+
+---
+
+## 🤖 AUTOMATIC AGENT DISPATCH SYSTEM
+
+**CRITICAL: This project uses specialized agents for all development tasks. You MUST dispatch the appropriate agent automatically based on the task type.**
+
+### Agent Dispatch Rules
+
+When receiving a task, analyze it and **immediately dispatch** to the correct agent using the Task tool. Do NOT implement code directly - always delegate to the specialized agent.
+
+| Task Type | Agent | Trigger Keywords |
+|-----------|-------|------------------|
+| **Frontend Development** | `fe-e` | component, page, UI, form, button, layout, styling, React, hook, state, props, Tailwind, responsive |
+| **E2E Testing** | `qa-engineer` | test, testing, E2E, Playwright, verify, QA, regression, bug reproduction, test coverage |
+| **TypeScript Types** | `type-guardian` | types, interface, DTO, API contract, type error, generics, type guard, validation |
+| **Architecture Review** | `architecture-guardian` | architecture, module, refactor structure, code organization, dependencies, shared components |
+
+### Dispatch Decision Tree
+
+```
+User Request Received
+         │
+         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ Does the request involve creating/modifying React components,   │
+│ pages, hooks, styling, or any UI-related code?                  │
+└─────────────────────────────────────────────────────────────────┘
+         │ YES                              │ NO
+         ▼                                  ▼
+   ┌───────────┐              ┌─────────────────────────────────┐
+   │  fe-e     │              │ Does it involve testing, E2E,   │
+   │  agent    │              │ bug verification, or Playwright?│
+   └───────────┘              └─────────────────────────────────┘
+                                    │ YES              │ NO
+                                    ▼                  ▼
+                              ┌───────────┐   ┌─────────────────────┐
+                              │qa-engineer│   │ Does it involve     │
+                              │  agent    │   │ TypeScript types,   │
+                              └───────────┘   │ interfaces, or API  │
+                                              │ contracts?          │
+                                              └─────────────────────┘
+                                                   │ YES        │ NO
+                                                   ▼            ▼
+                                             ┌───────────┐  ┌─────────────────┐
+                                             │   type-   │  │ Does it involve │
+                                             │ guardian  │  │ architecture,   │
+                                             └───────────┘  │ module design,  │
+                                                            │ or code review? │
+                                                            └─────────────────┘
+                                                                 │ YES
+                                                                 ▼
+                                                           ┌─────────────┐
+                                                           │architecture-│
+                                                           │  guardian   │
+                                                           └─────────────┘
+```
+
+### Agent Responsibilities Matrix
+
+| Agent | Primary Tasks | Skills Used | MCP Tools |
+|-------|--------------|-------------|-----------|
+| **fe-e** | Components, pages, hooks, styling, forms | react-expert, typescript-pro | Context7 |
+| **qa-engineer** | E2E tests, bug reproduction, test coverage | playwright-expert, test-master, debugging-wizard | Playwright MCP |
+| **type-guardian** | Type definitions, API contracts, type guards | typescript-pro | Context7 |
+| **architecture-guardian** | Module design, dependencies, code review | architecture-designer, code-reviewer | - |
+
+### When to Use Multiple Agents (Sequential)
+
+Some tasks require multiple agents in sequence:
+
+1. **New Feature Development:**
+   - `architecture-guardian` → Design module structure
+   - `fe-e` → Implement the feature
+   - `type-guardian` → Verify types match API
+   - `qa-engineer` → Write E2E tests
+
+2. **Bug Fix:**
+   - `qa-engineer` → Reproduce and document the bug
+   - `fe-e` → Fix the issue
+   - `qa-engineer` → Verify fix and add regression test
+
+3. **Before PR:**
+   - `architecture-guardian` → Review code organization
+   - `qa-engineer` → Run regression tests
+
+### Example Dispatches
+
+```
+User: "Create a meter reading form"
+→ Dispatch to: fe-e (frontend component creation)
+
+User: "The login isn't working"
+→ Dispatch to: qa-engineer (bug reproduction)
+
+User: "Update the Address type to include postal code"
+→ Dispatch to: type-guardian (type modification)
+
+User: "Should we create a new module for notifications?"
+→ Dispatch to: architecture-guardian (architecture decision)
+
+User: "Add tests for the reading submission flow"
+→ Dispatch to: qa-engineer (E2E test creation)
+
+User: "Fix the TypeScript error in MeterCard"
+→ Dispatch to: type-guardian (type error resolution)
+```
+
+---
 
 ## Project Structure
 
@@ -70,11 +184,18 @@ This project follows a **module-based architecture** that organizes code by feat
 - `types/` - Shared TypeScript types
 - `constants/` - Application-wide constants
 
+**`tests/`** - E2E testing with Playwright
+- `e2e/` - Test specs organized by feature
+- `pages/` - Page Object Model classes
+- `fixtures/` - Test data
+- `helpers/` - API mocks and utilities
+
 **Key Files:**
 - `src/App.tsx` - React Router configuration and route definitions
 - `src/main.tsx` - Application entry point with React 19 createRoot
 - `vite.config.ts` - Vite configuration
 - `tsconfig.json` - TypeScript configuration
+- `playwright.config.ts` - Playwright E2E test configuration
 
 ### When to Create a New Module
 
@@ -132,35 +253,66 @@ Benefits:
 - **Extensibility**: Easy to add `variants` and `compoundVariants` later
 - **Type Safety**: Use `VariantProps<typeof component>` for typed props
 
-## Development Workflow
+---
 
-**IMPORTANT: All frontend development tasks must be handled by the senior-frontend-engineer agent.**
-
-When working on this project:
-- **Always** use the `fe-e` agent for any frontend-related tasks
-- This includes: component creation, styling, refactoring, bug fixes, feature implementation, layout changes, etc.
-- The agent has deep expertise in React, TypeScript, and modern frontend practices
-- Do not implement frontend changes directly - delegate all frontend work to the agent
-- The agent will ensure consistency with the project's architecture and best practices
-
-## MCP Tools Usage
+## 🔧 MCP Tools Usage
 
 ### Context7 MCP (Documentation)
 
 **REQUIRED: Before implementing or planning any task, fetch up-to-date documentation.**
 
-- Use `mcp__context7__resolve-library-id` to find the library ID
-- Use `mcp__context7__query-docs` to get current documentation and examples
+- Use `mcp__plugin_context7_context7__resolve-library-id` to find the library ID
+- Use `mcp__plugin_context7_context7__query-docs` to get current documentation and examples
 - Always check documentation for: React, React Router, Tailwind CSS, tailwind-variants, Vite, TypeScript, and any other libraries used
 - This ensures you're using the latest APIs and best practices, not outdated patterns
+
+**Libraries to check:**
+| Library | When to Check |
+|---------|---------------|
+| React | Component patterns, hooks, React 19 features |
+| React Router | Routing, loaders, actions |
+| Tailwind CSS | Utility classes, configuration |
+| tailwind-variants | tv() API, variants |
+| Playwright | Test patterns, locators, assertions |
+| Vite | Build configuration, plugins |
+
+### Playwright MCP (E2E Testing)
+
+**REQUIRED for qa-engineer agent:**
+
+- Use `mcp__plugin_playwright_playwright__browser_*` tools for browser automation
+- Available tools: navigate, click, type, snapshot, screenshot, etc.
+- Use `browser_snapshot` for accessibility tree analysis
+- Use `browser_console_messages` for debugging
 
 ### GitHub MCP
 
 **REQUIRED: Always use GitHub MCP for all GitHub operations.**
 
-- Use `mcp__github__*` tools for: creating PRs, managing issues, reading repository content, searching code
+- Use `mcp__github-mw__*` tools for: creating PRs, managing issues, reading repository content, searching code
 - Do NOT use `gh` CLI commands — always prefer MCP tools
 - Available operations: create/update PRs, list/search issues, get file contents, create branches, etc.
+
+---
+
+## 📚 Skills System
+
+Agents have access to specialized skills in `.claude/skills/`:
+
+| Skill | Description | Used By |
+|-------|-------------|---------|
+| `react-expert` | React 19, hooks, Server Components, performance | fe-e |
+| `typescript-pro` | Advanced types, generics, type guards | fe-e, type-guardian |
+| `playwright-expert` | E2E testing, Page Objects, selectors | qa-engineer |
+| `test-master` | Testing strategy, TDD, coverage | qa-engineer |
+| `debugging-wizard` | Bug investigation, root cause analysis | qa-engineer |
+| `architecture-designer` | System design, ADRs, patterns | architecture-guardian |
+| `code-reviewer` | Code review practices, feedback | architecture-guardian |
+
+**Skill Loading:**
+Agents should read relevant skill files from `.claude/skills/[skill-name]/SKILL.md` and reference files as needed.
+
+---
 
 ## Git Commit & PR Guidelines
 
@@ -170,6 +322,8 @@ When working on this project:
 - Do NOT mention any AI tools (Claude, Gemini, ChatGPT, Copilot, etc.) in commit messages or PR descriptions
 - Write commit messages and PR descriptions as if written by a human developer
 - Focus on what was changed and why, not how it was created
+
+---
 
 ## Feature Requirements
 

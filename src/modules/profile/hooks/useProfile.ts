@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { useAuth } from '@shared/hooks'
 import { userService } from '@shared/api'
-import type { ChangePasswordRequest } from '@types/auth'
+import type { ChangePasswordRequest } from '@shared/types/auth'
 
 /**
  * Profile management hook

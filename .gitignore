@@ -31,4 +31,12 @@ routeTree.gen.ts
 *.sln
 *.sw?
 
-playwright-report/
+# Documentation (work in progress)
+docs/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

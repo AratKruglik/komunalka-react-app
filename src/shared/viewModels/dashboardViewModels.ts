@@ -213,10 +213,19 @@ export function toChartDataViewModel(
     monthData.set(meter.type, currentValue + (reading.consumption || 0))
   })
 
-  // Перетворюємо в масив ChartDataPointViewModel
+  type MutableDataPoint = {
+    month: string
+    electricity?: number
+    gas?: number
+    water?: number
+    hotWater?: number
+    coldWater?: number
+    heating?: number
+  }
+
   const chartData: ChartDataPointViewModel[] = []
   monthsMap.forEach((monthData, month) => {
-    const dataPoint: ChartDataPointViewModel = { month }
+    const dataPoint: MutableDataPoint = { month }
 
     monthData.forEach((value, meterType) => {
       switch (meterType) {
@@ -240,7 +249,7 @@ export function toChartDataViewModel(
       }
     })
 
-    chartData.push(dataPoint)
+    chartData.push(dataPoint as ChartDataPointViewModel)
   })
 
   return chartData
