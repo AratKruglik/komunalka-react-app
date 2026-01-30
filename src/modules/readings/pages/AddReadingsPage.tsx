@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router'
 import { Plus } from 'lucide-react'
 import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
 import { PageSectionHeader } from '@shared/components/pages'
-import { Button, Card, CardContent, Label, Select } from '@shared/components/ui'
+import { Button, Card, CardContent, FormMessage, Label, Select } from '@shared/components/ui'
 import { useAddresses } from '@modules/addresses/hooks'
-import {
-  MOCK_PROVIDERS,
-  getMetersByAddressId,
-  getReadingsByAddressId,
-} from '@shared/data/mockDatabase'
+import { useMetersByAddress } from '@modules/meters/hooks'
+import { useReadingsByAddress, useCreateBatchReadings } from '@modules/readings/hooks'
+import type { BatchReadingItem } from '@modules/readings/types'
+import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
 import {
   toAddressSelectViewModel,
   toAddressReadingsSnapshotViewModel,
@@ -20,12 +19,13 @@ import { ReadingCard } from '../components/ReadingCard'
 import { ReadingSummaryTable } from '../components/ReadingSummaryTable'
 
 type MeterFormState = Record<
-  number, // Changed from string to number for meterId
+  number,
   {
     currentValue: string
     readingDate: string
     tariffId: string
     photo: {
+      file: File | null
       fileName: string | null
       previewUrl: string | null
     }
@@ -39,6 +39,7 @@ const buildFormState = (drafts: readonly MeterReadingDraftViewModel[]): MeterFor
       readingDate: draft.readingDate,
       tariffId: draft.tariffId,
       photo: {
+        file: null,
         fileName: draft.photo?.fileName ?? null,
         previewUrl: draft.photo?.previewUrl ?? null,
       },
@@ -51,6 +52,7 @@ export default function AddReadingsPage() {
   const navigate = useNavigate()
   const { addresses } = useAddresses()
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   // Set initial address when addresses load
   useEffect(() => {
@@ -59,22 +61,20 @@ export default function AddReadingsPage() {
     }
   }, [addresses, selectedAddressId])
 
+  // Fetch meters and readings from API
+  const { meters, isLoading: isLoadingMeters } = useMetersByAddress(selectedAddressId)
+  const { readings, isLoading: isLoadingReadings, refetch: refetchReadings } = useReadingsByAddress(selectedAddressId)
+  const { createBatchReadings, isLoading: isSubmitting, error: submitError } = useCreateBatchReadings()
+
   // Generate address options for dropdown
   const addressOptions = useMemo(
     () => addresses.map(toAddressSelectViewModel),
     [addresses]
   )
 
-  // Generate snapshot for selected address
+  // Generate snapshot for selected address from API data
   const snapshot = useMemo<AddressReadingsSnapshotViewModel | null>(() => {
-    if (selectedAddressId === null) {
-      return null
-    }
-
-    const meters = getMetersByAddressId(selectedAddressId)
-    const readings = getReadingsByAddressId(selectedAddressId)
-
-    if (meters.length === 0) {
+    if (selectedAddressId === null || meters.length === 0) {
       return null
     }
 
@@ -84,7 +84,9 @@ export default function AddReadingsPage() {
       readings,
       MOCK_PROVIDERS
     )
-  }, [selectedAddressId])
+  }, [selectedAddressId, meters, readings])
+
+  const isLoading = isLoadingMeters || isLoadingReadings
   const [forms, setForms] = useState<MeterFormState>(() => buildFormState(snapshot?.meterDrafts ?? []))
   const generatedPreviews = useRef<Record<string, string>>({})
 
@@ -158,7 +160,7 @@ export default function AddReadingsPage() {
       if (!file) {
         nextState[meterId] = {
           ...nextState[meterId],
-          photo: { fileName: null, previewUrl: null },
+          photo: { file: null, fileName: null, previewUrl: null },
         }
         return nextState
       }
@@ -169,6 +171,7 @@ export default function AddReadingsPage() {
       nextState[meterId] = {
         ...nextState[meterId],
         photo: {
+          file,
           fileName: file.name,
           previewUrl,
         },
@@ -186,7 +189,7 @@ export default function AddReadingsPage() {
         ...previous,
         [meterId]: {
           ...previous[meterId],
-          photo: { fileName: null, previewUrl: null },
+          photo: { file: null, fileName: null, previewUrl: null },
         },
       }
       const previousPreview = generatedPreviews.current[meterId]
@@ -198,29 +201,40 @@ export default function AddReadingsPage() {
     })
   }
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
 
-    // Demo: Log submitted readings
-    const submittedData = meterDrafts.map((draft) => {
+    if (selectedAddressId === null) return
+
+    // Build batch reading items
+    const batchItems: BatchReadingItem[] = meterDrafts.map((draft) => {
       const formState = forms[draft.id]
-      const activeTariff = getActiveTariff(draft, formState)
       return {
-        meterId: draft.id,
-        meterNumber: draft.meterNumber,
-        serviceName: draft.serviceName,
-        currentValue: Number(formState?.currentValue ?? draft.currentValue),
-        readingDate: formState?.readingDate ?? draft.readingDate,
-        tariffId: activeTariff?.id ?? draft.tariffId,
-        tariffLabel: activeTariff?.label ?? draft.tariffLabel,
-        hasPhoto: Boolean(formState?.photo?.fileName),
+        MeterId: draft.id,
+        Value: Number(formState?.currentValue ?? draft.currentValue),
+        ReadingDate: formState?.readingDate ?? draft.readingDate,
+        Notes: undefined,
       }
     })
 
-    console.log('Submitting readings:', submittedData)
-    alert(`Показання успішно збережено для ${meterDrafts.length} лічильників!`)
+    const photos = new Map<number, File>()
+    for (const draft of meterDrafts) {
+      const formState = forms[draft.id]
+      if (formState?.photo?.file) {
+        photos.set(draft.id, formState.photo.file)
+      }
+    }
 
-    // TODO: Hook up API call once backend is ready.
+    try {
+      await createBatchReadings(selectedAddressId, batchItems, photos.size > 0 ? photos : undefined)
+      setSubmitSuccess(true)
+      refetchReadings()
+
+      // Clear success after delay
+      setTimeout(() => setSubmitSuccess(false), 3000)
+    } catch {
+      // Error is handled by the hook
+    }
   }
 
   const meterDrafts = snapshot?.meterDrafts ?? []
@@ -309,8 +323,23 @@ export default function AddReadingsPage() {
 
           <ReadingSummaryTable rows={summaryRows} />
 
+          {submitError && (
+            <FormMessage variant="error">{submitError}</FormMessage>
+          )}
+          {submitSuccess && (
+            <FormMessage variant="success">Показання успішно збережено!</FormMessage>
+          )}
+
           <div className="flex justify-end border-t border-gray-100 pt-4">
-            <Button type="submit" tone="primary" size="md" className="min-w-[220px]">
+            <Button
+              type="submit"
+              tone="primary"
+              size="md"
+              className="min-w-[220px]"
+              loading={isSubmitting}
+              loadingText="Збереження..."
+              disabled={isLoading || meterDrafts.length === 0}
+            >
               Зберегти
             </Button>
           </div>

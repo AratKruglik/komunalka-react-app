@@ -1,5 +1,8 @@
 import type { MeterType } from '@shared/constants/meterTypes'
 
+// API types
+export * from './meter.types'
+
 export type MeterStatus = 'active' | 'maintenance' | 'pending'
 export type MeterHistoryStatus = 'accepted' | 'processing' | 'error'
 

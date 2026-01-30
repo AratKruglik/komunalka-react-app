@@ -1,5 +1,8 @@
 import type { MeterType } from '@shared/constants/meterTypes'
 
+// API types
+export * from './reading.types'
+
 export interface MeterReadingDraft {
   id: number
   type: MeterType

@@ -212,3 +212,64 @@ export function toMeterTypeGroupViewModel(
     history,
   }
 }
+
+/**
+ * Створює AddressMetersSnapshotViewModel з meters та readings
+ * Групує лічильники за типом і формує viewModel для UI
+ */
+export function toAddressMetersSnapshotViewModel(
+  addressId: number,
+  meters: readonly Meter[],
+  readings: readonly Reading[],
+  providers: readonly Provider[],
+): AddressMetersSnapshotViewModel {
+  // Групуємо лічильники за типом
+  const metersByType = meters.reduce(
+    (acc, meter) => {
+      if (!acc[meter.type]) {
+        acc[meter.type] = []
+      }
+      acc[meter.type].push(meter)
+      return acc
+    },
+    {} as Record<MeterType, Meter[]>,
+  )
+
+  // Створюємо groups
+  const groups: Partial<Record<MeterType, MeterTypeGroupViewModel>> = {}
+
+  for (const [type, typeMeters] of Object.entries(metersByType)) {
+    const meterType = type as MeterType
+
+    // Отримуємо readings для цих лічильників
+    const meterIds = typeMeters.map((m) => m.id)
+    const typeReadings = readings
+      .filter((r) => meterIds.includes(r.meterId))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    // Знаходимо провайдера
+    const provider = providers.find((p) => p.id === typeMeters[0]?.providerId)
+    if (!provider) continue
+
+    groups[meterType] = toMeterTypeGroupViewModel(
+      meterType,
+      typeMeters,
+      typeReadings,
+      provider,
+    )
+  }
+
+  // Рахуємо summary
+  const activeMeters = meters.filter((m) => m.status === 'active').length
+  const pendingReadings = readings.filter((r) => r.status === 'processing').length
+
+  return {
+    addressId,
+    summary: {
+      totalMeters: meters.length,
+      activeMeters,
+      pendingReadings,
+    },
+    groups,
+  }
+}

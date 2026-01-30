@@ -30,3 +30,13 @@ routeTree.gen.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation (work in progress)
+docs/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
