@@ -30,7 +30,7 @@ export function useMetersByAddress(addressId: number | null) {
 
     try {
       const data = await meterService.getByAddress(addressId)
-      setMeters(data)
+      setMeters(Array.isArray(data) ? data : [])
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Не вдалося завантажити лічильники'
       setError(errorMessage)

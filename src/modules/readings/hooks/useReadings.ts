@@ -30,7 +30,7 @@ export function useReadingsByAddress(
 
     try {
       const data = await readingService.getByAddress(addressId, params)
-      setReadings(data)
+      setReadings(Array.isArray(data) ? data : [])
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Не вдалося завантажити показання'
       setError(errorMessage)
