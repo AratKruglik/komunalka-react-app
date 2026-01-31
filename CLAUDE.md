@@ -316,6 +316,13 @@ Agents should read relevant skill files from `.claude/skills/[skill-name]/SKILL.
 
 ## Git Commit & PR Guidelines
 
+**⛔ CRITICAL: NEVER create commits or push without explicit user command.**
+
+- NEVER run `git add`, `git commit`, `git push`, or create PRs automatically
+- ONLY perform git operations when user explicitly says: "commit", "create commit", "push", "create PR"
+- Even if work is complete and tests pass — WAIT for user's direct command
+- This rule has NO exceptions
+
 **CRITICAL: Never mention AI assistance in commits or PRs.**
 
 - Do NOT include "Generated with Claude", "Co-Authored-By: Claude", "AI-assisted", or any similar references
