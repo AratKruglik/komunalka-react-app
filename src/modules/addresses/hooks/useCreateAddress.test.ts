@@ -4,6 +4,7 @@ import { useCreateAddress } from './useCreateAddress'
 import { addressService } from '../api'
 import type { Address } from '@shared/types/entities'
 import type { CreateAddressRequest } from '../types'
+import { createMockAddress } from '@/test-utils/factories'
 
 vi.mock('../api', () => ({
   addressService: {
@@ -11,24 +12,18 @@ vi.mock('../api', () => ({
   },
 }))
 
-const mockCreatedAddress: Address = {
-  id: 1,
-  street: 'New Street',
-  building: '10',
-  apartment: '5',
-  city: 'Kyiv',
-  district: 'Shevchenkivskyi',
-  isPrimary: false,
-  createdAt: '2025-01-20T12:00:00Z',
-}
+const mockCreatedAddress: Address = createMockAddress({ id: 1, isPrimary: false })
 
 const createData: CreateAddressRequest = {
-  street: 'New Street',
-  building: '10',
-  apartment: '5',
-  city: 'Kyiv',
-  district: 'Shevchenkivskyi',
+  regionId: 9,
+  city: 'Київ',
+  street: 'вул. Нова',
+  buildingNumber: '10',
+  apartmentNumber: '5',
+  zipCode: '01001',
+  notes: '',
   isPrimary: false,
+  addressTypeId: 1,
 }
 
 describe('useCreateAddress', () => {

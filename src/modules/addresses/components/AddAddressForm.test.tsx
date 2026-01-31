@@ -282,12 +282,15 @@ describe('AddAddressForm', () => {
 
       await waitFor(() => {
         expect(mockCreateAddress).toHaveBeenCalledWith({
-          street: 'Хрещатик',
-          building: '22',
-          apartment: '15',
+          regionId: 9,
           city: 'Київ',
-          district: 'Київська область',
+          street: 'Хрещатик',
+          buildingNumber: '22',
+          apartmentNumber: '15',
+          zipCode: '01001',
+          notes: '',
           isPrimary: false,
+          addressTypeId: 1,
         })
       })
     })

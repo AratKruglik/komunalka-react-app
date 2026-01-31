@@ -13,8 +13,8 @@ let mockIsLoading = false
 let mockError: string | null = null
 
 const mockAddresses = [
-  createMockAddress({ id: 1, street: 'Хрещатик', building: '22', apartment: '15' }),
-  createMockAddress({ id: 2, street: 'Дарницька', building: '5', apartment: '42' }),
+  createMockAddress({ id: 1, street: 'вул. Хрещатик', buildingNumber: '22', apartmentNumber: '15' }),
+  createMockAddress({ id: 2, street: 'вул. Дарницька', buildingNumber: '5', apartmentNumber: '42' }),
 ]
 
 vi.mock('react-router', async () => {

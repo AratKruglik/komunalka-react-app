@@ -78,10 +78,13 @@ export default function AddressMetersPage() {
   const { addresses } = useAddresses()
 
   const addressOptions = useMemo(() => {
-    return addresses.map((address) => ({
-      value: address.id,
-      label: `${address.street}, ${address.building}, кв. ${address.apartment}`,
-    }))
+    return addresses.map((address) => {
+      const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
+      return {
+        value: address.id,
+        label: `${address.street}, ${address.buildingNumber}${apartment}`,
+      }
+    })
   }, [addresses])
 
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)

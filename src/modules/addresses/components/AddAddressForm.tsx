@@ -7,6 +7,7 @@ import {
   Home,
   MapPinned,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { PageSectionHeader } from '@shared/components/pages'
@@ -23,6 +24,7 @@ import {
   Select,
   Textarea,
 } from '@shared/components/ui'
+import { useRegions, useAddressTypes } from '@shared/hooks'
 import { useCreateAddress } from '../hooks'
 import type { CreateAddressRequest } from '../types'
 
@@ -38,23 +40,14 @@ interface Step extends StepDefinition {
   status: StepStatus
 }
 
-type PropertyType = 'apartment' | 'house' | 'office'
-
-interface PropertyTypeOption {
-  value: PropertyType
-  title: string
-  description: string
-  icon: typeof Home
-}
-
 interface AddressFormValues {
-  propertyType: PropertyType | ''
-  region: string
+  addressTypeId: string
+  regionId: string
   city: string
   street: string
   buildingNumber: string
-  unitNumber: string
-  postalCode: string
+  apartmentNumber: string
+  zipCode: string
   notes: string
   isPrimary: boolean
 }
@@ -81,43 +74,26 @@ const stepDefinitions: StepDefinition[] = [
   },
 ]
 
-const propertyTypeOptions: PropertyTypeOption[] = [
-  {
-    value: 'apartment',
-    title: 'Квартира',
-    description: 'Багатоквартирний будинок у місті',
-    icon: Building2,
-  },
-  {
-    value: 'house',
-    title: 'Приватний будинок',
-    description: 'Окрема садиба або дача',
-    icon: Home,
-  },
-  {
-    value: 'office',
-    title: 'Офіс',
-    description: 'Комерційне або офісне приміщення',
-    icon: BriefcaseBusiness,
-  },
-]
+const ADDRESS_TYPE_ICONS: Record<string, LucideIcon> = {
+  apartment: Building2,
+  house: Home,
+  office: BriefcaseBusiness,
+}
 
-const regionOptions = [
-  'Київська область',
-  'Львівська область',
-  'Харківська область',
-  'Одеська область',
-  'Дніпропетровська область',
-]
+const ADDRESS_TYPE_DESCRIPTIONS: Record<string, string> = {
+  apartment: 'Багатоквартирний будинок у місті',
+  house: 'Окрема садиба або дача',
+  office: 'Комерційне або офісне приміщення',
+}
 
 const defaultValues: AddressFormValues = {
-  propertyType: '',
-  region: '',
+  addressTypeId: '',
+  regionId: '',
   city: '',
   street: '',
   buildingNumber: '',
-  unitNumber: '',
-  postalCode: '',
+  apartmentNumber: '',
+  zipCode: '',
   notes: '',
   isPrimary: false,
 }
@@ -125,6 +101,8 @@ const defaultValues: AddressFormValues = {
 export function AddAddressForm({ onCancel }: AddAddressFormProps) {
   const navigate = useNavigate()
   const { createAddress, isLoading: isPending, error } = useCreateAddress()
+  const { regions, isLoading: isLoadingRegions } = useRegions()
+  const { addressTypes, isLoading: isLoadingAddressTypes } = useAddressTypes()
 
   const {
     register,
@@ -137,21 +115,25 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
     mode: 'onSubmit',
   })
 
-  const propertyType = watch('propertyType')
-  const isPropertyTypeSelected = Boolean(propertyType)
+  const addressTypeId = watch('addressTypeId')
+  const isAddressTypeSelected = Boolean(addressTypeId)
+  const isLoadingReferences = isLoadingRegions || isLoadingAddressTypes
 
-  const handlePropertyTypeSelect = (type: PropertyType) => {
-    setValue('propertyType', type, { shouldValidate: true })
+  const handleAddressTypeSelect = (typeId: string) => {
+    setValue('addressTypeId', typeId, { shouldValidate: true })
   }
 
   const onSubmit = async (data: AddressFormValues) => {
     const requestData: CreateAddressRequest = {
-      street: data.street,
-      building: data.buildingNumber,
-      apartment: data.unitNumber,
+      regionId: Number(data.regionId),
       city: data.city,
-      district: data.region,
+      street: data.street,
+      buildingNumber: data.buildingNumber,
+      apartmentNumber: data.apartmentNumber,
+      zipCode: data.zipCode,
+      notes: data.notes,
       isPrimary: data.isPrimary,
+      addressTypeId: Number(data.addressTypeId),
     }
 
     try {
@@ -162,27 +144,27 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
     }
   }
 
-  const selectedTypeTitle = useMemo(() => {
-    if (!propertyType) {
+  const selectedAddressType = useMemo(() => {
+    if (!addressTypeId) {
       return undefined
     }
 
-    return propertyTypeOptions.find((option) => option.value === propertyType)?.title
-  }, [propertyType])
+    return addressTypes.find((type) => type.id === Number(addressTypeId))
+  }, [addressTypeId, addressTypes])
 
   const steps = useMemo<Step[]>(() => {
     return stepDefinitions.map((definition) => {
       if (definition.id === 'type') {
         return {
           ...definition,
-          status: isPropertyTypeSelected ? 'completed' : 'current',
+          status: isAddressTypeSelected ? 'completed' : 'current',
         }
       }
 
       if (definition.id === 'address') {
         return {
           ...definition,
-          status: isPropertyTypeSelected ? 'current' : 'upcoming',
+          status: isAddressTypeSelected ? 'current' : 'upcoming',
         }
       }
 
@@ -191,7 +173,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
         status: 'upcoming',
       }
     })
-  }, [isPropertyTypeSelected])
+  }, [isAddressTypeSelected])
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -207,7 +189,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
 
           <section className="space-y-4">
             <div>
-              <Label htmlFor="propertyType">
+              <Label htmlFor="addressTypeId">
                 Тип нерухомості<span className="text-red-500">*</span>
               </Label>
               <p className="text-sm text-gray-500 dark:text-slate-400">
@@ -215,56 +197,68 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {propertyTypeOptions.map((option) => (
-                <RadioCard
-                  key={option.value}
-                  title={option.title}
-                  description={option.description}
-                  icon={option.icon}
-                  selected={propertyType === option.value}
-                  onClick={() => handlePropertyTypeSelect(option.value)}
-                />
-              ))}
-            </div>
+            {isLoadingAddressTypes ? (
+              <div className="flex items-center justify-center py-8">
+                <span className="text-sm text-gray-500 dark:text-slate-400">
+                  Завантаження типів нерухомості...
+                </span>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {addressTypes.map((type) => {
+                  const Icon = ADDRESS_TYPE_ICONS[type.icon] || Home
+                  const description = ADDRESS_TYPE_DESCRIPTIONS[type.icon] || type.description
+                  return (
+                    <RadioCard
+                      key={type.id}
+                      title={type.name}
+                      description={description}
+                      icon={Icon}
+                      selected={addressTypeId === String(type.id)}
+                      onClick={() => handleAddressTypeSelect(String(type.id))}
+                    />
+                  )
+                })}
+              </div>
+            )}
             <input
               type="hidden"
-              {...register('propertyType', {
+              {...register('addressTypeId', {
                 required: 'Оберіть тип нерухомості',
               })}
             />
-            {errors.propertyType ? (
-              <FormMessage variant="error">{errors.propertyType.message}</FormMessage>
+            {errors.addressTypeId ? (
+              <FormMessage variant="error">{errors.addressTypeId.message}</FormMessage>
             ) : null}
           </section>
 
           <fieldset
-            disabled={!isPropertyTypeSelected}
+            disabled={!isAddressTypeSelected || isLoadingReferences}
             className="space-y-6 [&:disabled]:opacity-60"
-            aria-disabled={!isPropertyTypeSelected}
+            aria-disabled={!isAddressTypeSelected || isLoadingReferences}
           >
             <div className="grid gap-6 sm:grid-cols-2">
               <FormField
-                id="region"
+                id="regionId"
                 label="Область"
                 required
                 helper="Оберіть область"
-                error={errors.region?.message}
+                error={errors.regionId?.message}
               >
                 <Select
-                  id="region"
+                  id="regionId"
                   required
-                  {...register('region', {
+                  {...register('regionId', {
                     required: 'Оберіть область',
                   })}
-                  isInvalid={Boolean(errors.region)}
+                  isInvalid={Boolean(errors.regionId)}
                 >
                   <option value="" disabled>
-                    Оберіть область
+                    {isLoadingRegions ? 'Завантаження...' : 'Оберіть область'}
                   </option>
-                  {regionOptions.map((region) => (
-                    <option key={region} value={region}>
-                      {region}
+                  {regions.map((region) => (
+                    <option key={region.id} value={region.id}>
+                      {region.name}
                     </option>
                   ))}
                 </Select>
@@ -329,48 +323,48 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
 
             <div className="grid gap-6 sm:grid-cols-2">
               <FormField
-                id="unitNumber"
+                id="apartmentNumber"
                 label="Номер квартири/офісу"
                 required
                 helper={
-                  selectedTypeTitle
-                    ? `Введіть номер для ${selectedTypeTitle.toLowerCase()}`
+                  selectedAddressType
+                    ? `Введіть номер для ${selectedAddressType.name.toLowerCase()}`
                     : 'Введіть номер квартири або офісу'
                 }
-                error={errors.unitNumber?.message}
+                error={errors.apartmentNumber?.message}
               >
                 <Input
-                  id="unitNumber"
+                  id="apartmentNumber"
                   placeholder="Введіть номер квартири або офісу"
                   required
-                  {...register('unitNumber', {
+                  {...register('apartmentNumber', {
                     required: 'Вкажіть номер квартири або офісу',
                   })}
-                  isInvalid={Boolean(errors.unitNumber)}
+                  isInvalid={Boolean(errors.apartmentNumber)}
                 />
               </FormField>
 
               <FormField
-                id="postalCode"
+                id="zipCode"
                 label="Поштовий індекс"
                 required
                 helper="Введіть поштовий індекс (5 цифр)"
-                error={errors.postalCode?.message}
+                error={errors.zipCode?.message}
               >
                 <Input
-                  id="postalCode"
+                  id="zipCode"
                   type="text"
                   placeholder="Введіть поштовий індекс (5 цифр)"
                   required
                   inputMode="numeric"
-                  {...register('postalCode', {
+                  {...register('zipCode', {
                     required: 'Вкажіть поштовий індекс',
                     pattern: {
                       value: /^\d{5}$/,
                       message: 'Поштовий індекс має містити 5 цифр',
                     },
                   })}
-                  isInvalid={Boolean(errors.postalCode)}
+                  isInvalid={Boolean(errors.zipCode)}
                 />
               </FormField>
             </div>
@@ -405,7 +399,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
             </p>
           </fieldset>
 
-          {!isPropertyTypeSelected ? (
+          {!isAddressTypeSelected ? (
             <p className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
               Оберіть тип нерухомості, щоб заповнити адресу
             </p>
@@ -431,7 +425,7 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
             type="submit"
             loading={isPending || isSubmitting}
             loadingText="Збереження..."
-            disabled={!isPropertyTypeSelected}
+            disabled={!isAddressTypeSelected}
           >
             Зберегти адресу
           </Button>

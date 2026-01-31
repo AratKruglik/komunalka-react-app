@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { addressService } from './addressService'
 import { api } from '@shared/api/apiClient'
 import { API_ENDPOINTS } from '@shared/constants'
-import type { Address } from '@shared/types/entities'
+import type { Address, Region, AddressType } from '@shared/types/entities'
 import type { PaginatedResponse } from '@shared/api/types'
 import type { CreateAddressRequest, UpdateAddressRequest } from '../types'
 
@@ -15,30 +15,53 @@ vi.mock('@shared/api/apiClient', () => ({
   },
 }))
 
+const mockRegion: Region = {
+  id: 9,
+  name: 'Київська область',
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+}
+
+const mockAddressType: AddressType = {
+  id: 1,
+  name: 'Квартира',
+  description: 'Багатоквартирний будинок у місті',
+  icon: 'apartment',
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+}
+
 const mockAddress: Address = {
   id: 1,
-  street: 'Хрещатик',
-  building: '1',
-  apartment: '10',
+  userId: 1,
+  regionId: 9,
   city: 'Київ',
-  district: 'Шевченківський',
+  street: 'вул. Хрещатик',
+  buildingNumber: '1',
+  apartmentNumber: '10',
+  zipCode: '01001',
+  notes: 'Центр міста',
   isPrimary: true,
+  addressTypeId: 1,
+  region: mockRegion,
+  addressType: mockAddressType,
   createdAt: '2025-01-15T10:00:00Z',
+  updatedAt: '2025-01-15T10:00:00Z',
 }
 
 const mockPaginatedResponse: PaginatedResponse<Address> = {
   data: [mockAddress],
   links: {
-    first: '/addresses?page=1',
-    last: '/addresses?page=5',
+    first: '/address?page=1',
+    last: '/address?page=5',
     prev: null,
-    next: '/addresses?page=2',
+    next: '/address?page=2',
   },
   meta: {
     current_page: 1,
     from: 1,
     last_page: 5,
-    path: '/addresses',
+    path: '/address',
     per_page: 10,
     to: 10,
     total: 50,
@@ -57,7 +80,7 @@ describe('addressService', () => {
       const result = await addressService.list()
 
       expect(result).toEqual(mockPaginatedResponse)
-      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESSES.LIST)
+      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESS.LIST)
     })
 
     it('builds query string with pagination params', async () => {
@@ -65,7 +88,7 @@ describe('addressService', () => {
 
       await addressService.list({ page: 2, perPage: 20 })
 
-      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESSES.LIST}?page=2&perPage=20`)
+      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESS.LIST}?page=2&perPage=20`)
     })
 
     it('includes sorting params in query string', async () => {
@@ -73,7 +96,7 @@ describe('addressService', () => {
 
       await addressService.list({ sortBy: 'city', desc: true })
 
-      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESSES.LIST}?sortBy=city&desc=true`)
+      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESS.LIST}?sortBy=city&desc=true`)
     })
 
     it('includes city filter in query string', async () => {
@@ -81,15 +104,15 @@ describe('addressService', () => {
 
       await addressService.list({ city: 'Kyiv' })
 
-      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESSES.LIST}?city=Kyiv`)
+      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESS.LIST}?city=Kyiv`)
     })
 
-    it('includes district filter in query string', async () => {
+    it('includes regionId filter in query string', async () => {
       vi.mocked(api.get).mockResolvedValueOnce(mockPaginatedResponse)
 
-      await addressService.list({ district: 'Shevchenkivskyi' })
+      await addressService.list({ regionId: 9 })
 
-      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESSES.LIST}?district=Shevchenkivskyi`)
+      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESS.LIST}?regionId=9`)
     })
 
     it('includes isPrimary filter in query string', async () => {
@@ -97,7 +120,7 @@ describe('addressService', () => {
 
       await addressService.list({ isPrimary: true })
 
-      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESSES.LIST}?isPrimary=true`)
+      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESS.LIST}?isPrimary=true`)
     })
 
     it('handles isPrimary=false correctly (falsy but defined)', async () => {
@@ -105,7 +128,7 @@ describe('addressService', () => {
 
       await addressService.list({ isPrimary: false })
 
-      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESSES.LIST}?isPrimary=false`)
+      expect(api.get).toHaveBeenCalledWith(`${API_ENDPOINTS.ADDRESS.LIST}?isPrimary=false`)
     })
 
     it('handles all params together', async () => {
@@ -117,11 +140,11 @@ describe('addressService', () => {
         sortBy: 'street',
         desc: false,
         city: 'Lviv',
-        district: 'Halytskyi',
+        regionId: 13,
         isPrimary: true,
       })
 
-      const expectedUrl = `${API_ENDPOINTS.ADDRESSES.LIST}?page=1&perPage=10&sortBy=street&desc=false&city=Lviv&district=Halytskyi&isPrimary=true`
+      const expectedUrl = `${API_ENDPOINTS.ADDRESS.LIST}?page=1&perPage=10&sortBy=street&desc=false&city=Lviv&regionId=13&isPrimary=true`
       expect(api.get).toHaveBeenCalledWith(expectedUrl)
     })
 
@@ -139,7 +162,7 @@ describe('addressService', () => {
       const result = await addressService.getById(1)
 
       expect(result).toEqual(mockAddress)
-      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESSES.GET(1))
+      expect(api.get).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESS.GET(1))
     })
 
     it('throws error when address not found', async () => {
@@ -153,18 +176,21 @@ describe('addressService', () => {
 
       await addressService.getById(42)
 
-      expect(api.get).toHaveBeenCalledWith('/addresses/42')
+      expect(api.get).toHaveBeenCalledWith('/address/42')
     })
   })
 
   describe('create', () => {
     const createData: CreateAddressRequest = {
-      street: 'Нова вулиця',
-      building: '5',
-      apartment: '20',
+      regionId: 9,
       city: 'Одеса',
-      district: 'Приморський',
+      street: 'Нова вулиця',
+      buildingNumber: '5',
+      apartmentNumber: '20',
+      zipCode: '65000',
+      notes: 'Тестова примітка',
       isPrimary: false,
+      addressTypeId: 1,
     }
 
     it('creates new address and returns it', async () => {
@@ -172,20 +198,24 @@ describe('addressService', () => {
         ...mockAddress,
         ...createData,
         id: 2,
+        userId: 1,
+        region: mockRegion,
+        addressType: mockAddressType,
         createdAt: '2025-01-20T12:00:00Z',
+        updatedAt: '2025-01-20T12:00:00Z',
       }
       vi.mocked(api.post).mockResolvedValueOnce(createdAddress)
 
       const result = await addressService.create(createData)
 
       expect(result).toEqual(createdAddress)
-      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESSES.CREATE, createData)
+      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESS.CREATE, createData)
     })
 
     it('throws error on validation failure', async () => {
-      vi.mocked(api.post).mockRejectedValueOnce(new Error('Street is required'))
+      vi.mocked(api.post).mockRejectedValueOnce(new Error('City is required'))
 
-      await expect(addressService.create(createData)).rejects.toThrow('Street is required')
+      await expect(addressService.create(createData)).rejects.toThrow('City is required')
     })
 
     it('handles server error', async () => {
@@ -198,7 +228,7 @@ describe('addressService', () => {
   describe('update', () => {
     const updateData: UpdateAddressRequest = {
       street: 'Оновлена вулиця',
-      building: '10',
+      buildingNumber: '10',
     }
 
     it('updates address and returns updated data', async () => {
@@ -208,7 +238,7 @@ describe('addressService', () => {
       const result = await addressService.update(1, updateData)
 
       expect(result).toEqual(updatedAddress)
-      expect(api.put).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESSES.UPDATE(1), updateData)
+      expect(api.put).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESS.UPDATE(1), updateData)
     })
 
     it('handles partial updates', async () => {
@@ -219,7 +249,7 @@ describe('addressService', () => {
       const result = await addressService.update(1, partialUpdate)
 
       expect(result).toEqual(updatedAddress)
-      expect(api.put).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESSES.UPDATE(1), partialUpdate)
+      expect(api.put).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESS.UPDATE(1), partialUpdate)
     })
 
     it('throws error when address not found', async () => {
@@ -234,7 +264,7 @@ describe('addressService', () => {
 
       await addressService.update(42, updateData)
 
-      expect(api.put).toHaveBeenCalledWith('/addresses/42', updateData)
+      expect(api.put).toHaveBeenCalledWith('/address/42', updateData)
     })
   })
 
@@ -243,7 +273,7 @@ describe('addressService', () => {
       vi.mocked(api.delete).mockResolvedValueOnce(undefined)
 
       await expect(addressService.delete(1)).resolves.toBeUndefined()
-      expect(api.delete).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESSES.DELETE(1))
+      expect(api.delete).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESS.DELETE(1))
     })
 
     it('throws error when address not found', async () => {
@@ -263,7 +293,7 @@ describe('addressService', () => {
 
       await addressService.delete(42)
 
-      expect(api.delete).toHaveBeenCalledWith('/addresses/42')
+      expect(api.delete).toHaveBeenCalledWith('/address/42')
     })
   })
 
@@ -275,7 +305,7 @@ describe('addressService', () => {
       const result = await addressService.setPrimary(1)
 
       expect(result).toEqual(primaryAddress)
-      expect(api.put).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESSES.UPDATE(1), { isPrimary: true })
+      expect(api.put).toHaveBeenCalledWith(API_ENDPOINTS.ADDRESS.UPDATE(1), { isPrimary: true })
     })
 
     it('throws error when address not found', async () => {
@@ -290,7 +320,7 @@ describe('addressService', () => {
 
       await addressService.setPrimary(42)
 
-      expect(api.put).toHaveBeenCalledWith('/addresses/42', { isPrimary: true })
+      expect(api.put).toHaveBeenCalledWith('/address/42', { isPrimary: true })
     })
 
     it('unsets previous primary address implicitly (handled by API)', async () => {

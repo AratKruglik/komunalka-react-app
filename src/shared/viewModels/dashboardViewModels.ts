@@ -261,8 +261,9 @@ export function toChartDataViewModel(
 export function toDashboardAddressOptionViewModel(
   address: Address,
 ): DashboardAddressOptionViewModel {
-  const label = `${address.street}, ${address.building}, кв. ${address.apartment}`
-  const description = `м. ${address.city}, ${address.district} район`
+  const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
+  const label = `${address.street}, ${address.buildingNumber}${apartment}`
+  const description = `м. ${address.city}, ${address.region.name}`
 
   return {
     id: address.id,

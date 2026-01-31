@@ -70,19 +70,17 @@ const mockAddresses: Address[] = [
   createMockAddress({
     id: 1,
     street: 'вул. Хрещатик',
-    building: '22',
-    apartment: '15',
+    buildingNumber: '22',
+    apartmentNumber: '15',
     city: 'Київ',
-    district: 'Шевченківський',
     isPrimary: true,
   }),
   createMockAddress({
     id: 2,
     street: 'вул. Дарницька',
-    building: '5',
-    apartment: '42',
+    buildingNumber: '5',
+    apartmentNumber: '42',
     city: 'Київ',
-    district: 'Дарницький',
     isPrimary: false,
   }),
 ]

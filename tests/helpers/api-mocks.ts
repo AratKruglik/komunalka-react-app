@@ -348,6 +348,7 @@ export async function mockUpdateProfile(page: Page, options: MockOptions = {}): 
 
 export interface MockAddress {
   id: number;
+  userId?: number;
   regionId: number;
   region?: { id: number; name: string };
   city: string;
@@ -358,7 +359,7 @@ export interface MockAddress {
   notes?: string;
   isPrimary: boolean;
   addressTypeId: number;
-  addressType?: { id: number; name: string; description: string };
+  addressType?: { id: number; name: string; description: string; icon?: string };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -368,7 +369,7 @@ export async function mockAddresses(
   addresses: MockAddress[],
   options: MockOptions = {}
 ): Promise<void> {
-  await page.route(`${API_BASE_URL}/addresses`, async (route: Route) => {
+  await page.route(`${API_BASE_URL}/address`, async (route: Route) => {
     if (route.request().method() !== 'GET') {
       await route.continue();
       return;
@@ -385,11 +386,11 @@ export async function mockAddresses(
     await route.fulfill({
       status: options.status ?? 200,
       contentType: 'application/json',
-      body: JSON.stringify(createPaginatedResponse(addresses, '/addresses', page_num, perPage)),
+      body: JSON.stringify(createPaginatedResponse(addresses, '/address', page_num, perPage)),
     });
   });
 
-  await page.route(new RegExp(`${API_BASE_URL}/addresses\\?`), async (route: Route) => {
+  await page.route(new RegExp(`${API_BASE_URL}/address\\?`), async (route: Route) => {
     if (route.request().method() !== 'GET') {
       await route.continue();
       return;
@@ -406,7 +407,7 @@ export async function mockAddresses(
     await route.fulfill({
       status: options.status ?? 200,
       contentType: 'application/json',
-      body: JSON.stringify(createPaginatedResponse(addresses, '/addresses', page_num, perPage)),
+      body: JSON.stringify(createPaginatedResponse(addresses, '/address', page_num, perPage)),
     });
   });
 }
@@ -416,7 +417,7 @@ export async function mockGetAddress(
   address: MockAddress,
   options: MockOptions = {}
 ): Promise<void> {
-  await page.route(new RegExp(`${API_BASE_URL}/addresses/\\d+$`), async (route: Route) => {
+  await page.route(new RegExp(`${API_BASE_URL}/address/\\d+$`), async (route: Route) => {
     if (route.request().method() !== 'GET') {
       await route.continue();
       return;
@@ -435,7 +436,7 @@ export async function mockGetAddress(
 }
 
 export async function mockCreateAddress(page: Page, options: MockOptions = {}): Promise<void> {
-  await page.route(`${API_BASE_URL}/addresses`, async (route: Route) => {
+  await page.route(`${API_BASE_URL}/address`, async (route: Route) => {
     if (route.request().method() !== 'POST') {
       await route.continue();
       return;
@@ -462,7 +463,7 @@ export async function mockCreateAddress(page: Page, options: MockOptions = {}): 
 }
 
 export async function mockUpdateAddress(page: Page, options: MockOptions = {}): Promise<void> {
-  await page.route(new RegExp(`${API_BASE_URL}/addresses/\\d+$`), async (route: Route) => {
+  await page.route(new RegExp(`${API_BASE_URL}/address/\\d+$`), async (route: Route) => {
     if (route.request().method() !== 'PUT') {
       await route.continue();
       return;
@@ -474,7 +475,7 @@ export async function mockUpdateAddress(page: Page, options: MockOptions = {}): 
 
     const requestBody = route.request().postDataJSON();
     const url = route.request().url();
-    const match = url.match(/\/addresses\/(\d+)/);
+    const match = url.match(/\/address\/(\d+)/);
     const addressId = match ? parseInt(match[1], 10) : 1;
     const now = new Date().toISOString();
 
@@ -491,7 +492,7 @@ export async function mockUpdateAddress(page: Page, options: MockOptions = {}): 
 }
 
 export async function mockDeleteAddress(page: Page, options: MockOptions = {}): Promise<void> {
-  await page.route(new RegExp(`${API_BASE_URL}/addresses/\\d+$`), async (route: Route) => {
+  await page.route(new RegExp(`${API_BASE_URL}/address/\\d+$`), async (route: Route) => {
     if (route.request().method() !== 'DELETE') {
       await route.continue();
       return;

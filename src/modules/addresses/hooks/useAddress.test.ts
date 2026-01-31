@@ -3,6 +3,7 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { useAddress } from './useAddress'
 import { addressService } from '../api'
 import type { Address } from '@shared/types/entities'
+import { createMockAddress } from '@/test-utils/factories'
 
 vi.mock('../api', () => ({
   addressService: {
@@ -10,16 +11,7 @@ vi.mock('../api', () => ({
   },
 }))
 
-const mockAddress: Address = {
-  id: 1,
-  street: 'Test Street',
-  building: '1',
-  apartment: '10',
-  city: 'Kyiv',
-  district: 'Shevchenkivskyi',
-  isPrimary: true,
-  createdAt: '2025-01-15T10:00:00Z',
-}
+const mockAddress: Address = createMockAddress({ id: 1 })
 
 describe('useAddress', () => {
   beforeEach(() => {

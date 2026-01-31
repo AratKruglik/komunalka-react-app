@@ -1,5 +1,5 @@
 import type { User, AuthState } from '@shared/types/auth'
-import type { Address, Meter, Reading } from '@shared/types/entities'
+import type { Address, Meter, Reading, Region, AddressType } from '@shared/types/entities'
 
 let idCounter = 1
 
@@ -9,6 +9,30 @@ function nextId(): number {
 
 export function resetIdCounter(): void {
   idCounter = 1
+}
+
+export function createMockRegion(overrides: Partial<Region> = {}): Region {
+  const id = overrides.id ?? 9
+  return {
+    id,
+    name: 'Київська область',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+    ...overrides,
+  }
+}
+
+export function createMockAddressType(overrides: Partial<AddressType> = {}): AddressType {
+  const id = overrides.id ?? 1
+  return {
+    id,
+    name: 'Квартира',
+    description: 'Багатоквартирний будинок у місті',
+    icon: 'apartment',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+    ...overrides,
+  }
 }
 
 export function createMockUser(overrides: Partial<User> = {}): User {
@@ -30,13 +54,20 @@ export function createMockAddress(overrides: Partial<Address> = {}): Address {
   const id = overrides.id ?? nextId()
   return {
     id,
-    street: 'Test Street',
-    building: '1',
-    apartment: '10',
-    city: 'Kyiv',
-    district: 'Shevchenkivskyi',
+    userId: 1,
+    regionId: 9,
+    city: 'Київ',
+    street: 'вул. Тестова',
+    buildingNumber: '1',
+    apartmentNumber: '10',
+    zipCode: '01001',
+    notes: '',
     isPrimary: id === 1,
+    addressTypeId: 1,
+    region: createMockRegion(overrides.region),
+    addressType: createMockAddressType(overrides.addressType),
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     ...overrides,
   }
 }

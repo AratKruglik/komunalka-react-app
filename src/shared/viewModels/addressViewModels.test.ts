@@ -4,19 +4,42 @@ import {
   toAddressSelectViewModel,
   toAddressCardViewModels,
 } from './addressViewModels'
-import type { Address, Meter } from '../types/entities'
+import type { Address, Meter, Region, AddressType } from '../types/entities'
 import { Star } from 'lucide-react'
+
+const mockRegion: Region = {
+  id: 25,
+  name: 'м. Київ',
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+}
+
+const mockAddressType: AddressType = {
+  id: 1,
+  name: 'Квартира',
+  description: 'Багатоквартирний будинок у місті',
+  icon: 'apartment',
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+}
 
 function createMockAddress(overrides: Partial<Address> = {}): Address {
   return {
     id: 1,
-    street: 'вул. Хрещатик',
-    building: '22',
-    apartment: '15',
+    userId: 1,
+    regionId: 25,
     city: 'Київ',
-    district: 'Шевченківський',
+    street: 'вул. Хрещатик',
+    buildingNumber: '22',
+    apartmentNumber: '15',
+    zipCode: '01001',
+    notes: '',
     isPrimary: false,
+    addressTypeId: 1,
+    region: overrides.region || mockRegion,
+    addressType: overrides.addressType || mockAddressType,
     createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
     ...overrides,
   }
 }
@@ -53,7 +76,19 @@ describe('addressViewModels', () => {
 
       const result = toAddressCardViewModel(address, meters)
 
-      expect(result.subtitle).toBe('м. Київ, Шевченківський район')
+      expect(result.subtitle).toBe('Квартира | м. Київ, м. Київ')
+    })
+
+    it('includes addressType in view model', () => {
+      const address = createMockAddress()
+      const meters: Meter[] = []
+
+      const result = toAddressCardViewModel(address, meters)
+
+      expect(result.addressType).toEqual({
+        name: 'Квартира',
+        icon: 'apartment',
+      })
     })
 
     it('includes primary badge when address is primary', () => {
@@ -189,7 +224,7 @@ describe('addressViewModels', () => {
 
       const result = toAddressSelectViewModel(address)
 
-      expect(result.description).toBe('м. Київ, Шевченківський район')
+      expect(result.description).toBe('Квартира | м. Київ, м. Київ')
     })
 
     it('preserves address id', () => {

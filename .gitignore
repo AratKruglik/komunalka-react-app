@@ -31,9 +31,6 @@ routeTree.gen.ts
 *.sln
 *.sw?
 
-# Documentation (work in progress)
-docs/
-
 # Playwright
 /test-results/
 /playwright-report/

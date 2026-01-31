@@ -1,35 +1,24 @@
-import type { Address } from '@shared/types/entities'
+import type { Address, Region, AddressType } from '@shared/types/entities'
 import type { PaginationParams } from '@shared/api/types'
 
-/**
- * Request payload for creating a new address
- */
 export interface CreateAddressRequest {
-  street: string
-  building: string
-  apartment: string
+  regionId: number
   city: string
-  district: string
+  street: string
+  buildingNumber: string
+  apartmentNumber: string
+  zipCode: string
+  notes: string
   isPrimary: boolean
+  addressTypeId: number
 }
 
-/**
- * Request payload for updating an existing address
- * All fields are optional
- */
 export type UpdateAddressRequest = Partial<CreateAddressRequest>
 
-/**
- * Parameters for filtering and paginating address list
- * Extends base pagination params with address-specific filters
- */
 export interface AddressListParams extends PaginationParams {
   city?: string
-  district?: string
+  regionId?: number
   isPrimary?: boolean
 }
 
-/**
- * Re-export Address type for convenience
- */
-export type { Address }
+export type { Address, Region, AddressType }

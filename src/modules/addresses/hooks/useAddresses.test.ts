@@ -4,6 +4,7 @@ import { useAddresses } from './useAddresses'
 import { addressService } from '../api'
 import type { Address } from '@shared/types/entities'
 import type { PaginatedResponse } from '@shared/api/types'
+import { createMockAddress, createMockRegion } from '@/test-utils/factories'
 
 vi.mock('../api', () => ({
   addressService: {
@@ -12,41 +13,30 @@ vi.mock('../api', () => ({
 }))
 
 const mockAddresses: Address[] = [
-  {
-    id: 1,
-    street: 'Test Street',
-    building: '1',
-    apartment: '10',
-    city: 'Kyiv',
-    district: 'Shevchenkivskyi',
-    isPrimary: true,
-    createdAt: '2025-01-15T10:00:00Z',
-  },
-  {
+  createMockAddress({ id: 1, isPrimary: true }),
+  createMockAddress({
     id: 2,
-    street: 'Another Street',
-    building: '5',
-    apartment: '20',
-    city: 'Lviv',
-    district: 'Halytskyi',
+    street: 'вул. Франка',
+    city: 'Львів',
+    regionId: 12,
+    region: createMockRegion({ id: 12, name: 'Львівська область' }),
     isPrimary: false,
-    createdAt: '2025-01-16T10:00:00Z',
-  },
+  }),
 ]
 
 const mockPaginatedResponse: PaginatedResponse<Address> = {
   data: mockAddresses,
   links: {
-    first: '/addresses?page=1',
-    last: '/addresses?page=5',
+    first: '/address?page=1',
+    last: '/address?page=5',
     prev: null,
-    next: '/addresses?page=2',
+    next: '/address?page=2',
   },
   meta: {
     current_page: 1,
     from: 1,
     last_page: 5,
-    path: '/addresses',
+    path: '/address',
     per_page: 10,
     to: 2,
     total: 50,

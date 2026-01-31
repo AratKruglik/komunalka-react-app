@@ -7,18 +7,41 @@ import {
   toDashboardAddressOptionViewModel,
   toExpenseDistributionViewModel,
 } from './dashboardViewModels'
-import type { Address, Meter, Reading, Provider } from '../types/entities'
+import type { Address, Meter, Reading, Provider, Region, AddressType } from '../types/entities'
+
+const mockRegion: Region = {
+  id: 25,
+  name: 'м. Київ',
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+}
+
+const mockAddressType: AddressType = {
+  id: 1,
+  name: 'Квартира',
+  description: 'Багатоквартирний будинок у місті',
+  icon: 'apartment',
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+}
 
 function createMockAddress(overrides: Partial<Address> = {}): Address {
   return {
     id: 1,
-    street: 'вул. Хрещатик',
-    building: '22',
-    apartment: '15',
+    userId: 1,
+    regionId: 25,
     city: 'Київ',
-    district: 'Шевченківський',
+    street: 'вул. Хрещатик',
+    buildingNumber: '22',
+    apartmentNumber: '15',
+    zipCode: '01001',
+    notes: '',
     isPrimary: false,
+    addressTypeId: 1,
+    region: overrides.region || mockRegion,
+    addressType: overrides.addressType || mockAddressType,
     createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
     ...overrides,
   }
 }
@@ -498,17 +521,16 @@ describe('dashboardViewModels', () => {
       const address = createMockAddress({
         id: 42,
         street: 'вул. Хрещатик',
-        building: '22',
-        apartment: '15',
+        buildingNumber: '22',
+        apartmentNumber: '15',
         city: 'Київ',
-        district: 'Шевченківський',
       })
 
       const result = toDashboardAddressOptionViewModel(address)
 
       expect(result.id).toBe(42)
       expect(result.label).toBe('вул. Хрещатик, 22, кв. 15')
-      expect(result.description).toBe('м. Київ, Шевченківський район')
+      expect(result.description).toBe('м. Київ, м. Київ')
     })
 
     it('preserves address id', () => {
