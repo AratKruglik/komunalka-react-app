@@ -1,15 +1,22 @@
 import { test, expect } from '@playwright/test';
-import { AddressPage, AddAddressPage } from '../../pages';
+import { AddressPage, AddAddressPage, EditAddressPage } from '../../pages';
 import {
   mockAddresses,
   mockUserProfile,
   mockCreateAddress,
   mockDeleteAddress,
+  mockUpdateAddress,
+  mockGetAddress,
   mockMetersByAddress,
   mockReadingsByAddress,
 } from '../../helpers';
 import { authenticateUser } from '../../helpers/auth';
-import { testAddresses, testNewAddressFormData, testMeters } from '../../fixtures/test-data';
+import {
+  testAddresses,
+  testNewAddressFormData,
+  testMeters,
+  testEditedAddressFormData,
+} from '../../fixtures/test-data';
 
 test.describe('Addresses List', () => {
   let addressPage: AddressPage;
@@ -252,5 +259,238 @@ test.describe('Address Card Actions', () => {
 
     const primaryCard = await addressPage.getAddressCardByStreet(testAddresses.primary.street);
     await expect(primaryCard).toContainText(/основна адреса/i);
+  });
+});
+
+test.describe('Edit Address', () => {
+  let addressPage: AddressPage;
+  let editAddressPage: EditAddressPage;
+
+  test.beforeEach(async ({ page }) => {
+    addressPage = new AddressPage(page);
+    editAddressPage = new EditAddressPage(page, testAddresses.primary.id);
+    await authenticateUser(page);
+    await mockUserProfile(page);
+  });
+
+  test.skip('should open edit page when clicking edit button', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+    await mockGetAddress(page, testAddresses.primary);
+
+    await addressPage.goto();
+    await addressPage.clickEditAddress(testAddresses.primary.street);
+
+    await expect(page).toHaveURL(/\/addresses\/\d+\/edit/);
+  });
+
+  test.skip('should pre-populate form with existing address data', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+    await mockGetAddress(page, testAddresses.primary);
+
+    await editAddressPage.goto();
+
+    await editAddressPage.expectFormPrePopulated({
+      city: testAddresses.primary.city,
+      street: testAddresses.primary.street,
+      building: testAddresses.primary.buildingNumber,
+      unit: testAddresses.primary.apartmentNumber,
+      postalCode: testAddresses.primary.zipCode,
+    });
+  });
+
+  test.skip('should validate edited fields', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+    await mockGetAddress(page, testAddresses.primary);
+
+    await editAddressPage.goto();
+
+    await editAddressPage.fillEditForm({ city: '' });
+    await editAddressPage.submit();
+
+    await editAddressPage.expectValidationError('місто');
+  });
+
+  test.skip('should save updated address successfully', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+    await mockGetAddress(page, testAddresses.primary);
+    await mockUpdateAddress(page);
+
+    await editAddressPage.goto();
+
+    await editAddressPage.fillEditForm({
+      city: testEditedAddressFormData.city,
+      street: testEditedAddressFormData.street,
+      building: testEditedAddressFormData.building,
+      unit: testEditedAddressFormData.unit,
+    });
+    await editAddressPage.submit();
+
+    await expect(page).toHaveURL(/\/addresses$/);
+  });
+
+  test.skip('should show updated data in list after save', async ({ page }) => {
+    const updatedAddress = {
+      ...testAddresses.primary,
+      city: 'Львів',
+      street: 'вул. Франка',
+    };
+
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+    await mockGetAddress(page, testAddresses.primary);
+    await mockUpdateAddress(page);
+
+    await editAddressPage.goto();
+    await editAddressPage.fillEditForm({
+      city: updatedAddress.city,
+      street: updatedAddress.street,
+    });
+    await editAddressPage.submit();
+
+    await mockAddresses(page, [updatedAddress]);
+
+    await addressPage.goto();
+    await addressPage.expectAddressVisible(updatedAddress.street);
+  });
+
+  test.skip('should cancel edit without saving changes', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+    await mockGetAddress(page, testAddresses.primary);
+
+    await editAddressPage.goto();
+    await editAddressPage.fillEditForm({ city: 'Нове місто' });
+    await editAddressPage.cancel();
+
+    await expect(page).toHaveURL(/\/addresses$/);
+
+    await addressPage.expectAddressVisible(testAddresses.primary.street);
+  });
+});
+
+test.describe('Delete Address', () => {
+  let addressPage: AddressPage;
+
+  test.beforeEach(async ({ page }) => {
+    addressPage = new AddressPage(page);
+    await authenticateUser(page);
+    await mockUserProfile(page);
+  });
+
+  test.skip('should show confirmation dialog when clicking delete', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+
+    await addressPage.goto();
+    await addressPage.clickDeleteAddress(testAddresses.secondary.street);
+
+    await addressPage.expectDeleteConfirmationDialog();
+  });
+
+  test.skip('should delete address after confirmation', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+    await mockDeleteAddress(page);
+
+    await addressPage.goto();
+    await addressPage.clickDeleteAddress(testAddresses.secondary.street);
+    await addressPage.confirmDelete();
+
+    await addressPage.expectSuccessToast();
+  });
+
+  test.skip('should remove address from list after deletion', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+    await mockDeleteAddress(page);
+
+    await addressPage.goto();
+    await addressPage.expectAddressCount(2);
+
+    await addressPage.clickDeleteAddress(testAddresses.secondary.street);
+    await addressPage.confirmDelete();
+
+    await mockAddresses(page, [testAddresses.primary]);
+    await page.reload();
+
+    await addressPage.expectAddressCount(1);
+    await addressPage.expectAddressNotVisible(testAddresses.secondary.street);
+  });
+
+  test.skip('should cancel delete operation', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+
+    await addressPage.goto();
+    await addressPage.clickDeleteAddress(testAddresses.secondary.street);
+    await addressPage.cancelDelete();
+
+    await addressPage.expectAddressCount(2);
+    await addressPage.expectAddressVisible(testAddresses.secondary.street);
+  });
+
+  test.skip('should handle delete error gracefully', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+    await mockDeleteAddress(page, { status: 500 });
+
+    await addressPage.goto();
+    await addressPage.clickDeleteAddress(testAddresses.secondary.street);
+    await addressPage.confirmDelete();
+
+    await addressPage.expectErrorToast();
+    await addressPage.expectAddressCount(2);
+  });
+});
+
+test.describe('Address Actions Menu', () => {
+  let addressPage: AddressPage;
+
+  test.beforeEach(async ({ page }) => {
+    addressPage = new AddressPage(page);
+    await authenticateUser(page);
+    await mockUserProfile(page);
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+  });
+
+  test.skip('should open actions menu when clicking more button', async ({ page }) => {
+    await addressPage.goto();
+    await addressPage.clickMoreActions(testAddresses.primary.street);
+
+    await addressPage.expectActionsMenuVisible();
+  });
+
+  test.skip('should have delete option in actions menu', async ({ page }) => {
+    await addressPage.goto();
+    await addressPage.clickMoreActions(testAddresses.primary.street);
+
+    await addressPage.expectActionsMenuOptions();
+  });
+
+  test.skip('should close menu on outside click', async ({ page }) => {
+    await addressPage.goto();
+    await addressPage.clickMoreActions(testAddresses.primary.street);
+    await addressPage.expectActionsMenuVisible();
+
+    await addressPage.clickOutsideActionsMenu();
+
+    await addressPage.expectActionsMenuHidden();
   });
 });

@@ -2,6 +2,7 @@ import { type ReactElement, type ReactNode, createElement } from 'react'
 import { render, type RenderOptions, type RenderResult } from '@testing-library/react'
 import { MemoryRouter, type MemoryRouterProps } from 'react-router'
 import { AuthContext } from '@shared/contexts/auth'
+import { ThemeProvider } from '@shared/components/theme/ThemeProvider'
 import type { AuthContextValue, AuthState, User } from '@shared/types/auth'
 import type { UpdateUserRequest } from '@shared/types/auth'
 import { createMockAuthState, createMockUser } from './factories'
@@ -64,9 +65,13 @@ export function renderWithProviders(
 
   const wrapper = ({ children }: { children: ReactNode }): ReactElement => {
     return createElement(
-      MemoryRouter,
-      routerProps,
-      createElement(AuthContext.Provider, { value: mockAuthValue }, children)
+      ThemeProvider,
+      null,
+      createElement(
+        MemoryRouter,
+        routerProps,
+        createElement(AuthContext.Provider, { value: mockAuthValue }, children)
+      )
     )
   }
 

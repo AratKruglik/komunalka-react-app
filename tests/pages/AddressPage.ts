@@ -95,6 +95,70 @@ export class AddressPage extends BasePage {
   async retry(): Promise<void> {
     await this.retryButton.click();
   }
+
+  async clickDeleteAddress(street: string): Promise<void> {
+    await this.clickMoreActions(street);
+    const deleteButton = this.page.getByRole('menuitem', { name: /видалити/i });
+    await deleteButton.click();
+  }
+
+  async expectAddressNotVisible(street: string): Promise<void> {
+    const card = await this.getAddressCardByStreet(street);
+    await expect(card).not.toBeVisible();
+  }
+
+  async expectDeleteConfirmationDialog(): Promise<void> {
+    const dialog = this.page.getByRole('alertdialog');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/видалити адресу/i)).toBeVisible();
+  }
+
+  async confirmDelete(): Promise<void> {
+    const dialog = this.page.getByRole('alertdialog');
+    const confirmButton = dialog.getByRole('button', { name: /видалити/i });
+    await confirmButton.click();
+  }
+
+  async cancelDelete(): Promise<void> {
+    const dialog = this.page.getByRole('alertdialog');
+    const cancelButton = dialog.getByRole('button', { name: /скасувати/i });
+    await cancelButton.click();
+  }
+
+  async expectActionsMenuVisible(): Promise<void> {
+    const menu = this.page.getByRole('menu');
+    await expect(menu).toBeVisible();
+  }
+
+  async expectActionsMenuHidden(): Promise<void> {
+    const menu = this.page.getByRole('menu');
+    await expect(menu).not.toBeVisible();
+  }
+
+  async expectActionsMenuOptions(): Promise<void> {
+    const menu = this.page.getByRole('menu');
+    await expect(menu.getByRole('menuitem', { name: /видалити/i })).toBeVisible();
+  }
+
+  async clickOutsideActionsMenu(): Promise<void> {
+    await this.page.locator('body').click({ position: { x: 10, y: 10 } });
+  }
+
+  async expectSuccessToast(message?: string): Promise<void> {
+    const toast = this.page.getByRole('status');
+    await expect(toast).toBeVisible();
+    if (message) {
+      await expect(toast).toContainText(message);
+    }
+  }
+
+  async expectErrorToast(message?: string): Promise<void> {
+    const toast = this.page.getByRole('alert');
+    await expect(toast).toBeVisible();
+    if (message) {
+      await expect(toast).toContainText(message);
+    }
+  }
 }
 
 export class AddAddressPage extends BasePage {
@@ -255,5 +319,166 @@ export class AddAddressPage extends BasePage {
 
   async expectDisabledFieldsHintHidden(): Promise<void> {
     await expect(this.disabledFieldsHint).not.toBeVisible();
+  }
+}
+
+export class EditAddressPage extends BasePage {
+  readonly url: string;
+
+  readonly pageHeading: Locator;
+  readonly breadcrumb: Locator;
+  readonly formHeading: Locator;
+
+  readonly propertyTypeApartment: Locator;
+  readonly propertyTypeHouse: Locator;
+  readonly propertyTypeOffice: Locator;
+
+  readonly regionSelect: Locator;
+  readonly cityInput: Locator;
+  readonly streetInput: Locator;
+  readonly buildingInput: Locator;
+  readonly unitInput: Locator;
+  readonly postalCodeInput: Locator;
+  readonly notesInput: Locator;
+  readonly isPrimaryCheckbox: Locator;
+
+  readonly cancelButton: Locator;
+  readonly submitButton: Locator;
+
+  readonly loadingIndicator: Locator;
+
+  constructor(page: Page, addressId?: number) {
+    super(page);
+
+    this.url = addressId ? `/addresses/${addressId}/edit` : '/addresses/1/edit';
+
+    this.pageHeading = page.getByRole('heading', { name: /редагувати адресу/i, level: 1 });
+    this.breadcrumb = page.getByRole('navigation', { name: 'Breadcrumb' });
+    this.formHeading = page.getByRole('heading', { name: /редагувати адресу/i });
+
+    this.propertyTypeApartment = page.getByRole('button', { name: /квартира/i });
+    this.propertyTypeHouse = page.getByRole('button', { name: /приватний будинок/i });
+    this.propertyTypeOffice = page.getByRole('button', { name: /офіс/i });
+
+    this.regionSelect = page.getByRole('combobox', { name: /область/i });
+    this.cityInput = page.getByLabel(/місто/i);
+    this.streetInput = page.getByLabel(/вулиця/i);
+    this.buildingInput = page.getByLabel(/номер будинку/i);
+    this.unitInput = page.getByLabel(/номер квартири/i);
+    this.postalCodeInput = page.getByLabel(/поштовий індекс/i);
+    this.notesInput = page.getByLabel(/додаткові примітки/i);
+    this.isPrimaryCheckbox = page.getByLabel(/встановити як основну/i);
+
+    this.cancelButton = page.getByRole('button', { name: /скасувати/i });
+    this.submitButton = page.getByRole('button', { name: /зберегти/i });
+
+    this.loadingIndicator = page.locator('.animate-pulse');
+  }
+
+  async selectPropertyType(type: 'apartment' | 'house' | 'office'): Promise<void> {
+    switch (type) {
+      case 'apartment':
+        await this.propertyTypeApartment.click();
+        break;
+      case 'house':
+        await this.propertyTypeHouse.click();
+        break;
+      case 'office':
+        await this.propertyTypeOffice.click();
+        break;
+    }
+  }
+
+  async fillEditForm(data: {
+    city?: string;
+    street?: string;
+    building?: string;
+    unit?: string;
+    postalCode?: string;
+    notes?: string;
+    isPrimary?: boolean;
+  }): Promise<void> {
+    if (data.city !== undefined) {
+      await this.cityInput.clear();
+      await this.cityInput.fill(data.city);
+    }
+    if (data.street !== undefined) {
+      await this.streetInput.clear();
+      await this.streetInput.fill(data.street);
+    }
+    if (data.building !== undefined) {
+      await this.buildingInput.clear();
+      await this.buildingInput.fill(data.building);
+    }
+    if (data.unit !== undefined) {
+      await this.unitInput.clear();
+      await this.unitInput.fill(data.unit);
+    }
+    if (data.postalCode !== undefined) {
+      await this.postalCodeInput.clear();
+      await this.postalCodeInput.fill(data.postalCode);
+    }
+    if (data.notes !== undefined) {
+      await this.notesInput.clear();
+      await this.notesInput.fill(data.notes);
+    }
+    if (data.isPrimary !== undefined) {
+      if (data.isPrimary) {
+        await this.isPrimaryCheckbox.check();
+      } else {
+        await this.isPrimaryCheckbox.uncheck();
+      }
+    }
+  }
+
+  async submit(): Promise<void> {
+    await this.submitButton.click();
+  }
+
+  async cancel(): Promise<void> {
+    await this.cancelButton.click();
+  }
+
+  async expectFormVisible(): Promise<void> {
+    await expect(this.formHeading).toBeVisible();
+  }
+
+  async expectFormPrePopulated(data: {
+    city?: string;
+    street?: string;
+    building?: string;
+    unit?: string;
+    postalCode?: string;
+  }): Promise<void> {
+    if (data.city) {
+      await expect(this.cityInput).toHaveValue(data.city);
+    }
+    if (data.street) {
+      await expect(this.streetInput).toHaveValue(data.street);
+    }
+    if (data.building) {
+      await expect(this.buildingInput).toHaveValue(data.building);
+    }
+    if (data.unit) {
+      await expect(this.unitInput).toHaveValue(data.unit);
+    }
+    if (data.postalCode) {
+      await expect(this.postalCodeInput).toHaveValue(data.postalCode);
+    }
+  }
+
+  async expectBreadcrumbVisible(): Promise<void> {
+    await expect(this.breadcrumb).toBeVisible();
+    await expect(this.breadcrumb.getByText('Мої адреси')).toBeVisible();
+    await expect(this.breadcrumb.getByText('Редагувати')).toBeVisible();
+  }
+
+  async expectLoadingState(): Promise<void> {
+    await expect(this.loadingIndicator.first()).toBeVisible();
+  }
+
+  async expectValidationError(message: string): Promise<void> {
+    const error = this.page.locator('p.text-red-500').filter({ hasText: new RegExp(message, 'i') });
+    await expect(error.first()).toBeVisible();
   }
 }

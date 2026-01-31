@@ -18,6 +18,7 @@ export class AddReadingsPage extends BasePage {
   readonly submitButton: Locator;
   readonly successMessage: Locator;
   readonly errorMessage: Locator;
+  readonly loadingIndicator: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -36,6 +37,7 @@ export class AddReadingsPage extends BasePage {
     this.submitButton = page.getByRole('button', { name: /зберегти/i });
     this.successMessage = page.getByText('Показання успішно збережено!');
     this.errorMessage = page.locator('[class*="error"]');
+    this.loadingIndicator = page.getByText(/збереження/i);
   }
 
   async selectAddress(addressLabel: string): Promise<void> {
@@ -153,5 +155,96 @@ export class AddReadingsPage extends BasePage {
   async expectAddressOptionCount(count: number): Promise<void> {
     const options = await this.getAddressOptions();
     expect(options.length).toBe(count);
+  }
+
+  async getReadingInput(meterName: string): Promise<Locator> {
+    const card = await this.getReadingCard(meterName);
+    return card.getByRole('spinbutton').first();
+  }
+
+  async getPreviousReadingValue(meterName: string): Promise<string> {
+    const card = await this.getReadingCard(meterName);
+    const previousInput = card.locator('input[readonly]').first();
+    return (await previousInput.inputValue()) || '';
+  }
+
+  async expectPreviousReadingVisible(meterName: string): Promise<void> {
+    const card = await this.getReadingCard(meterName);
+    const previousLabel = card.getByText(/попередні показання/i);
+    await expect(previousLabel).toBeVisible();
+  }
+
+  async getConsumptionValue(meterName: string): Promise<string> {
+    const card = await this.getReadingCard(meterName);
+    const consumptionRow = card.locator('dt:has-text("Споживання:") + dd, dd:has(+ dt:has-text("Споживання:"))').first();
+    if (await consumptionRow.count() === 0) {
+      const consumptionText = card.getByText(/споживання:/i).locator('..').locator('dd');
+      return (await consumptionText.textContent()) || '';
+    }
+    return (await consumptionRow.textContent()) || '';
+  }
+
+  async expectConsumptionValue(meterName: string, expectedValue: string): Promise<void> {
+    const card = await this.getReadingCard(meterName);
+    const consumptionSection = card.locator('dl').filter({ hasText: /споживання/i });
+    await expect(consumptionSection).toContainText(expectedValue);
+  }
+
+  async expectEstimatedCostVisible(meterName: string): Promise<void> {
+    const card = await this.getReadingCard(meterName);
+    const costLabel = card.getByText(/вартість/i);
+    await expect(costLabel).toBeVisible();
+  }
+
+  async expectEstimatedCostValue(meterName: string, expectedCost: string): Promise<void> {
+    const card = await this.getReadingCard(meterName);
+    const costSection = card.locator('dl').filter({ hasText: /вартість/i });
+    await expect(costSection).toContainText(expectedCost);
+  }
+
+  async expectWarningForLowerValue(meterName: string): Promise<void> {
+    const card = await this.getReadingCard(meterName);
+    const consumption = await this.getConsumptionValue(meterName);
+    expect(consumption).toContain('0');
+  }
+
+  async expectSubmitLoading(): Promise<void> {
+    await expect(this.loadingIndicator).toBeVisible();
+  }
+
+  async expectSubmitNotLoading(): Promise<void> {
+    await expect(this.loadingIndicator).not.toBeVisible();
+  }
+
+  async fillAllReadings(readings: Array<{ meterName: string; value: string }>): Promise<void> {
+    for (const reading of readings) {
+      await this.fillReadingValue(reading.meterName, reading.value);
+    }
+  }
+
+  async expectReadingCardsCount(count: number): Promise<void> {
+    const cards = this.page.locator('[class*="shadow-lg"]').filter({ hasText: /поточні показання/i });
+    await expect(cards).toHaveCount(count);
+  }
+
+  async expectSummaryTableHasRows(count: number): Promise<void> {
+    const rows = this.summaryTable.locator('tbody tr');
+    await expect(rows).toHaveCount(count);
+  }
+
+  async getReadingDateInput(meterName: string): Promise<Locator> {
+    const card = await this.getReadingCard(meterName);
+    return card.locator('input[type="date"]');
+  }
+
+  async getTariffSelect(meterName: string): Promise<Locator> {
+    const card = await this.getReadingCard(meterName);
+    return card.getByRole('combobox').first();
+  }
+
+  async expectInputValidationError(meterName: string): Promise<void> {
+    const input = await this.getReadingInput(meterName);
+    const isInvalid = await input.evaluate((el: HTMLInputElement) => el.validity.valid === false);
+    expect(isInvalid).toBe(true);
   }
 }

@@ -185,6 +185,18 @@ export const testNewAddressFormData = {
   isPrimary: false,
 };
 
+export const testEditedAddressFormData = {
+  propertyType: 'apartment' as const,
+  region: 'Київська область',
+  city: 'Київ',
+  street: 'вул. Хрещатик',
+  building: '10',
+  unit: '55',
+  postalCode: '01002',
+  notes: 'Оновлена адреса',
+  isPrimary: false,
+};
+
 type FrontendCompatibleMeter = MockMeter & {
   meterNumber: string;
   type: 'electricity' | 'gas' | 'coldWater' | 'hotWater' | 'heating';

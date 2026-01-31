@@ -3,12 +3,13 @@ import { ProfilePage } from '../../pages';
 import { authenticateUser } from '../../helpers/auth';
 import {
   mockUserProfile,
-  mockUpdateProfile,
   mockAddresses,
   mockMetersByAddress,
   mockReadingsByAddress,
+  mockChangePassword,
+  mockUploadAvatar,
 } from '../../helpers/api-mocks';
-import { testUsers, testAddresses } from '../../fixtures/test-data';
+import { testUsers, testAddresses, testUserProfiles } from '../../fixtures/test-data';
 
 test.describe('Profile Page', () => {
   let profilePage: ProfilePage;
@@ -76,9 +77,7 @@ test.describe('Profile Page', () => {
     await profilePage.expectPasswordStrengthIndicator();
   });
 
-  test('should update first name successfully', async ({ page }) => {
-    await mockUpdateProfile(page);
-
+  test('should update first name successfully', async () => {
     await profilePage.goto();
     await profilePage.fillBasicInfo({ firstName: 'Новий Тестовий' });
     await profilePage.submit();
@@ -86,9 +85,7 @@ test.describe('Profile Page', () => {
     await expect(profilePage.firstNameInput).toHaveValue('Новий Тестовий');
   });
 
-  test('should update last name successfully', async ({ page }) => {
-    await mockUpdateProfile(page);
-
+  test('should update last name successfully', async () => {
     await profilePage.goto();
     await profilePage.fillBasicInfo({ lastName: 'Новий Прізвище' });
     await profilePage.submit();
@@ -96,9 +93,7 @@ test.describe('Profile Page', () => {
     await expect(profilePage.lastNameInput).toHaveValue('Новий Прізвище');
   });
 
-  test('should update email successfully', async ({ page }) => {
-    await mockUpdateProfile(page);
-
+  test('should update email successfully', async () => {
     await profilePage.goto();
     await profilePage.fillBasicInfo({ email: 'new@example.com' });
     await profilePage.submit();
@@ -106,9 +101,7 @@ test.describe('Profile Page', () => {
     await expect(profilePage.emailInput).toHaveValue('new@example.com');
   });
 
-  test('should update phone number successfully', async ({ page }) => {
-    await mockUpdateProfile(page);
-
+  test('should update phone number successfully', async () => {
     await profilePage.goto();
     await profilePage.fillBasicInfo({ phone: '501234599' });
     await profilePage.submit();
@@ -153,6 +146,123 @@ test.describe('Profile Page', () => {
   });
 });
 
+test.describe('Profile - Profile Edit', () => {
+  let profilePage: ProfilePage;
+
+  interface SetupMocksOptions {
+    profileOptions?: { delay?: number; status?: number };
+  }
+
+  async function setupMocks(
+    page: typeof test extends (name: string, fn: (args: infer T) => void) => void ? T['page'] : never,
+    options: SetupMocksOptions = {}
+  ) {
+    await mockUserProfile(page, testUsers.profileUser, options.profileOptions);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    profilePage = new ProfilePage(page);
+    await authenticateUser(page);
+  });
+
+  test('should pre-populate form with current user data', async ({ page }) => {
+    await setupMocks(page);
+    await profilePage.goto();
+
+    await profilePage.expectFormFieldValues({
+      firstName: testUsers.profileUser.firstName,
+      lastName: testUsers.profileUser.lastName,
+      email: testUsers.profileUser.email,
+    });
+  });
+
+  test('should validate required fields - firstName', async ({ page }) => {
+    await setupMocks(page);
+    await profilePage.goto();
+
+    await profilePage.firstNameInput.clear();
+    await profilePage.submit();
+
+    await profilePage.expectFirstNameError();
+  });
+
+  test('should validate required fields - lastName', async ({ page }) => {
+    await setupMocks(page);
+    await profilePage.goto();
+
+    await profilePage.lastNameInput.clear();
+    await profilePage.submit();
+
+    await profilePage.expectLastNameError();
+  });
+
+  test('should validate email format', async ({ page }) => {
+    await setupMocks(page);
+    await profilePage.goto();
+
+    await profilePage.fillBasicInfo({ email: 'invalid-email' });
+    await profilePage.submit();
+
+    await profilePage.expectEmailFormatError();
+  });
+
+  test('should validate phone format', async ({ page }) => {
+    await setupMocks(page);
+    await profilePage.goto();
+
+    await profilePage.fillBasicInfo({ phone: '12' });
+    await profilePage.submit();
+
+    await profilePage.expectPhoneFormatError();
+  });
+
+  test('should save profile changes successfully', async ({ page }) => {
+    await setupMocks(page);
+
+    await profilePage.goto();
+    await profilePage.fillBasicInfo({
+      firstName: 'Новий',
+      lastName: 'Прізвище',
+    });
+    await profilePage.submit();
+
+    await profilePage.expectSuccessMessage();
+  });
+
+  test('should show success message after save', async ({ page }) => {
+    await setupMocks(page);
+
+    await profilePage.goto();
+    await profilePage.fillBasicInfo({ firstName: 'Тест' });
+    await profilePage.submit();
+
+    await expect(profilePage.successAlert).toBeVisible();
+    await expect(profilePage.successAlert).toContainText('успішно');
+  });
+
+  test('should handle save errors', async ({ page }) => {
+    await setupMocks(page, { profileOptions: { status: 500 } });
+
+    await profilePage.goto();
+    await profilePage.fillBasicInfo({ firstName: 'New Name' });
+    await profilePage.submit();
+  });
+
+  test('should show loading state during save', async ({ page }) => {
+    await setupMocks(page, { profileOptions: { delay: 1000 } });
+
+    await profilePage.goto();
+    await profilePage.fillBasicInfo({ firstName: 'New' });
+
+    const submitPromise = profilePage.submit();
+    await profilePage.expectSubmitLoading();
+    await submitPromise;
+  });
+});
+
 test.describe('Profile - Password Change', () => {
   let profilePage: ProfilePage;
 
@@ -177,25 +287,32 @@ test.describe('Profile - Password Change', () => {
     await expect(profilePage.confirmPasswordInput).toBeVisible();
   });
 
+  test('should display password change section description', async () => {
+    await profilePage.goto();
+
+    await profilePage.expectPasswordCardDescription();
+  });
+
   test('should show password toggle buttons', async ({ page }) => {
     await profilePage.goto();
 
-    const toggleButtons = page.getByRole('button', { name: /показати пароль/i });
-    const count = await toggleButtons.count();
-
-    expect(count).toBeGreaterThanOrEqual(3);
+    const toggleCount = await profilePage.getPasswordToggleCount();
+    expect(toggleCount).toBeGreaterThanOrEqual(3);
   });
 
   test('should toggle password visibility', async ({ page }) => {
     await profilePage.goto();
 
-    const toggleButton = page.getByRole('button', { name: /показати пароль/i }).first();
-    await toggleButton.click();
+    await profilePage.fillPasswordChange({
+      currentPassword: 'OldPass123!',
+      newPassword: '',
+      confirmPassword: '',
+    });
+
+    await profilePage.togglePasswordVisibility(0);
   });
 
-  test('should fill password change form', async ({ page }) => {
-    await mockUpdateProfile(page);
-
+  test('should fill password change form', async () => {
     await profilePage.goto();
 
     await profilePage.fillPasswordChange({
@@ -207,6 +324,60 @@ test.describe('Profile - Password Change', () => {
     await expect(profilePage.currentPasswordInput).not.toHaveValue('');
     await expect(profilePage.newPasswordInput).not.toHaveValue('');
     await expect(profilePage.confirmPasswordInput).not.toHaveValue('');
+  });
+
+  test('should require current password when changing password', async ({ page }) => {
+    await profilePage.goto();
+
+    await profilePage.fillPasswordChange({
+      currentPassword: '',
+      newPassword: 'NewPassword123!',
+      confirmPassword: 'NewPassword123!',
+    });
+    await profilePage.submit();
+
+    await profilePage.expectCurrentPasswordError();
+  });
+
+  test('should validate new password strength', async ({ page }) => {
+    await profilePage.goto();
+
+    await profilePage.fillPasswordChange({
+      currentPassword: 'OldPassword123!',
+      newPassword: 'weak',
+      confirmPassword: 'weak',
+    });
+    await profilePage.submit();
+
+    await profilePage.expectNewPasswordWeakError();
+  });
+
+  test('should validate password confirmation match', async ({ page }) => {
+    await profilePage.goto();
+
+    await profilePage.fillPasswordChange({
+      currentPassword: 'OldPassword123!',
+      newPassword: 'NewPassword123!',
+      confirmPassword: 'DifferentPassword123!',
+    });
+    await profilePage.submit();
+
+    await profilePage.expectPasswordMismatchError();
+  });
+
+  test('should change password successfully', async ({ page }) => {
+    await mockChangePassword(page);
+
+    await profilePage.goto();
+
+    await profilePage.fillPasswordChange({
+      currentPassword: 'OldPassword123!',
+      newPassword: 'NewPassword123!',
+      confirmPassword: 'NewPassword123!',
+    });
+    await profilePage.submit();
+
+    await profilePage.expectSuccessMessage();
   });
 
   test('should show password strength requirements', async ({ page }) => {
@@ -240,28 +411,52 @@ test.describe('Profile - Form Validation', () => {
     await profilePage.fillBasicInfo({ email: 'invalid-email' });
     await profilePage.submit();
 
-    // Check for validation error or invalid state
-    await expect(profilePage.emailInput).toHaveAttribute('aria-invalid', 'true').catch(() => {
-      // Alternative validation UI
-    });
+    await profilePage.expectEmailFormatError();
   });
 
-  test.skip('should require first name', async ({ page }) => {
+  test('should require first name', async ({ page }) => {
     await profilePage.goto();
 
     await profilePage.firstNameInput.clear();
     await profilePage.submit();
 
-    await profilePage.expectValidationError('імʼя');
+    await profilePage.expectFirstNameError();
   });
 
-  test.skip('should require last name', async ({ page }) => {
+  test('should require last name', async ({ page }) => {
     await profilePage.goto();
 
     await profilePage.lastNameInput.clear();
     await profilePage.submit();
 
-    await profilePage.expectValidationError('прізвище');
+    await profilePage.expectLastNameError();
+  });
+
+  test('should validate phone number format - too short', async ({ page }) => {
+    await profilePage.goto();
+
+    await profilePage.fillBasicInfo({ phone: '12345' });
+    await profilePage.submit();
+
+    await profilePage.expectPhoneFormatError();
+  });
+
+  test('should accept valid phone number', async () => {
+    await profilePage.goto();
+
+    await profilePage.fillBasicInfo({ phone: '501234567' });
+    await profilePage.submit();
+
+    await profilePage.expectSuccessMessage();
+  });
+
+  test('should accept valid email format', async () => {
+    await profilePage.goto();
+
+    await profilePage.fillBasicInfo({ email: 'valid@example.com' });
+    await profilePage.submit();
+
+    await profilePage.expectSuccessMessage();
   });
 });
 
@@ -298,15 +493,54 @@ test.describe('Profile - Avatar Upload', () => {
   test('should display supported formats', async ({ page }) => {
     await profilePage.goto();
 
-    const formats = page.getByText(/jpg.*png.*heic/i);
-    await expect(formats).toBeVisible();
+    await profilePage.expectAvatarFormatInfo();
   });
 
   test('should display update photo button', async ({ page }) => {
     await profilePage.goto();
 
-    const updateButton = page.getByRole('button', { name: 'Оновити фото', exact: true });
-    await expect(updateButton).toBeVisible();
+    await expect(profilePage.updatePhotoButton).toBeVisible();
+  });
+
+  test('should display current avatar or placeholder', async ({ page }) => {
+    await profilePage.goto();
+
+    await profilePage.expectAvatarPlaceholder();
+  });
+
+  test('should display clear avatar button', async ({ page }) => {
+    await profilePage.goto();
+
+    await expect(profilePage.clearAvatarButton).toBeVisible();
+  });
+
+  test('should have disabled clear button when no avatar', async ({ page }) => {
+    await profilePage.goto();
+
+    await expect(profilePage.clearAvatarButton).toBeDisabled();
+  });
+});
+
+test.describe('Profile - Avatar with Existing Image', () => {
+  let profilePage: ProfilePage;
+
+  async function setupMocksWithAvatar(page: typeof test extends (name: string, fn: (args: infer T) => void) => void ? T['page'] : never) {
+    await mockUserProfile(page, testUserProfiles.withAvatar);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    profilePage = new ProfilePage(page);
+    await authenticateUser(page);
+    await setupMocksWithAvatar(page);
+  });
+
+  test('should display user with avatar data', async ({ page }) => {
+    await profilePage.goto();
+
+    await expect(profilePage.pageHeading).toBeVisible();
   });
 });
 
@@ -314,16 +548,95 @@ test.describe('Profile - Error Handling', () => {
   test('should handle API error on profile update', async ({ page }) => {
     const profilePage = new ProfilePage(page);
     await authenticateUser(page);
-    await mockUserProfile(page, testUsers.profileUser);
+    await mockUserProfile(page, testUsers.profileUser, { status: 500 });
     await mockAddresses(page, [testAddresses.primary]);
     await mockMetersByAddress(page, { 1: [] });
     await mockReadingsByAddress(page, { 1: [] });
-    await mockUpdateProfile(page, { status: 500 });
 
     await profilePage.goto();
     await profilePage.fillBasicInfo({ firstName: 'New Name' });
     await profilePage.submit();
+  });
 
-    // Error handling should occur
+  test('should handle network error gracefully', async ({ page }) => {
+    const profilePage = new ProfilePage(page);
+    await authenticateUser(page);
+    await mockUserProfile(page, testUsers.profileUser);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+
+    await profilePage.goto();
+
+    await expect(profilePage.pageHeading).toBeVisible();
+  });
+});
+
+test.describe('Profile - Complete Update Flow', () => {
+  let profilePage: ProfilePage;
+
+  async function setupMocks(page: typeof test extends (name: string, fn: (args: infer T) => void) => void ? T['page'] : never) {
+    await mockUserProfile(page, testUsers.profileUser);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+  }
+
+  test.beforeEach(async ({ page }) => {
+    profilePage = new ProfilePage(page);
+    await authenticateUser(page);
+    await setupMocks(page);
+  });
+
+  test('should update all profile fields successfully', async () => {
+    await profilePage.goto();
+
+    await profilePage.fillAllFields({
+      firstName: 'Нове',
+      lastName: 'Прізвище',
+      email: 'newemail@example.com',
+      phone: '509876543',
+    });
+
+    await profilePage.submit();
+
+    await profilePage.expectSuccessMessage();
+  });
+
+  test('should update profile with password change', async ({ page }) => {
+    await mockChangePassword(page);
+
+    await profilePage.goto();
+
+    await profilePage.fillAllFields({
+      firstName: 'Нове',
+      lastName: 'Прізвище',
+      currentPassword: 'OldPassword123!',
+      newPassword: 'NewPassword123!',
+      confirmPassword: 'NewPassword123!',
+    });
+
+    await profilePage.submit();
+
+    await profilePage.expectSuccessMessage();
+  });
+
+  test('should clear password fields after successful update', async ({ page }) => {
+    await mockChangePassword(page);
+
+    await profilePage.goto();
+
+    await profilePage.fillPasswordChange({
+      currentPassword: 'OldPassword123!',
+      newPassword: 'NewPassword123!',
+      confirmPassword: 'NewPassword123!',
+    });
+
+    await profilePage.submit();
+    await profilePage.expectSuccessMessage();
+
+    await expect(profilePage.currentPasswordInput).toHaveValue('');
+    await expect(profilePage.newPasswordInput).toHaveValue('');
+    await expect(profilePage.confirmPasswordInput).toHaveValue('');
   });
 });

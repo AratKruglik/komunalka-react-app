@@ -203,7 +203,11 @@ export interface MockUser {
   updatedAt?: string;
 }
 
-export async function mockUserProfile(page: Page, user?: Partial<MockUser>): Promise<void> {
+export interface MockUserProfileOptions extends MockOptions {
+  enableUpdate?: boolean;
+}
+
+export async function mockUserProfile(page: Page, user?: Partial<MockUser>, options: MockUserProfileOptions = {}): Promise<void> {
   const now = new Date().toISOString();
   const defaultUser: MockUser = {
     id: 1,
@@ -220,24 +224,81 @@ export async function mockUserProfile(page: Page, user?: Partial<MockUser>): Pro
   };
 
   const userData = { ...defaultUser, ...user };
+  const { enableUpdate = true } = options;
 
   await page.route(`${API_BASE_URL}/users/*`, async (route: Route) => {
-    if (route.request().method() === 'GET') {
+    const method = route.request().method();
+    const url = route.request().url();
+
+    // Skip avatar and password endpoints - let them be handled by their own mocks
+    if (url.includes('/avatar') || url.includes('/password')) {
+      await route.fallback();
+      return;
+    }
+
+    if (method === 'GET') {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(userData),
       });
+    } else if (enableUpdate && (method === 'PUT' || method === 'PATCH')) {
+      if (options.delay) {
+        await new Promise(resolve => setTimeout(resolve, options.delay));
+      }
+
+      if (options.status && options.status !== 200) {
+        await route.fulfill({
+          status: options.status,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Update failed' }),
+        });
+        return;
+      }
+
+      const contentType = route.request().headers()['content-type'] || '';
+      let requestData: Record<string, unknown> = {};
+      if (contentType.includes('application/json')) {
+        requestData = route.request().postDataJSON() || {};
+      }
+
+      const match = url.match(/\/users\/(\d+)/);
+      const userId = match ? parseInt(match[1], 10) : userData.id;
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ...userData,
+          ...requestData,
+          id: userId,
+          updatedAt: new Date().toISOString(),
+        }),
+      });
     } else {
-      await route.continue();
+      await route.fallback();
     }
   });
 }
 
+/**
+ * @deprecated Use mockUserProfile with enableUpdate option instead.
+ * This function is kept for backwards compatibility but may cause issues
+ * when used together with mockUserProfile due to route handler ordering.
+ */
 export async function mockUpdateProfile(page: Page, options: MockOptions = {}): Promise<void> {
   await page.route(`${API_BASE_URL}/users/*`, async (route: Route) => {
-    if (route.request().method() !== 'PUT' && route.request().method() !== 'PATCH') {
-      await route.continue();
+    const method = route.request().method();
+    const url = route.request().url();
+
+    // Skip avatar and password endpoints
+    if (url.includes('/avatar') || url.includes('/password')) {
+      await route.fallback();
+      return;
+    }
+
+    if (method !== 'PUT' && method !== 'PATCH') {
+      await route.fallback();
       return;
     }
 
@@ -245,9 +306,17 @@ export async function mockUpdateProfile(page: Page, options: MockOptions = {}): 
       await new Promise(resolve => setTimeout(resolve, options.delay));
     }
 
-    const url = route.request().url();
     const match = url.match(/\/users\/(\d+)/);
     const userId = match ? parseInt(match[1], 10) : 1;
+
+    if (options.status && options.status !== 200) {
+      await route.fulfill({
+        status: options.status,
+        contentType: 'application/json',
+        body: JSON.stringify({ message: 'Update failed' }),
+      });
+      return;
+    }
 
     const contentType = route.request().headers()['content-type'] || '';
     let requestData: Record<string, unknown> = {};
@@ -259,7 +328,7 @@ export async function mockUpdateProfile(page: Page, options: MockOptions = {}): 
     const now = new Date().toISOString();
 
     await route.fulfill({
-      status: options.status ?? 200,
+      status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
         id: userId,
@@ -644,6 +713,14 @@ export async function mockGetMeter(page: Page, meter: MockMeter, options: MockOp
   });
 }
 
+const UTILITY_TYPE_TO_METER_TYPE: Record<number, string> = {
+  1: 'electricity',
+  2: 'gas',
+  3: 'coldWater',
+  4: 'hotWater',
+  5: 'heat',
+};
+
 export async function mockMetersByAddress(
   page: Page,
   metersMap: Record<number, MockMeter[]>,
@@ -658,7 +735,20 @@ export async function mockMetersByAddress(
       await new Promise(resolve => setTimeout(resolve, options.delay));
     }
 
-    const meters = addressId !== null ? metersMap[addressId] ?? [] : [];
+    const mockMeters = addressId !== null ? metersMap[addressId] ?? [] : [];
+
+    const meters = mockMeters.map(meter => ({
+      id: meter.id,
+      addressId: meter.addressId,
+      providerId: meter.serviceProviderId ?? 1,
+      type: UTILITY_TYPE_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity',
+      name: meter.name,
+      meterNumber: meter.serialNumber,
+      location: meter.location ?? '',
+      installedAt: meter.installationDate ?? '',
+      status: meter.isActive ? 'active' : 'inactive',
+      nextCheckDate: undefined,
+    }));
 
     await route.fulfill({
       status: options.status ?? 200,
@@ -827,7 +917,19 @@ export async function mockReadingsByAddress(
       await new Promise(resolve => setTimeout(resolve, options.delay));
     }
 
-    const readings = addressId !== null ? readingsMap[addressId] ?? [] : [];
+    const mockReadings = addressId !== null ? readingsMap[addressId] ?? [] : [];
+
+    const readings = mockReadings.map(reading => ({
+      id: reading.id,
+      meterId: reading.meterId,
+      date: reading.readingDate,
+      value: reading.readingValue,
+      consumption: reading.consumption,
+      submittedAt: reading.createdAt ?? reading.readingDate,
+      status: 'accepted' as const,
+      note: reading.notes,
+      photoUrl: reading.photoUrl ?? undefined,
+    }));
 
     await route.fulfill({
       status: options.status ?? 200,
@@ -924,6 +1026,59 @@ export async function mockNetworkError(page: Page, urlPattern: string): Promise<
   await page.route(`${API_BASE_URL}${urlPattern}`, async (route: Route) => {
     await route.abort('failed');
   });
+}
+
+export async function mockTimeout(page: Page, urlPattern: string, delayMs = 30000): Promise<void> {
+  await page.route(`${API_BASE_URL}${urlPattern}`, async (route: Route) => {
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+    await route.abort('timedout');
+  });
+}
+
+export async function mockApiErrorWithDetails(
+  page: Page,
+  urlPattern: string,
+  statusCode: number,
+  errors: Record<string, string[]>
+): Promise<void> {
+  await page.route(`${API_BASE_URL}${urlPattern}`, async (route: Route) => {
+    await route.fulfill({
+      status: statusCode,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: statusCode,
+        message: 'Validation failed',
+        errors,
+      }),
+    });
+  });
+}
+
+export async function mockApiErrorAllMethods(
+  page: Page,
+  urlPattern: string | RegExp,
+  statusCode = 500,
+  message = 'Internal Server Error'
+): Promise<void> {
+  const pattern = typeof urlPattern === 'string' ? `${API_BASE_URL}${urlPattern}` : urlPattern;
+  await page.route(pattern, async (route: Route) => {
+    await route.fulfill({
+      status: statusCode,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: statusCode,
+        message,
+      }),
+    });
+  });
+}
+
+export async function mockNetworkErrorAllRoutes(page: Page, urlPatterns: string[]): Promise<void> {
+  for (const pattern of urlPatterns) {
+    await page.route(`${API_BASE_URL}${pattern}`, async (route: Route) => {
+      await route.abort('failed');
+    });
+  }
 }
 
 export async function mockReferenceData(page: Page): Promise<void> {
@@ -1024,6 +1179,238 @@ export async function mockCreateProvider(page: Page, options: MockOptions = {}):
           ...requestBody,
         },
       }),
+    });
+  });
+}
+
+export interface MockUtilityType {
+  id: number;
+  name: string;
+}
+
+export async function mockUtilityTypes(page: Page, types?: MockUtilityType[]): Promise<void> {
+  const defaultTypes: MockUtilityType[] = [
+    { id: UTILITY_TYPES.ELECTRICITY, name: 'Електроенергія' },
+    { id: UTILITY_TYPES.GAS, name: 'Газ' },
+    { id: UTILITY_TYPES.COLD_WATER, name: 'Холодна вода' },
+    { id: UTILITY_TYPES.HOT_WATER, name: 'Гаряча вода' },
+    { id: UTILITY_TYPES.HEATING, name: 'Опалення' },
+  ];
+
+  await page.route(`${API_BASE_URL}/utility-type*`, async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(types ?? defaultTypes),
+    });
+  });
+}
+
+export async function mockCreateMeterError(
+  page: Page,
+  statusCode = 400,
+  message = 'Помилка при створенні лічильника'
+): Promise<void> {
+  await page.route(`${API_BASE_URL}/meter`, async (route: Route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+
+    await route.fulfill({
+      status: statusCode,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        status: statusCode,
+        message,
+      }),
+    });
+  });
+}
+
+export async function mockAddMeterPageData(
+  page: Page,
+  data: {
+    addresses: MockAddress[];
+    providers?: unknown[];
+  },
+  options: MockOptions = {}
+): Promise<void> {
+  await mockReferenceData(page);
+  await mockAddresses(page, data.addresses, options);
+  await mockUtilityTypes(page);
+  if (data.providers) {
+    await mockProviders(page, data.providers, options);
+  }
+}
+
+export async function mockChangePassword(
+  page: Page,
+  options: MockOptions & { wrongCurrentPassword?: boolean } = {}
+): Promise<void> {
+  await page.route(`${API_BASE_URL}/users/*/password`, async (route: Route) => {
+    if (route.request().method() !== 'PUT' && route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+
+    if (options.wrongCurrentPassword) {
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 400,
+          message: 'Невірний поточний пароль',
+        }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: options.status ?? 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        message: 'Пароль успішно змінено',
+      }),
+    });
+  });
+}
+
+export async function mockUploadAvatar(
+  page: Page,
+  options: MockOptions & { fileTooLarge?: boolean; invalidFormat?: boolean } = {}
+): Promise<void> {
+  await page.route(`${API_BASE_URL}/users/*/avatar`, async (route: Route) => {
+    if (route.request().method() !== 'POST' && route.request().method() !== 'PUT') {
+      await route.continue();
+      return;
+    }
+
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+
+    if (options.fileTooLarge) {
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 400,
+          message: 'Розмір файлу перевищує допустимий ліміт (5 МБ)',
+        }),
+      });
+      return;
+    }
+
+    if (options.invalidFormat) {
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          status: 400,
+          message: 'Невірний формат файлу. Дозволені формати: JPG, PNG',
+        }),
+      });
+      return;
+    }
+
+    const url = route.request().url();
+    const match = url.match(/\/users\/(\d+)/);
+    const userId = match ? parseInt(match[1], 10) : 1;
+
+    await route.fulfill({
+      status: options.status ?? 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        avatarUrl: `${API_BASE_URL}/users/${userId}/avatar`,
+        avatarThumbnailUrl: `${API_BASE_URL}/users/${userId}/avatar/thumbnail`,
+      }),
+    });
+  });
+}
+
+export async function mockDeleteAvatar(page: Page, options: MockOptions = {}): Promise<void> {
+  await page.route(`${API_BASE_URL}/users/*/avatar`, async (route: Route) => {
+    if (route.request().method() !== 'DELETE') {
+      await route.continue();
+      return;
+    }
+
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+
+    await route.fulfill({
+      status: options.status ?? 204,
+      body: '',
+    });
+  });
+}
+
+export async function mockBatchReadingsWithPartialFailure(
+  page: Page,
+  successMeterIds: number[],
+  failureMeterIds: number[],
+  options: MockOptions = {}
+): Promise<void> {
+  await page.route(`${API_BASE_URL}/meter-readings/batch`, async (route: Route) => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay));
+    }
+
+    const now = new Date().toISOString();
+
+    const results: BatchReadingResult[] = [
+      ...successMeterIds.map(meterId => ({
+        meterId,
+        readingId: Date.now() + meterId,
+        readingValue: 5100 + meterId * 10,
+        previousReading: 5000 + meterId * 10,
+        consumption: 100,
+        baseRate: 4.32,
+        serviceFee: 0,
+        totalCost: 432.0,
+        tariffName: 'Денний тариф',
+        success: true,
+      })),
+      ...failureMeterIds.map(meterId => ({
+        meterId,
+        readingId: 0,
+        readingValue: 0,
+        previousReading: 0,
+        consumption: 0,
+        baseRate: 0,
+        serviceFee: 0,
+        totalCost: 0,
+        tariffName: '',
+        success: false,
+        message: 'Помилка збереження показання',
+      })),
+    ];
+
+    const response: BatchReadingsResponse = {
+      addressId: 1,
+      submissionDate: now,
+      results,
+      totalCost: successMeterIds.length * 432.0,
+      successCount: successMeterIds.length,
+      failureCount: failureMeterIds.length,
+    };
+
+    await route.fulfill({
+      status: 207,
+      contentType: 'application/json',
+      body: JSON.stringify(response),
     });
   });
 }

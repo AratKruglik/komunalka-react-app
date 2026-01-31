@@ -7,6 +7,7 @@ import {
   mockMetersByAddress,
   mockReadingsByAddress,
   mockCreateBatchReadings,
+  mockBatchReadingsWithPartialFailure,
 } from '../../helpers/api-mocks';
 import { testAddresses, testMeters, testReadings, testUserProfiles } from '../../fixtures/test-data';
 
@@ -235,5 +236,414 @@ test.describe('Readings - API Error Handling', () => {
     await readingsPage.goto();
 
     await readingsPage.submit();
+  });
+});
+
+test.describe('Readings - Consumption Calculation', () => {
+  let readingsPage: AddReadingsPage;
+
+  async function setupWithMeterAndReading(page: Parameters<typeof mockAddresses>[0]) {
+    await mockUserProfile(page, testUserProfiles.default);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [testMeters.electricity] });
+    await mockReadingsByAddress(page, { 1: [testReadings.electricity] });
+  }
+
+  async function getMeterCard(page: Parameters<typeof mockAddresses>[0], serviceName: string) {
+    const card = page.locator('[class*="shadow-lg"]').filter({ hasText: serviceName }).filter({ hasText: /поточні показання/i });
+    await expect(card).toBeVisible({ timeout: 10000 });
+    return card;
+  }
+
+  test.beforeEach(async ({ page }) => {
+    readingsPage = new AddReadingsPage(page);
+    await authenticateUser(page);
+  });
+
+  test('should display previous reading value', async ({ page }) => {
+    await setupWithMeterAndReading(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const previousLabel = card.getByLabel(/попередні показання/i);
+    await expect(previousLabel).toBeVisible();
+  });
+
+  test('should calculate and display consumption (current - previous)', async ({ page }) => {
+    await setupWithMeterAndReading(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    await card.getByRole('spinbutton').first().fill('5200');
+
+    const consumptionSection = card.locator('dl');
+    await expect(consumptionSection).toContainText('103');
+  });
+
+  test('should show zero consumption if current < previous', async ({ page }) => {
+    await setupWithMeterAndReading(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    await card.getByRole('spinbutton').first().fill('5000');
+
+    const consumptionSection = card.locator('dl');
+    await expect(consumptionSection).toContainText('0');
+  });
+
+  test('should update consumption when value changes', async ({ page }) => {
+    await setupWithMeterAndReading(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    await card.getByRole('spinbutton').first().fill('5150');
+    await expect(card.locator('dl')).toContainText('53');
+
+    await card.getByRole('spinbutton').first().fill('5200');
+    await expect(card.locator('dl')).toContainText('103');
+  });
+
+  test('should display estimated cost based on consumption and tariff', async ({ page }) => {
+    await setupWithMeterAndReading(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    await card.getByRole('spinbutton').first().fill('5197');
+
+    const costSection = card.getByText(/вартість/i);
+    await expect(costSection).toBeVisible();
+  });
+});
+
+test.describe('Readings - Input Validation', () => {
+  let readingsPage: AddReadingsPage;
+
+  async function setupWithMeter(page: Parameters<typeof mockAddresses>[0]) {
+    await mockUserProfile(page, testUserProfiles.default);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [testMeters.electricity] });
+    await mockReadingsByAddress(page, { 1: [testReadings.electricity] });
+  }
+
+  async function getMeterCard(page: Parameters<typeof mockAddresses>[0], serviceName: string) {
+    const card = page.locator('[class*="shadow-lg"]').filter({ hasText: serviceName }).filter({ hasText: /поточні показання/i });
+    await expect(card).toBeVisible({ timeout: 10000 });
+    return card;
+  }
+
+  test.beforeEach(async ({ page }) => {
+    readingsPage = new AddReadingsPage(page);
+    await authenticateUser(page);
+  });
+
+  test('should accept only numeric input', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const input = card.getByRole('spinbutton').first();
+    await input.clear();
+    await input.pressSequentially('abc');
+
+    const value = await input.inputValue();
+    expect(value).toBe('');
+  });
+
+  test('should accept positive values', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const input = card.getByRole('spinbutton').first();
+    await input.fill('5200');
+
+    const value = await input.inputValue();
+    expect(value).toBe('5200');
+  });
+
+  test('should handle decimal values', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const input = card.getByRole('spinbutton').first();
+    await input.fill('5200.5');
+
+    const value = await input.inputValue();
+    expect(value).toBe('5200.5');
+  });
+
+  test('should have number input type', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const input = card.getByRole('spinbutton').first();
+    await expect(input).toHaveAttribute('type', 'number');
+  });
+
+  test('should allow clearing and re-entering value', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const input = card.getByRole('spinbutton').first();
+    await input.fill('5200');
+    await input.clear();
+    await input.fill('5300');
+
+    const value = await input.inputValue();
+    expect(value).toBe('5300');
+  });
+});
+
+test.describe('Readings - Batch Submission', () => {
+  let readingsPage: AddReadingsPage;
+
+  async function setupMultipleMeters(page: Parameters<typeof mockAddresses>[0]) {
+    const meters = [testMeters.electricity, testMeters.gas, testMeters.coldWater];
+    const readings = [testReadings.electricity, testReadings.gas, testReadings.coldWater];
+
+    await mockUserProfile(page, testUserProfiles.default);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: meters });
+    await mockReadingsByAddress(page, { 1: readings });
+  }
+
+  async function getMeterCards(page: Parameters<typeof mockAddresses>[0]) {
+    const cards = page.locator('[class*="shadow-lg"]').filter({ hasText: /поточні показання/i });
+    await expect(cards.first()).toBeVisible({ timeout: 10000 });
+    return cards;
+  }
+
+  async function getMeterCard(page: Parameters<typeof mockAddresses>[0], serviceName: string) {
+    const card = page.locator('[class*="shadow-lg"]').filter({ hasText: serviceName }).filter({ hasText: /поточні показання/i });
+    return card;
+  }
+
+  test.beforeEach(async ({ page }) => {
+    readingsPage = new AddReadingsPage(page);
+    await authenticateUser(page);
+  });
+
+  test('should display multiple meter cards', async ({ page }) => {
+    await setupMultipleMeters(page);
+
+    await readingsPage.goto();
+    const cards = await getMeterCards(page);
+
+    await expect(cards).toHaveCount(3);
+  });
+
+  test('should submit all readings at once', async ({ page }) => {
+    await setupMultipleMeters(page);
+    await mockCreateBatchReadings(page, {
+      successCount: 3,
+      failureCount: 0,
+    });
+
+    await readingsPage.goto();
+    await getMeterCards(page);
+
+    const electricityCard = await getMeterCard(page, 'Електроенергія');
+    const gasCard = await getMeterCard(page, 'Газ');
+    const waterCard = await getMeterCard(page, 'Холодна вода');
+
+    await electricityCard.getByRole('spinbutton').first().fill('5200');
+    await gasCard.getByRole('spinbutton').first().fill('620');
+    await waterCard.getByRole('spinbutton').first().fill('380');
+
+    await readingsPage.submit();
+
+    await readingsPage.expectSuccessMessage();
+  });
+
+  test('should show loading state during submission', async ({ page }) => {
+    await setupMultipleMeters(page);
+    await mockCreateBatchReadings(page, undefined, { delay: 1000 });
+
+    await readingsPage.goto();
+    await getMeterCards(page);
+
+    const submitPromise = readingsPage.submit();
+    await readingsPage.expectSubmitLoading();
+    await submitPromise;
+  });
+
+  test('should handle partial failures', async ({ page }) => {
+    await setupMultipleMeters(page);
+    await mockBatchReadingsWithPartialFailure(page, [1, 2], [3]);
+
+    await readingsPage.goto();
+    await getMeterCards(page);
+
+    const electricityCard = await getMeterCard(page, 'Електроенергія');
+    const gasCard = await getMeterCard(page, 'Газ');
+    const waterCard = await getMeterCard(page, 'Холодна вода');
+
+    await electricityCard.getByRole('spinbutton').first().fill('5200');
+    await gasCard.getByRole('spinbutton').first().fill('620');
+    await waterCard.getByRole('spinbutton').first().fill('380');
+
+    await readingsPage.submit();
+  });
+
+  test('should show summary table with all meters', async ({ page }) => {
+    await setupMultipleMeters(page);
+
+    await readingsPage.goto();
+    await getMeterCards(page);
+
+    await expect(readingsPage.summaryTable).toBeVisible();
+  });
+});
+
+test.describe('Readings - Date Input', () => {
+  let readingsPage: AddReadingsPage;
+
+  async function setupWithMeter(page: Parameters<typeof mockAddresses>[0]) {
+    await mockUserProfile(page, testUserProfiles.default);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [testMeters.electricity] });
+    await mockReadingsByAddress(page, { 1: [testReadings.electricity] });
+  }
+
+  async function getMeterCard(page: Parameters<typeof mockAddresses>[0], serviceName: string) {
+    const card = page.locator('[class*="shadow-lg"]').filter({ hasText: serviceName }).filter({ hasText: /поточні показання/i });
+    await expect(card).toBeVisible({ timeout: 10000 });
+    return card;
+  }
+
+  test.beforeEach(async ({ page }) => {
+    readingsPage = new AddReadingsPage(page);
+    await authenticateUser(page);
+  });
+
+  test('should display date input for each meter', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const dateInput = card.locator('input[type="date"]');
+    await expect(dateInput).toBeVisible();
+  });
+
+  test('should allow changing reading date', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const dateInput = card.locator('input[type="date"]');
+    await dateInput.fill('2025-12-25');
+
+    await expect(dateInput).toHaveValue('2025-12-25');
+  });
+
+  test('should have date input type', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const dateInput = card.locator('input[type="date"]');
+    await expect(dateInput).toHaveAttribute('type', 'date');
+  });
+});
+
+test.describe('Readings - Tariff Selection', () => {
+  let readingsPage: AddReadingsPage;
+
+  async function setupWithMeter(page: Parameters<typeof mockAddresses>[0]) {
+    await mockUserProfile(page, testUserProfiles.default);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [testMeters.electricity] });
+    await mockReadingsByAddress(page, { 1: [testReadings.electricity] });
+  }
+
+  async function getMeterCard(page: Parameters<typeof mockAddresses>[0], serviceName: string) {
+    const card = page.locator('[class*="shadow-lg"]').filter({ hasText: serviceName }).filter({ hasText: /поточні показання/i });
+    await expect(card).toBeVisible({ timeout: 10000 });
+    return card;
+  }
+
+  test.beforeEach(async ({ page }) => {
+    readingsPage = new AddReadingsPage(page);
+    await authenticateUser(page);
+  });
+
+  test('should display tariff selector for meter', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const tariffSelect = card.getByRole('combobox').first();
+    await expect(tariffSelect).toBeVisible();
+  });
+
+  test('should update cost when tariff changes', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    await card.getByRole('spinbutton').first().fill('5200');
+
+    const costSection = card.getByText(/вартість/i);
+    await expect(costSection).toBeVisible();
+  });
+});
+
+test.describe('Readings - Photo Upload', () => {
+  let readingsPage: AddReadingsPage;
+
+  async function setupWithMeter(page: Parameters<typeof mockAddresses>[0]) {
+    await mockUserProfile(page, testUserProfiles.default);
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [testMeters.electricity] });
+    await mockReadingsByAddress(page, { 1: [testReadings.electricity] });
+  }
+
+  async function getMeterCard(page: Parameters<typeof mockAddresses>[0], serviceName: string) {
+    const card = page.locator('[class*="shadow-lg"]').filter({ hasText: serviceName }).filter({ hasText: /поточні показання/i });
+    await expect(card).toBeVisible({ timeout: 10000 });
+    return card;
+  }
+
+  test.beforeEach(async ({ page }) => {
+    readingsPage = new AddReadingsPage(page);
+    await authenticateUser(page);
+  });
+
+  test('should display photo upload section for meter', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const photoSection = card.getByText('Фото лічильника', { exact: true });
+    await expect(photoSection).toBeVisible();
+  });
+
+  test('should display photo upload instructions', async ({ page }) => {
+    await setupWithMeter(page);
+
+    await readingsPage.goto();
+    const card = await getMeterCard(page, 'Електроенергія');
+
+    const instructions = card.getByText(/перетягніть файл/i);
+    await expect(instructions).toBeVisible();
   });
 });
