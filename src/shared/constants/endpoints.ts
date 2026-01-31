@@ -11,12 +11,20 @@ export const API_ENDPOINTS = {
     LOGOUT: '/auth/logout',
     VALIDATE: '/auth/validate-token',
   },
-  ADDRESSES: {
-    LIST: '/addresses',
-    CREATE: '/addresses',
-    GET: (id: number) => `/addresses/${id}`,
-    UPDATE: (id: number) => `/addresses/${id}`,
-    DELETE: (id: number) => `/addresses/${id}`,
+  ADDRESS: {
+    LIST: '/address',
+    CREATE: '/address',
+    GET: (id: number) => `/address/${id}`,
+    UPDATE: (id: number) => `/address/${id}`,
+    DELETE: (id: number) => `/address/${id}`,
+  },
+  REGION: {
+    LIST: '/region',
+    GET: (id: number) => `/region/${id}`,
+  },
+  ADDRESS_TYPE: {
+    LIST: '/addresstype',
+    GET: (id: number) => `/addresstype/${id}`,
   },
   METERS: {
     LIST: '/meter',

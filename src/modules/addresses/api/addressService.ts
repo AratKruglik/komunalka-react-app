@@ -26,11 +26,11 @@ export const addressService = {
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
     if (params?.desc !== undefined) queryParams.append('desc', params.desc.toString())
     if (params?.city) queryParams.append('city', params.city)
-    if (params?.district) queryParams.append('district', params.district)
+    if (params?.regionId) queryParams.append('regionId', params.regionId.toString())
     if (params?.isPrimary !== undefined) queryParams.append('isPrimary', params.isPrimary.toString())
 
     const queryString = queryParams.toString()
-    const url = queryString ? `${API_ENDPOINTS.ADDRESSES.LIST}?${queryString}` : API_ENDPOINTS.ADDRESSES.LIST
+    const url = queryString ? `${API_ENDPOINTS.ADDRESS.LIST}?${queryString}` : API_ENDPOINTS.ADDRESS.LIST
 
     return api.get<PaginatedResponse<Address>>(url)
   },
@@ -41,7 +41,7 @@ export const addressService = {
    * @returns Address data
    */
   getById: async (id: number): Promise<Address> => {
-    return api.get<Address>(API_ENDPOINTS.ADDRESSES.GET(id))
+    return api.get<Address>(API_ENDPOINTS.ADDRESS.GET(id))
   },
 
   /**
@@ -50,7 +50,7 @@ export const addressService = {
    * @returns Created address
    */
   create: async (data: CreateAddressRequest): Promise<Address> => {
-    return api.post<Address>(API_ENDPOINTS.ADDRESSES.CREATE, data)
+    return api.post<Address>(API_ENDPOINTS.ADDRESS.CREATE, data)
   },
 
   /**
@@ -60,7 +60,7 @@ export const addressService = {
    * @returns Updated address
    */
   update: async (id: number, data: UpdateAddressRequest): Promise<Address> => {
-    return api.put<Address>(API_ENDPOINTS.ADDRESSES.UPDATE(id), data)
+    return api.put<Address>(API_ENDPOINTS.ADDRESS.UPDATE(id), data)
   },
 
   /**
@@ -69,7 +69,7 @@ export const addressService = {
    * @returns void
    */
   delete: async (id: number): Promise<void> => {
-    return api.delete<void>(API_ENDPOINTS.ADDRESSES.DELETE(id))
+    return api.delete<void>(API_ENDPOINTS.ADDRESS.DELETE(id))
   },
 
   /**
@@ -78,6 +78,6 @@ export const addressService = {
    * @returns Updated address with isPrimary set to true
    */
   setPrimary: async (id: number): Promise<Address> => {
-    return api.put<Address>(API_ENDPOINTS.ADDRESSES.UPDATE(id), { isPrimary: true })
+    return api.put<Address>(API_ENDPOINTS.ADDRESS.UPDATE(id), { isPrimary: true })
   },
 }

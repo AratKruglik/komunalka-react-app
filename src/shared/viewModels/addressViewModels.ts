@@ -50,11 +50,10 @@ export function toAddressCardViewModel(
   address: Address,
   meters: readonly Meter[],
 ): AddressCardViewModel {
-  // Формуємо title з адреси
-  const title = `${address.street}, ${address.building}, кв. ${address.apartment}`
+  const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
+  const title = `${address.street}, ${address.buildingNumber}${apartment}`
 
-  // Формуємо subtitle з міста та району
-  const subtitle = `м. ${address.city}, ${address.district} район`
+  const subtitle = `м. ${address.city}, ${address.region.name}`
 
   // Формуємо badges
   const badges: AddressBadge[] = []
@@ -92,8 +91,9 @@ export function toAddressCardViewModel(
  * Перетворює Address entity на AddressSelectViewModel для dropdown/select компонента
  */
 export function toAddressSelectViewModel(address: Address): AddressSelectViewModel {
-  const label = `${address.street}, ${address.building}, кв. ${address.apartment}`
-  const description = `м. ${address.city}, ${address.district} район`
+  const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
+  const label = `${address.street}, ${address.buildingNumber}${apartment}`
+  const description = `м. ${address.city}, ${address.region.name}`
 
   return {
     id: address.id,

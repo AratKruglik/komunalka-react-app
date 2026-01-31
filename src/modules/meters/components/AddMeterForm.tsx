@@ -131,10 +131,13 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   }, [addressId, meterType, serialNumber, installationDate, initialReading, tariffValue])
 
   const addressOptions = useMemo(() => {
-    return addresses.map((address) => ({
-      value: String(address.id),
-      label: `${address.street}, ${address.building}, кв. ${address.apartment}`,
-    }))
+    return addresses.map((address) => {
+      const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
+      return {
+        value: String(address.id),
+        label: `${address.street}, ${address.buildingNumber}${apartment}`,
+      }
+    })
   }, [addresses])
 
   const handleMeterTypeSelect = (value: MeterType) => {

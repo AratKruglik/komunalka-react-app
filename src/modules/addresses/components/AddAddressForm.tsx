@@ -7,6 +7,7 @@ import {
   Home,
   MapPinned,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { PageSectionHeader } from '@shared/components/pages'
@@ -23,6 +24,7 @@ import {
   Select,
   Textarea,
 } from '@shared/components/ui'
+import { useRegions, useAddressTypes } from '@shared/hooks'
 import { useCreateAddress } from '../hooks'
 import type { CreateAddressRequest } from '../types'
 
@@ -38,23 +40,14 @@ interface Step extends StepDefinition {
   status: StepStatus
 }
 
-type PropertyType = 'apartment' | 'house' | 'office'
-
-interface PropertyTypeOption {
-  value: PropertyType
-  title: string
-  description: string
-  icon: typeof Home
-}
-
 interface AddressFormValues {
-  propertyType: PropertyType | ''
-  region: string
+  addressTypeId: string
+  regionId: string
   city: string
   street: string
   buildingNumber: string
-  unitNumber: string
-  postalCode: string
+  apartmentNumber: string
+  zipCode: string
   notes: string
   isPrimary: boolean
 }
@@ -144,14 +137,37 @@ export function AddAddressForm({ onCancel }: AddAddressFormProps) {
     setValue('propertyType', type, { shouldValidate: true })
   }
 
+  const propertyTypeToAddressTypeId = (type: PropertyType): number => {
+    switch (type) {
+      case 'apartment': return 1
+      case 'house': return 2
+      case 'office': return 3
+      default: return 1
+    }
+  }
+
+  const regionNameToId = (regionName: string): number => {
+    const regionMap: Record<string, number> = {
+      'Київська область': 9,
+      'Львівська область': 12,
+      'Харківська область': 19,
+      'Одеська область': 14,
+      'Дніпропетровська область': 3,
+    }
+    return regionMap[regionName] || 9
+  }
+
   const onSubmit = async (data: AddressFormValues) => {
     const requestData: CreateAddressRequest = {
-      street: data.street,
-      building: data.buildingNumber,
-      apartment: data.unitNumber,
+      regionId: regionNameToId(data.region),
       city: data.city,
-      district: data.region,
+      street: data.street,
+      buildingNumber: data.buildingNumber,
+      apartmentNumber: data.unitNumber,
+      zipCode: data.postalCode,
+      notes: data.notes,
       isPrimary: data.isPrimary,
+      addressTypeId: propertyTypeToAddressTypeId(data.propertyType as PropertyType),
     }
 
     try {

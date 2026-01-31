@@ -38,21 +38,45 @@ export const SERVICE_LABEL_TO_METER_TYPE: Record<ServiceLabel, MeterType> = {
 }
 
 // =============================================================================
+// Reference Entities
+// =============================================================================
+
+export interface Region {
+  id: number
+  name: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AddressType {
+  id: number
+  name: string
+  description: string
+  icon: string
+  createdAt: string
+  updatedAt: string
+}
+
+// =============================================================================
 // Core Entities
 // =============================================================================
 
-/**
- * Address entity - represents a physical address where meters are located
- */
 export interface Address {
   id: number
-  street: string
-  building: string
-  apartment: string
+  userId: number
+  regionId: number
   city: string
-  district: string
+  street: string
+  buildingNumber: string
+  apartmentNumber: string
+  zipCode: string
+  notes: string
   isPrimary: boolean
+  addressTypeId: number
+  region: Region
+  addressType: AddressType
   createdAt: string
+  updatedAt: string
 }
 
 /**
