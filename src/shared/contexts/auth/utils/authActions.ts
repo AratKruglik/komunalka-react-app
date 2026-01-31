@@ -1,6 +1,7 @@
 import { AuthActionType } from '../actionTypes'
 import { authService, userService } from '@shared/api'
 import type { AuthDispatch, ScheduleTokenRefreshFn } from './types'
+import type { User } from '@shared/types/auth/user.types'
 
 /**
  * Parameters for login action
@@ -45,28 +46,29 @@ export async function loginAction(
 
     const response = await authService.login({ email, password }, rememberMe)
 
-    // Update state
+    const minimalUser: User = {
+      id: response.userId,
+      username: response.username,
+      email: response.email,
+    }
+
     dispatch({
       type: AuthActionType.AUTH_SUCCESS,
       payload: {
-        user: response.user || null,
+        user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
         expiresAt: response.expiration,
       },
     })
 
-    // Schedule token refresh
     scheduleTokenRefresh(response.expiration)
 
-    // Load user profile if not included in login response
-    if (!response.user) {
-      try {
-        const user = await userService.getProfile()
-        dispatch({ type: AuthActionType.UPDATE_USER, payload: user })
-      } catch {
-        // Profile loading failed - user will be loaded on next page refresh
-      }
+    try {
+      const fullUser = await userService.getProfile()
+      dispatch({ type: AuthActionType.UPDATE_USER, payload: fullUser })
+    } catch {
+      // Profile loading failed - minimal user data already set
     }
   } catch (error) {
     const errorMessage =
@@ -98,28 +100,29 @@ export async function registerAction(
 
     const response = await authService.register(registrationData, rememberMe)
 
-    // Update state
+    const minimalUser: User = {
+      id: response.userId,
+      username: response.username,
+      email: response.email,
+    }
+
     dispatch({
       type: AuthActionType.AUTH_SUCCESS,
       payload: {
-        user: response.user || null,
+        user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
         expiresAt: response.expiration,
       },
     })
 
-    // Schedule token refresh
     scheduleTokenRefresh(response.expiration)
 
-    // Load user profile if not included in registration response
-    if (!response.user) {
-      try {
-        const user = await userService.getProfile()
-        dispatch({ type: AuthActionType.UPDATE_USER, payload: user })
-      } catch {
-        // Profile loading failed - user will be loaded on next page refresh
-      }
+    try {
+      const fullUser = await userService.getProfile()
+      dispatch({ type: AuthActionType.UPDATE_USER, payload: fullUser })
+    } catch {
+      // Profile loading failed - minimal user data already set
     }
   } catch (error) {
     const errorMessage =

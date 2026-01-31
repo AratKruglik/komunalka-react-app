@@ -1,6 +1,7 @@
 import { AuthActionType } from '../actionTypes'
 import { authService, userService } from '@shared/api'
 import type { AuthDispatch, IsRefreshingRef, ScheduleTokenRefreshFn, LogoutFn } from './types'
+import type { User } from '@shared/types/auth/user.types'
 
 /**
  * Refresh the authentication token
@@ -36,12 +37,14 @@ export async function refreshToken(
 
     const response = await authService.refreshToken(refreshTokenValue)
 
-    let user = response.user
-    if (!user) {
-      try {
-        user = await userService.getProfile()
-      } catch {
-        // Profile loading failed - continue without user data
+    let user: User
+    try {
+      user = await userService.getProfile()
+    } catch {
+      user = {
+        id: response.userId,
+        username: response.username,
+        email: response.email,
       }
     }
 

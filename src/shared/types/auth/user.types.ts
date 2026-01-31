@@ -10,6 +10,8 @@ export interface User {
   phoneNumber?: string;
   avatarUrl?: string;
   avatarThumbnailUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
