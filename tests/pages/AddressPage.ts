@@ -50,6 +50,26 @@ export class AddressPage extends BasePage {
     await moreButton.click();
   }
 
+  async getEditButton(street: string): Promise<Locator> {
+    const card = await this.getAddressCardByStreet(street);
+    return card.getByRole('button', { name: /редагувати адресу/i });
+  }
+
+  async getMoreActionsButton(street: string): Promise<Locator> {
+    const card = await this.getAddressCardByStreet(street);
+    return card.getByRole('button', { name: /інші дії/i });
+  }
+
+  async expectEditButtonVisible(street: string): Promise<void> {
+    const editButton = await this.getEditButton(street);
+    await expect(editButton).toBeVisible();
+  }
+
+  async expectMoreActionsButtonVisible(street: string): Promise<void> {
+    const moreActionsButton = await this.getMoreActionsButton(street);
+    await expect(moreActionsButton).toBeVisible();
+  }
+
   async setPrimaryAddress(street: string): Promise<void> {
     const card = await this.getAddressCardByStreet(street);
     const primaryButton = card.getByRole('button', { name: /зробити основною/i });

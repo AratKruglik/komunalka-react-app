@@ -23,26 +23,17 @@ vi.mock('./config', () => ({
 }))
 
 const { authService } = await import('./authService')
-type AuthResponse = typeof import('./authService').AuthResponse
-type LoginRequest = typeof import('./authService').LoginRequest
-type RegisterRequest = typeof import('./authService').RegisterRequest
 
 interface AuthResponseType {
   token: string
   refreshToken: string
   expiration: string
-  userId?: number
-  username?: string
-  email?: string
-  role?: string
-  user?: {
-    id: number
-    username: string
-    email: string
-    firstName?: string
-    lastName?: string
-    phoneNumber?: string
-  }
+  userId: number
+  username: string
+  email: string
+  role: string
+  authProvider: 'Local' | 'Google' | 'GitHub'
+  emailVerified: boolean
 }
 
 interface LoginRequestType {
@@ -67,6 +58,9 @@ const mockAuthResponse: AuthResponseType = {
   userId: 1,
   username: 'testuser',
   email: 'test@example.com',
+  role: 'User',
+  authProvider: 'Local',
+  emailVerified: true,
 }
 
 function createAxiosResponse<T>(data: T): AxiosResponse<T> {

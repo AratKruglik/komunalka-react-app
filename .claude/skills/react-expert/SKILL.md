@@ -1,7 +1,10 @@
 ---
 name: react-expert
-description: Use when building React 18+ applications requiring component architecture, hooks patterns, or state management. Invoke for Server Components, performance optimization, Suspense boundaries, React 19 features.
+description: |
+  Use when building React 18+ applications requiring component architecture, hooks patterns, or state management. Invoke for Server Components, performance optimization, Suspense boundaries, React 19 features.
+  Використовуй для React 18+ додатків, що потребують архітектури компонентів, патернів хуків або управління станом. Викликай для Server Components, оптимізації, React 19.
 triggers:
+  # English
   - React
   - JSX
   - hooks
@@ -16,6 +19,15 @@ triggers:
   - Zustand
   - component
   - frontend
+  # Ukrainian
+  - компонент
+  - хук
+  - хуки
+  - стан
+  - пропси
+  - рендеринг
+  - фронтенд
+  - інтерфейс
 role: specialist
 scope: implementation
 output-format: code

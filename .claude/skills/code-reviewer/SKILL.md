@@ -1,12 +1,22 @@
 ---
 name: code-reviewer
-description: Use when reviewing pull requests, conducting code quality audits, or identifying security vulnerabilities. Invoke for PR reviews, code quality checks, refactoring suggestions.
+description: |
+  Use when reviewing pull requests, conducting code quality audits, or identifying security vulnerabilities. Invoke for PR reviews, code quality checks, refactoring suggestions.
+  Використовуй для ревʼю pull requests, аудиту якості коду або виявлення вразливостей безпеки. Викликай для PR ревʼю, перевірки якості коду, рефакторингу.
 triggers:
+  # English
   - code review
   - PR review
   - pull request
   - review code
   - code quality
+  # Ukrainian
+  - ревʼю коду
+  - перевірка коду
+  - якість коду
+  - переглянь код
+  - рефакторинг
+  - оптимізація коду
 role: specialist
 scope: review
 allowed-tools: Read, Grep, Glob

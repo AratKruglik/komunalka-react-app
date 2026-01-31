@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
-import { addressService } from '../api'
+import { useAddressContext } from '@shared/contexts'
 import type { Address } from '@shared/types/entities'
 import type { UpdateAddressRequest } from '../types'
 
 /**
  * Hook for updating an existing address
- * Provides loading, error, and success states
+ * Uses AddressContext to keep addresses in sync
  *
  * @returns Update address state and methods
  *
@@ -28,47 +28,34 @@ import type { UpdateAddressRequest } from '../types'
  * ```
  */
 export function useUpdateAddress() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { updateAddress: contextUpdateAddress, isLoading: contextLoading, error: contextError } = useAddressContext()
   const [isSuccess, setIsSuccess] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
-  /**
-   * Update an existing address
-   * @param id - Address ID
-   * @param data - Fields to update
-   * @returns Updated address
-   * @throws {Error} if update fails
-   */
   const updateAddress = useCallback(async (id: number, data: UpdateAddressRequest): Promise<Address> => {
-    setIsLoading(true)
-    setError(null)
     setIsSuccess(false)
+    setLocalError(null)
 
     try {
-      const address = await addressService.update(id, data)
+      const address = await contextUpdateAddress(id, data)
       setIsSuccess(true)
       return address
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update address'
-      setError(errorMessage)
+      setLocalError(errorMessage)
       throw err
-    } finally {
-      setIsLoading(false)
     }
-  }, [])
+  }, [contextUpdateAddress])
 
-  /**
-   * Reset error and success states
-   */
   const reset = useCallback(() => {
-    setError(null)
+    setLocalError(null)
     setIsSuccess(false)
   }, [])
 
   return {
     updateAddress,
-    isLoading,
-    error,
+    isLoading: contextLoading,
+    error: localError || contextError,
     isSuccess,
     reset,
   }

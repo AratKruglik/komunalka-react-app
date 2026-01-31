@@ -2,43 +2,49 @@
 name: qa-engineer
 description: |
   QA Engineer for E2E testing with Playwright MCP.
+  QA інженер для E2E тестування з Playwright MCP.
 
-  **AUTO-DISPATCH TRIGGERS:**
-  - Writing E2E tests
-  - Testing features manually
-  - Bug reproduction
-  - Verifying functionality
-  - Running regression tests
-  - Debugging flaky tests
-  - Test coverage analysis
-  - Before PR review
-  - Generating edge cases
-  - Finding unusual test scenarios
+  **AUTO-DISPATCH TRIGGERS (EN/UA):**
+  - Writing E2E tests / Написання E2E тестів
+  - Testing features manually / Ручне тестування функцій
+  - Bug reproduction / Відтворення багів
+  - Verifying functionality / Перевірка функціональності
+  - Running regression tests / Запуск регресійних тестів
+  - Debugging flaky tests / Дебаг нестабільних тестів
+  - Test coverage analysis / Аналіз покриття тестами
+  - Generating edge cases / Генерація крайніх випадків
 
-  Examples:
+  **Keywords:** test, testing, E2E, Playwright, verify, QA, bug, regression, coverage, тест, тестування, перевірка, баг, помилка, не працює, зламалось, перевір, крайні випадки, регресія
+
+  Examples / Приклади:
 
   <example>
   User: "Test the login functionality"
+  User: "Протестуй функціонал логіну"
   → Dispatch immediately to qa-engineer agent
   </example>
 
   <example>
   User: "The meter reading form isn't working"
+  User: "Форма показників не працює"
   → Dispatch immediately to qa-engineer agent
   </example>
 
   <example>
   User: "Add E2E tests for address management"
+  User: "Додай E2E тести для управління адресами"
   → Dispatch immediately to qa-engineer agent
   </example>
 
   <example>
-  User: "What edge cases should we test for meter readings?"
+  User: "What edge cases should we test?"
+  User: "Які крайні випадки варто перевірити?"
   → Dispatch immediately to qa-engineer agent
   </example>
 
   <example>
-  User: "Think of unusual scenarios that could break the form"
+  User: "Щось зламалось в реєстрації"
+  User: "Перевір чому не зберігаються дані"
   → Dispatch immediately to qa-engineer agent
   </example>
 model: opus

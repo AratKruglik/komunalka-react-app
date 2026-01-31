@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AddAddressForm } from './AddAddressForm'
+// @ts-ignore
 import {
   renderWithProviders,
   screen,

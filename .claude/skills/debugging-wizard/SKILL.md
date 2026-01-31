@@ -1,7 +1,10 @@
 ---
 name: debugging-wizard
-description: Use when investigating errors, analyzing stack traces, or finding root causes of unexpected behavior. Invoke for error investigation, troubleshooting, log analysis, root cause analysis.
+description: |
+  Use when investigating errors, analyzing stack traces, or finding root causes of unexpected behavior. Invoke for error investigation, troubleshooting, log analysis, root cause analysis.
+  Використовуй для розслідування помилок, аналізу stack traces або пошуку кореневих причин неочікуваної поведінки. Викликай для аналізу помилок, логів, пошуку причин.
 triggers:
+  # English
   - debug
   - error
   - bug
@@ -12,6 +15,17 @@ triggers:
   - not working
   - crash
   - fix issue
+  # Ukrainian
+  - дебаг
+  - помилка
+  - баг
+  - виключення
+  - не працює
+  - зламалось
+  - краш
+  - виправити
+  - чому не працює
+  - знайти причину
 role: specialist
 scope: analysis
 output-format: analysis

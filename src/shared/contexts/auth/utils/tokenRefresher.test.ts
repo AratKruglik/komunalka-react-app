@@ -4,7 +4,7 @@ import { authService, userService } from '@shared/api'
 import { AuthActionType } from '../actionTypes'
 import type { IsRefreshingRef, AuthDispatch, ScheduleTokenRefreshFn, LogoutFn } from './types'
 import type { AuthResponse } from '@shared/api/authService'
-import type { User } from '@types/auth'
+import type { User } from '@shared/types/auth/user.types'
 
 vi.mock('@shared/api', () => ({
   authService: {
@@ -27,11 +27,12 @@ const mockAuthResponse: AuthResponse = {
   token: 'new-access-token',
   refreshToken: 'new-refresh-token',
   expiration: '2024-12-31T23:59:59.000Z',
-  user: {
-    id: 1,
-    username: 'testuser',
-    email: 'test@example.com',
-  },
+  userId: 1,
+  username: 'testuser',
+  email: 'test@example.com',
+  role: 'User',
+  authProvider: 'Local',
+  emailVerified: true,
 }
 
 describe('refreshToken', () => {
@@ -118,8 +119,27 @@ describe('refreshToken', () => {
     expect(isRefreshingRef.current).toBe(false)
   })
 
-  it('dispatches REFRESH_SUCCESS with user from response', async () => {
+  it('dispatches REFRESH_SUCCESS with user from profile service', async () => {
     (authService.refreshToken as Mock).mockResolvedValue(mockAuthResponse)
+    ;(userService.getProfile as Mock).mockResolvedValue(mockUser)
+
+    await refreshToken(isRefreshingRef, 'token', dispatch, scheduleTokenRefresh, logout)
+
+    expect(userService.getProfile).toHaveBeenCalled()
+    expect(dispatch).toHaveBeenCalledWith({
+      type: AuthActionType.REFRESH_SUCCESS,
+      payload: {
+        token: mockAuthResponse.token,
+        refreshToken: mockAuthResponse.refreshToken,
+        expiresAt: mockAuthResponse.expiration,
+        user: mockUser,
+      },
+    })
+  })
+
+  it('falls back to minimal user from response when profile fetch fails', async () => {
+    (authService.refreshToken as Mock).mockResolvedValue(mockAuthResponse)
+    ;(userService.getProfile as Mock).mockRejectedValue(new Error('Profile fetch failed'))
 
     await refreshToken(isRefreshingRef, 'token', dispatch, scheduleTokenRefresh, logout)
 
@@ -129,52 +149,11 @@ describe('refreshToken', () => {
         token: mockAuthResponse.token,
         refreshToken: mockAuthResponse.refreshToken,
         expiresAt: mockAuthResponse.expiration,
-        user: mockAuthResponse.user,
-      },
-    })
-  })
-
-  it('fetches user profile when response has no user', async () => {
-    const responseWithoutUser: AuthResponse = {
-      token: 'token',
-      refreshToken: 'refresh',
-      expiration: '2024-12-31T23:59:59.000Z',
-    }
-    ;(authService.refreshToken as Mock).mockResolvedValue(responseWithoutUser)
-    ;(userService.getProfile as Mock).mockResolvedValue(mockUser)
-
-    await refreshToken(isRefreshingRef, 'token', dispatch, scheduleTokenRefresh, logout)
-
-    expect(userService.getProfile).toHaveBeenCalled()
-    expect(dispatch).toHaveBeenCalledWith({
-      type: AuthActionType.REFRESH_SUCCESS,
-      payload: {
-        token: responseWithoutUser.token,
-        refreshToken: responseWithoutUser.refreshToken,
-        expiresAt: responseWithoutUser.expiration,
-        user: mockUser,
-      },
-    })
-  })
-
-  it('continues without user data when profile fetch fails', async () => {
-    const responseWithoutUser: AuthResponse = {
-      token: 'token',
-      refreshToken: 'refresh',
-      expiration: '2024-12-31T23:59:59.000Z',
-    }
-    ;(authService.refreshToken as Mock).mockResolvedValue(responseWithoutUser)
-    ;(userService.getProfile as Mock).mockRejectedValue(new Error('Profile fetch failed'))
-
-    await refreshToken(isRefreshingRef, 'token', dispatch, scheduleTokenRefresh, logout)
-
-    expect(dispatch).toHaveBeenCalledWith({
-      type: AuthActionType.REFRESH_SUCCESS,
-      payload: {
-        token: responseWithoutUser.token,
-        refreshToken: responseWithoutUser.refreshToken,
-        expiresAt: responseWithoutUser.expiration,
-        user: undefined,
+        user: {
+          id: mockAuthResponse.userId,
+          username: mockAuthResponse.username,
+          email: mockAuthResponse.email,
+        },
       },
     })
   })

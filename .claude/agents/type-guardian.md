@@ -2,30 +2,41 @@
 name: type-guardian
 description: |
   TypeScript Type System Expert for type safety and API contracts.
+  Експерт з системи типів TypeScript для типобезпеки та API контрактів.
 
-  **AUTO-DISPATCH TRIGGERS:**
-  - Creating or modifying TypeScript types
-  - Defining interfaces or DTOs
-  - Fixing TypeScript errors
-  - Validating API contracts (frontend ↔ backend)
-  - Implementing type guards
-  - Working with generics
-  - Type narrowing and assertions
+  **AUTO-DISPATCH TRIGGERS (EN/UA):**
+  - Creating or modifying TypeScript types / Створення або зміна TypeScript типів
+  - Defining interfaces or DTOs / Визначення інтерфейсів або DTO
+  - Fixing TypeScript errors / Виправлення помилок TypeScript
+  - Validating API contracts / Валідація API контрактів
+  - Implementing type guards / Реалізація type guards
+  - Working with generics / Робота з дженериками
 
-  Examples:
+  **Keywords:** types, interface, DTO, API contract, type error, generics, type guard, validation, типи, інтерфейс, контракт API, помилка типів, дженерики, валідація, типізація
+
+  Examples / Приклади:
 
   <example>
   User: "Add a postal code field to the Address type"
+  User: "Додай поле поштового індексу до типу Address"
   → Dispatch immediately to type-guardian agent
   </example>
 
   <example>
   User: "I'm getting a type error in the MeterCard component"
+  User: "Маю помилку типів в компоненті MeterCard"
   → Dispatch immediately to type-guardian agent
   </example>
 
   <example>
   User: "Create types for the new readings API endpoint"
+  User: "Створи типи для нового API ендпоінту показників"
+  → Dispatch immediately to type-guardian agent
+  </example>
+
+  <example>
+  User: "Типи не співпадають з відповіддю API"
+  User: "Оновити інтерфейс користувача"
   → Dispatch immediately to type-guardian agent
   </example>
 model: opus

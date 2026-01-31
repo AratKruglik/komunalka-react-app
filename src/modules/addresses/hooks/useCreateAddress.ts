@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
-import { addressService } from '../api'
+import { useAddressContext } from '@shared/contexts'
 import type { Address } from '@shared/types/entities'
 import type { CreateAddressRequest } from '../types'
 
 /**
  * Hook for creating a new address
- * Provides loading, error, and success states
+ * Uses AddressContext to keep addresses in sync
  *
  * @returns Create address state and methods
  *
@@ -28,46 +28,34 @@ import type { CreateAddressRequest } from '../types'
  * ```
  */
 export function useCreateAddress() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { addAddress, isLoading: contextLoading, error: contextError } = useAddressContext()
   const [isSuccess, setIsSuccess] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
-  /**
-   * Create a new address
-   * @param data - Address creation data
-   * @returns Created address
-   * @throws {Error} if creation fails
-   */
   const createAddress = useCallback(async (data: CreateAddressRequest): Promise<Address> => {
-    setIsLoading(true)
-    setError(null)
     setIsSuccess(false)
+    setLocalError(null)
 
     try {
-      const address = await addressService.create(data)
+      const address = await addAddress(data)
       setIsSuccess(true)
       return address
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create address'
-      setError(errorMessage)
+      setLocalError(errorMessage)
       throw err
-    } finally {
-      setIsLoading(false)
     }
-  }, [])
+  }, [addAddress])
 
-  /**
-   * Reset error and success states
-   */
   const reset = useCallback(() => {
-    setError(null)
+    setLocalError(null)
     setIsSuccess(false)
   }, [])
 
   return {
     createAddress,
-    isLoading,
-    error,
+    isLoading: contextLoading,
+    error: localError || contextError,
     isSuccess,
     reset,
   }

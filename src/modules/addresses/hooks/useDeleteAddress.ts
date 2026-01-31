@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react'
-import { addressService } from '../api'
+import { useAddressContext } from '@shared/contexts'
 
 /**
  * Hook for deleting an address
- * Provides loading, error, and success states
+ * Uses AddressContext to keep addresses in sync
  *
  * @returns Delete address state and methods
  *
@@ -28,44 +28,33 @@ import { addressService } from '../api'
  * ```
  */
 export function useDeleteAddress() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { deleteAddress: contextDeleteAddress, isLoading: contextLoading, error: contextError } = useAddressContext()
   const [isSuccess, setIsSuccess] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
 
-  /**
-   * Delete an address
-   * @param id - Address ID
-   * @throws {Error} if deletion fails
-   */
   const deleteAddress = useCallback(async (id: number): Promise<void> => {
-    setIsLoading(true)
-    setError(null)
     setIsSuccess(false)
+    setLocalError(null)
 
     try {
-      await addressService.delete(id)
+      await contextDeleteAddress(id)
       setIsSuccess(true)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete address'
-      setError(errorMessage)
+      setLocalError(errorMessage)
       throw err
-    } finally {
-      setIsLoading(false)
     }
-  }, [])
+  }, [contextDeleteAddress])
 
-  /**
-   * Reset error and success states
-   */
   const reset = useCallback(() => {
-    setError(null)
+    setLocalError(null)
     setIsSuccess(false)
   }, [])
 
   return {
     deleteAddress,
-    isLoading,
-    error,
+    isLoading: contextLoading,
+    error: localError || contextError,
     isSuccess,
     reset,
   }

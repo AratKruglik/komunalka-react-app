@@ -114,11 +114,21 @@ test.describe('Addresses List', () => {
 
     await addressPage.goto();
 
-    const editButton = page.getByRole('button', { name: /редагувати адресу/i });
-    const moreButton = page.getByRole('button', { name: /інші дії/i });
+    await addressPage.expectEditButtonVisible(testAddresses.primary.street);
+    await addressPage.expectMoreActionsButtonVisible(testAddresses.primary.street);
+  });
 
-    await expect(editButton).toBeVisible();
-    await expect(moreButton).toBeVisible();
+  test('should have edit and more actions buttons on multiple cards', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+
+    await addressPage.goto();
+
+    await addressPage.expectEditButtonVisible(testAddresses.primary.street);
+    await addressPage.expectMoreActionsButtonVisible(testAddresses.primary.street);
+    await addressPage.expectEditButtonVisible(testAddresses.secondary.street);
+    await addressPage.expectMoreActionsButtonVisible(testAddresses.secondary.street);
   });
 });
 
@@ -272,7 +282,54 @@ test.describe('Address Card Actions', () => {
   });
 });
 
-test.describe('Edit Address', () => {
+test.describe('Address Card Edit Button Navigation', () => {
+  let addressPage: AddressPage;
+
+  test.beforeEach(async ({ page }) => {
+    addressPage = new AddressPage(page);
+    await authenticateUser(page);
+    await mockUserProfile(page);
+    await mockRegions(page, testRegions);
+    await mockAddressTypes(page, testAddressTypes);
+  });
+
+  test('should navigate to meters page with addressId when clicking edit button', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+
+    await addressPage.goto();
+    await addressPage.clickEditAddress(testAddresses.primary.street);
+
+    await expect(page).toHaveURL(/\/meters\?addressId=1$/);
+  });
+
+  test('should navigate to meters page with correct addressId for secondary address', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
+    await mockMetersByAddress(page, { 1: [], 2: [] });
+    await mockReadingsByAddress(page, { 1: [], 2: [] });
+
+    await addressPage.goto();
+    await addressPage.clickEditAddress(testAddresses.secondary.street);
+
+    await expect(page).toHaveURL(/\/meters\?addressId=2$/);
+  });
+
+  test('should include addressId query parameter in navigation URL', async ({ page }) => {
+    await mockAddresses(page, [testAddresses.primary]);
+    await mockMetersByAddress(page, { 1: [] });
+    await mockReadingsByAddress(page, { 1: [] });
+
+    await addressPage.goto();
+    await addressPage.clickEditAddress(testAddresses.primary.street);
+
+    const url = new URL(page.url());
+    expect(url.pathname).toBe('/meters');
+    expect(url.searchParams.get('addressId')).toBe(String(testAddresses.primary.id));
+  });
+});
+
+test.describe('Edit Address Form', () => {
   let addressPage: AddressPage;
   let editAddressPage: EditAddressPage;
 
@@ -283,18 +340,6 @@ test.describe('Edit Address', () => {
     await mockUserProfile(page);
     await mockRegions(page, testRegions);
     await mockAddressTypes(page, testAddressTypes);
-  });
-
-  test.skip('should open edit page when clicking edit button', async ({ page }) => {
-    await mockAddresses(page, [testAddresses.primary]);
-    await mockMetersByAddress(page, { 1: [] });
-    await mockReadingsByAddress(page, { 1: [] });
-    await mockGetAddress(page, testAddresses.primary);
-
-    await addressPage.goto();
-    await addressPage.clickEditAddress(testAddresses.primary.street);
-
-    await expect(page).toHaveURL(/\/addresses\/\d+\/edit/);
   });
 
   test.skip('should pre-populate form with existing address data', async ({ page }) => {

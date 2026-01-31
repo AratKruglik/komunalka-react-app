@@ -50,6 +50,11 @@ export interface AddressSelectViewModel {
 /**
  * Перетворює Address entity на AddressCardViewModel для AddressCard компонента
  */
+const DEFAULT_ADDRESS_TYPE = {
+  name: 'Квартира',
+  icon: 'apartment',
+} as const
+
 export function toAddressCardViewModel(
   address: Address,
   meters: readonly Meter[],
@@ -57,7 +62,9 @@ export function toAddressCardViewModel(
   const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
   const title = `${address.street}, ${address.buildingNumber}${apartment}`
 
-  const subtitle = `${address.addressType.name} | м. ${address.city}, ${address.region.name}`
+  const addressTypeName = address.addressType?.name ?? DEFAULT_ADDRESS_TYPE.name
+  const regionName = address.region?.name ?? address.city
+  const subtitle = `${addressTypeName} | м. ${address.city}, ${regionName}`
 
   // Формуємо badges
   const badges: AddressBadge[] = []
@@ -89,8 +96,8 @@ export function toAddressCardViewModel(
     services,
     isPrimary: address.isPrimary,
     addressType: {
-      name: address.addressType.name,
-      icon: address.addressType.icon,
+      name: address.addressType?.name ?? DEFAULT_ADDRESS_TYPE.name,
+      icon: address.addressType?.icon ?? DEFAULT_ADDRESS_TYPE.icon,
     },
   }
 }
@@ -101,7 +108,9 @@ export function toAddressCardViewModel(
 export function toAddressSelectViewModel(address: Address): AddressSelectViewModel {
   const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
   const label = `${address.street}, ${address.buildingNumber}${apartment}`
-  const description = `${address.addressType.name} | м. ${address.city}, ${address.region.name}`
+  const addressTypeName = address.addressType?.name ?? DEFAULT_ADDRESS_TYPE.name
+  const regionName = address.region?.name ?? address.city
+  const description = `${addressTypeName} | м. ${address.city}, ${regionName}`
 
   return {
     id: address.id,

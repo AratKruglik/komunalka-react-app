@@ -20,22 +20,18 @@ export interface RegisterRequest {
   confirmPassword: string;
 }
 
+export type AuthProvider = 'Local' | 'Google' | 'GitHub';
+
 export interface AuthResponse {
   token: string;
   refreshToken: string;
-  expiration: string; // API повертає "expiration", а не "expiresAt"
-  userId?: number;
-  username?: string;
-  email?: string;
-  role?: string;
-  user?: {
-    id: number;
-    username: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-    phoneNumber?: string;
-  };
+  expiration: string;
+  userId: number;
+  username: string;
+  email: string;
+  role: string;
+  authProvider: AuthProvider;
+  emailVerified: boolean;
 }
 
 export interface RefreshTokenRequest {

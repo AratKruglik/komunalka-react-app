@@ -51,6 +51,27 @@ pnpm run test:e2e:debug
 
 ---
 
+## ⚠️ API Documentation (Single Source of Truth)
+
+**🔴 CRITICAL: The file `Komunalka.API.http` is the PRIMARY and AUTHORITATIVE source of truth for all API interactions.**
+
+All pages, components, and services in this project MUST work with the API according to the documentation in `Komunalka.API.http`. This file contains:
+- Complete endpoint specifications (URLs, methods, headers)
+- Request body formats and required fields
+- Response structures and status codes
+- Authentication requirements (JWT tokens)
+- Validation rules and error responses
+
+**Rules:**
+1. **Before implementing any API call** — read the corresponding section in `Komunalka.API.http`
+2. **TypeScript types** MUST match the response/request structures documented in the file
+3. **Do NOT assume** API behavior — verify against the documentation
+4. **When in doubt** — the `.http` file is always correct, not the code
+
+**File location:** `/Komunalka.API.http`
+
+---
+
 ## 🤖 AUTOMATIC AGENT DISPATCH SYSTEM
 
 **CRITICAL: This project uses specialized agents for all development tasks. You MUST dispatch the appropriate agent automatically based on the task type.**
@@ -59,12 +80,12 @@ pnpm run test:e2e:debug
 
 When receiving a task, analyze it and **immediately dispatch** to the correct agent using the Task tool. Do NOT implement code directly - always delegate to the specialized agent.
 
-| Task Type | Agent | Trigger Keywords |
-|-----------|-------|------------------|
-| **Frontend Development** | `fe-e` | component, page, UI, form, button, layout, styling, React, hook, state, props, Tailwind, responsive |
-| **E2E Testing** | `qa-engineer` | test, testing, E2E, Playwright, verify, QA, regression, bug reproduction, test coverage |
-| **TypeScript Types** | `type-guardian` | types, interface, DTO, API contract, type error, generics, type guard, validation |
-| **Architecture Review** | `architecture-guardian` | architecture, module, refactor structure, code organization, dependencies, shared components |
+| Task Type | Agent | Trigger Keywords (EN / UA) |
+|-----------|-------|----------------------------|
+| **Frontend Development** | `fe-e` | component, page, UI, form, button, layout, styling, React, hook, state, props, Tailwind, responsive / **компонент, сторінка, форма, кнопка, верстка, стилі, хук, стан** |
+| **E2E Testing** | `qa-engineer` | test, testing, E2E, Playwright, verify, QA, regression, bug reproduction, test coverage / **тест, тестування, перевірка, баг, помилка, не працює, зламалось, крайні випадки** |
+| **TypeScript Types** | `type-guardian` | types, interface, DTO, API contract, type error, generics, type guard, validation / **типи, інтерфейс, контракт API, помилка типів, дженерики, валідація** |
+| **Architecture Review** | `architecture-guardian` | architecture, module, refactor structure, code organization, dependencies, shared components / **архітектура, модуль, рефакторинг, структура коду, залежності, спільні компоненти** |
 
 ### Dispatch Decision Tree
 

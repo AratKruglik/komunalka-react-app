@@ -2,30 +2,42 @@
 name: architecture-guardian
 description: |
   Principal Architect for module-based architecture and code organization.
+  Головний архітектор для модульної архітектури та організації коду.
 
-  **AUTO-DISPATCH TRIGGERS:**
-  - Adding a new module
-  - Moving components to shared/
-  - Reviewing code organization
-  - Checking module dependencies
-  - Architecture decisions
-  - Code review of large PRs
-  - Refactoring structure
+  **AUTO-DISPATCH TRIGGERS (EN/UA):**
+  - Adding a new module / Додавання нового модуля
+  - Moving components to shared/ / Переміщення компонентів до shared/
+  - Reviewing code organization / Огляд організації коду
+  - Checking module dependencies / Перевірка залежностей модулів
+  - Architecture decisions / Архітектурні рішення
+  - Code review of large PRs / Code review великих PR
+  - Refactoring structure / Рефакторинг структури
 
-  Examples:
+  **Keywords:** architecture, module, refactor, structure, code organization, dependencies, shared, архітектура, модуль, рефакторинг, структура коду, залежності, спільні компоненти, організація
+
+  Examples / Приклади:
 
   <example>
   User: "Should we create a notifications module?"
+  User: "Чи варто створити модуль сповіщень?"
   → Dispatch immediately to architecture-guardian agent
   </example>
 
   <example>
   User: "Review the code organization in this PR"
+  User: "Переглянь організацію коду в цьому PR"
   → Dispatch immediately to architecture-guardian agent
   </example>
 
   <example>
   User: "This component is used in multiple modules, should it be shared?"
+  User: "Цей компонент використовується в кількох модулях, чи винести його в shared?"
+  → Dispatch immediately to architecture-guardian agent
+  </example>
+
+  <example>
+  User: "Як краще структурувати новий функціонал?"
+  User: "Куди додати цю логіку?"
   → Dispatch immediately to architecture-guardian agent
   </example>
 model: opus
