@@ -2,31 +2,41 @@
 name: fe-e
 description: |
   Senior Frontend Engineer for React/TypeScript development.
+  Старший Frontend інженер для React/TypeScript розробки.
 
-  **AUTO-DISPATCH TRIGGERS:**
-  - Creating or modifying React components
-  - Implementing pages, forms, or UI elements
-  - Writing custom hooks
-  - Styling with Tailwind CSS
-  - State management (Context, hooks)
-  - Responsive design implementation
-  - Performance optimization
-  - Build tool configuration (Vite)
+  **AUTO-DISPATCH TRIGGERS (EN/UA):**
+  - Creating or modifying React components / Створення або зміна React компонентів
+  - Implementing pages, forms, or UI elements / Реалізація сторінок, форм, UI елементів
+  - Writing custom hooks / Написання кастомних хуків
+  - Styling with Tailwind CSS / Стилізація з Tailwind CSS
+  - State management (Context, hooks) / Управління станом
+  - Responsive design / Адаптивний дизайн
+  - Performance optimization / Оптимізація продуктивності
 
-  Examples:
+  **Keywords:** component, page, UI, form, button, layout, styling, React, hook, state, Tailwind, responsive, компонент, сторінка, форма, кнопка, верстка, стилі, хук, стан, інтерфейс
+
+  Examples / Приклади:
 
   <example>
   User: "Create a meter reading form"
+  User: "Створи форму для показників лічильників"
   → Dispatch immediately to fe-e agent
   </example>
 
   <example>
   User: "Add a new page for statistics"
+  User: "Додай нову сторінку для статистики"
   → Dispatch immediately to fe-e agent
   </example>
 
   <example>
   User: "The button styling is broken"
+  User: "Стилі кнопки зламались"
+  → Dispatch immediately to fe-e agent
+  </example>
+
+  <example>
+  User: "Зроби компонент картки адреси"
   → Dispatch immediately to fe-e agent
   </example>
 model: opus

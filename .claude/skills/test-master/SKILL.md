@@ -1,7 +1,10 @@
 ---
 name: test-master
-description: Use when writing tests, creating test strategies, or building automation frameworks. Invoke for unit tests, integration tests, E2E, coverage analysis, performance testing, security testing.
+description: |
+  Use when writing tests, creating test strategies, or building automation frameworks. Invoke for unit tests, integration tests, E2E, coverage analysis, performance testing, security testing.
+  Використовуй для написання тестів, створення тестових стратегій або фреймворків автоматизації. Викликай для юніт-тестів, інтеграційних тестів, E2E, аналізу покриття.
 triggers:
+  # English
   - test
   - testing
   - QA
@@ -26,6 +29,19 @@ triggers:
   - quality gate
   - flaky test
   - test maintenance
+  # Ukrainian
+  - тест
+  - тестування
+  - юніт-тест
+  - інтеграційний тест
+  - покриття тестами
+  - регресія
+  - стратегія тестування
+  - автоматизація тестів
+  - баг
+  - дефект
+  - якість
+  - перевірка
 role: specialist
 scope: testing
 output-format: report

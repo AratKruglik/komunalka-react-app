@@ -1,7 +1,10 @@
 ---
 name: architecture-designer
-description: Use when designing new system architecture, reviewing existing designs, or making architectural decisions. Invoke for system design, architecture review, design patterns, ADRs, scalability planning.
+description: |
+  Use when designing new system architecture, reviewing existing designs, or making architectural decisions. Invoke for system design, architecture review, design patterns, ADRs, scalability planning.
+  Використовуй для проєктування нової системної архітектури, огляду існуючих дизайнів або прийняття архітектурних рішень. Викликай для системного дизайну, патернів, ADR.
 triggers:
+  # English
   - architecture
   - system design
   - design pattern
@@ -10,6 +13,15 @@ triggers:
   - ADR
   - technical design
   - infrastructure
+  # Ukrainian
+  - архітектура
+  - системний дизайн
+  - патерн
+  - масштабованість
+  - технічний дизайн
+  - інфраструктура
+  - структура проєкту
+  - організація коду
 role: expert
 scope: design
 output-format: document

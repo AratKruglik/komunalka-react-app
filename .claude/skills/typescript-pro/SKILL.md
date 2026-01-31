@@ -1,7 +1,10 @@
 ---
 name: typescript-pro
-description: Use when building TypeScript applications requiring advanced type systems, generics, or full-stack type safety. Invoke for type guards, utility types, tRPC integration, monorepo setup.
+description: |
+  Use when building TypeScript applications requiring advanced type systems, generics, or full-stack type safety. Invoke for type guards, utility types, tRPC integration, monorepo setup.
+  Використовуй для TypeScript додатків з просунутою системою типів, дженериками або повною типобезпекою. Викликай для type guards, utility types, валідації типів.
 triggers:
+  # English
   - TypeScript
   - generics
   - type safety
@@ -11,6 +14,14 @@ triggers:
   - tsconfig
   - type guards
   - discriminated unions
+  # Ukrainian
+  - типи
+  - типізація
+  - дженерики
+  - інтерфейс
+  - типобезпека
+  - помилка типів
+  - валідація типів
 role: specialist
 scope: implementation
 output-format: code
