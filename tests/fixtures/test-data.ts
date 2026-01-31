@@ -89,10 +89,10 @@ export const testRegions: MockRegion[] = [
   { id: 25, name: 'м. Київ' },
 ];
 
-export const testAddressTypes: MockAddressType[] = [
-  { id: ADDRESS_TYPES.APARTMENT, name: 'Квартира', description: 'Багатоквартирний будинок у місті' },
-  { id: ADDRESS_TYPES.PRIVATE_HOUSE, name: 'Приватний будинок', description: 'Окрема садиба або дача' },
-  { id: ADDRESS_TYPES.OFFICE, name: 'Офіс', description: 'Комерційне або офісне приміщення' },
+export const testAddressTypes: (MockAddressType & { icon?: string })[] = [
+  { id: ADDRESS_TYPES.APARTMENT, name: 'Квартира', description: 'Багатоквартирний будинок у місті', icon: 'apartment' },
+  { id: ADDRESS_TYPES.PRIVATE_HOUSE, name: 'Приватний будинок', description: 'Окрема садиба або дача', icon: 'house' },
+  { id: ADDRESS_TYPES.OFFICE, name: 'Офіс', description: 'Комерційне або офісне приміщення', icon: 'office' },
 ];
 
 export const testCurrencies: MockCurrency[] = [
@@ -101,61 +101,55 @@ export const testCurrencies: MockCurrency[] = [
   { id: 3, name: 'Euro', code: 'EUR', symbol: '€' },
 ];
 
-export const testAddresses: Record<string, MockAddress & { building: string; apartment: string; district: string }> = {
+export const testAddresses: Record<string, MockAddress> = {
   primary: {
     id: 1,
+    userId: 1,
     regionId: 9,
     region: { id: 9, name: 'Київська область' },
     city: 'Київ',
     street: 'вул. Хрещатик',
     buildingNumber: '1',
     apartmentNumber: '101',
-    building: '1',
-    apartment: '101',
-    district: 'Шевченківський',
     zipCode: '01001',
     notes: 'Центр міста',
     isPrimary: true,
     addressTypeId: ADDRESS_TYPES.APARTMENT,
-    addressType: { id: ADDRESS_TYPES.APARTMENT, name: 'Квартира', description: 'Багатоквартирний будинок у місті' },
+    addressType: { id: ADDRESS_TYPES.APARTMENT, name: 'Квартира', description: 'Багатоквартирний будинок у місті', icon: 'apartment' },
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
   },
   secondary: {
     id: 2,
+    userId: 1,
     regionId: 9,
     region: { id: 9, name: 'Київська область' },
     city: 'Бровари',
     street: 'вул. Лісова',
     buildingNumber: '15',
     apartmentNumber: '1',
-    building: '15',
-    apartment: '1',
-    district: 'Броварський',
     zipCode: '07400',
     notes: '',
     isPrimary: false,
     addressTypeId: ADDRESS_TYPES.PRIVATE_HOUSE,
-    addressType: { id: ADDRESS_TYPES.PRIVATE_HOUSE, name: 'Приватний будинок', description: 'Окрема садиба або дача' },
+    addressType: { id: ADDRESS_TYPES.PRIVATE_HOUSE, name: 'Приватний будинок', description: 'Окрема садиба або дача', icon: 'house' },
     createdAt: '2025-01-05T00:00:00Z',
     updatedAt: '2025-01-05T00:00:00Z',
   },
   office: {
     id: 3,
+    userId: 1,
     regionId: 9,
     region: { id: 9, name: 'Київська область' },
     city: 'Київ',
     street: 'вул. Богдана Хмельницького',
     buildingNumber: '50',
     apartmentNumber: '301',
-    building: '50',
-    apartment: '301',
-    district: 'Шевченківський',
     zipCode: '01030',
     notes: 'Офіс компанії',
     isPrimary: false,
     addressTypeId: ADDRESS_TYPES.OFFICE,
-    addressType: { id: ADDRESS_TYPES.OFFICE, name: 'Офіс', description: 'Комерційне або офісне приміщення' },
+    addressType: { id: ADDRESS_TYPES.OFFICE, name: 'Офіс', description: 'Комерційне або офісне приміщення', icon: 'office' },
     createdAt: '2025-01-10T00:00:00Z',
     updatedAt: '2025-01-10T00:00:00Z',
   },

@@ -9,6 +9,8 @@ import {
   mockGetAddress,
   mockMetersByAddress,
   mockReadingsByAddress,
+  mockRegions,
+  mockAddressTypes,
 } from '../../helpers';
 import { authenticateUser } from '../../helpers/auth';
 import {
@@ -16,6 +18,8 @@ import {
   testNewAddressFormData,
   testMeters,
   testEditedAddressFormData,
+  testRegions,
+  testAddressTypes,
 } from '../../fixtures/test-data';
 
 test.describe('Addresses List', () => {
@@ -25,6 +29,8 @@ test.describe('Addresses List', () => {
     addressPage = new AddressPage(page);
     await authenticateUser(page);
     await mockUserProfile(page);
+    await mockRegions(page, testRegions);
+    await mockAddressTypes(page, testAddressTypes);
   });
 
   test('should display addresses list with multiple addresses', async ({ page }) => {
@@ -123,6 +129,8 @@ test.describe('Add Address Form', () => {
     addAddressPage = new AddAddressPage(page);
     await authenticateUser(page);
     await mockUserProfile(page);
+    await mockRegions(page, testRegions);
+    await mockAddressTypes(page, testAddressTypes);
     await mockAddresses(page, [testAddresses.primary]);
     await mockMetersByAddress(page, { 1: [] });
     await mockReadingsByAddress(page, { 1: [] });
@@ -229,7 +237,7 @@ test.describe('Add Address Form', () => {
 
     expect(options).toContain('Київська область');
     expect(options).toContain('Львівська область');
-    expect(options).toContain('Харківська область');
+    expect(options).toContain('м. Київ');
   });
 });
 
@@ -240,6 +248,8 @@ test.describe('Address Card Actions', () => {
     addressPage = new AddressPage(page);
     await authenticateUser(page);
     await mockUserProfile(page);
+    await mockRegions(page, testRegions);
+    await mockAddressTypes(page, testAddressTypes);
     await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
     await mockMetersByAddress(page, { 1: [], 2: [] });
     await mockReadingsByAddress(page, { 1: [], 2: [] });
@@ -271,6 +281,8 @@ test.describe('Edit Address', () => {
     editAddressPage = new EditAddressPage(page, testAddresses.primary.id);
     await authenticateUser(page);
     await mockUserProfile(page);
+    await mockRegions(page, testRegions);
+    await mockAddressTypes(page, testAddressTypes);
   });
 
   test.skip('should open edit page when clicking edit button', async ({ page }) => {
@@ -385,6 +397,8 @@ test.describe('Delete Address', () => {
     addressPage = new AddressPage(page);
     await authenticateUser(page);
     await mockUserProfile(page);
+    await mockRegions(page, testRegions);
+    await mockAddressTypes(page, testAddressTypes);
   });
 
   test.skip('should show confirmation dialog when clicking delete', async ({ page }) => {
@@ -465,6 +479,8 @@ test.describe('Address Actions Menu', () => {
     addressPage = new AddressPage(page);
     await authenticateUser(page);
     await mockUserProfile(page);
+    await mockRegions(page, testRegions);
+    await mockAddressTypes(page, testAddressTypes);
     await mockAddresses(page, [testAddresses.primary, testAddresses.secondary]);
     await mockMetersByAddress(page, { 1: [], 2: [] });
     await mockReadingsByAddress(page, { 1: [], 2: [] });

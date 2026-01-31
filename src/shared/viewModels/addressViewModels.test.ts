@@ -76,7 +76,19 @@ describe('addressViewModels', () => {
 
       const result = toAddressCardViewModel(address, meters)
 
-      expect(result.subtitle).toBe('м. Київ, м. Київ')
+      expect(result.subtitle).toBe('Квартира | м. Київ, м. Київ')
+    })
+
+    it('includes addressType in view model', () => {
+      const address = createMockAddress()
+      const meters: Meter[] = []
+
+      const result = toAddressCardViewModel(address, meters)
+
+      expect(result.addressType).toEqual({
+        name: 'Квартира',
+        icon: 'apartment',
+      })
     })
 
     it('includes primary badge when address is primary', () => {
@@ -212,7 +224,7 @@ describe('addressViewModels', () => {
 
       const result = toAddressSelectViewModel(address)
 
-      expect(result.description).toBe('м. Київ, м. Київ')
+      expect(result.description).toBe('Квартира | м. Київ, м. Київ')
     })
 
     it('preserves address id', () => {
