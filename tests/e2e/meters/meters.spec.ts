@@ -8,12 +8,14 @@ import {
   mockMetersByAddress,
   mockReadingsByAddress,
   mockApiError,
-  mockLoginSuccess,
+  mockUserProfile,
 } from '../../helpers';
+import { authenticateUser } from '../../helpers/auth';
 import {
   testAddresses,
   testMeters,
   testReadings,
+  getActiveMeters,
 } from '../../fixtures/test-data';
 
 test.describe('Meters Page', () => {
@@ -29,13 +31,14 @@ test.describe('Meters Page', () => {
   const defaultReadings = [
     testReadings.electricity,
     testReadings.gas,
-    testReadings.water,
-    testReadings.processing,
+    testReadings.coldWater,
+    testReadings.hotWater,
   ];
 
   test.beforeEach(async ({ page }) => {
     meterPage = new MeterPage(page);
-    await mockLoginSuccess(page);
+    await authenticateUser(page);
+    await mockUserProfile(page);
   });
 
   test.describe('Meters List Display', () => {
@@ -143,7 +146,7 @@ test.describe('Meters Page', () => {
       });
       await mockReadingsByAddress(page, {
         1: [testReadings.electricity, testReadings.gas],
-        2: [testReadings.water],
+        2: [testReadings.coldWater],
       });
 
       await meterPage.goto();
@@ -191,7 +194,7 @@ test.describe('Meters Page', () => {
       await meterPage.goto();
       await meterPage.waitForPageLoad();
 
-      await expect(page.getByText(testMeters.electricity.serialNumber)).toBeVisible();
+      await expect(page.getByText(testMeters.electricity.meterNumber)).toBeVisible();
     });
 
     test('should display meter name and location', async ({ page }) => {
@@ -204,7 +207,7 @@ test.describe('Meters Page', () => {
       await meterPage.goto();
       await meterPage.waitForPageLoad();
 
-      await expect(page.getByText(testMeters.electricity.name)).toBeVisible();
+      await expect(page.getByRole('paragraph').filter({ hasText: testMeters.electricity.name })).toBeVisible();
       await expect(page.getByText(new RegExp(`Локація:.*${testMeters.electricity.location}`))).toBeVisible();
     });
 
@@ -248,7 +251,7 @@ test.describe('Meters Page', () => {
 
       await meterPage.selectMeterType('gas');
 
-      await expect(page.getByText(testMeters.gas.serialNumber)).toBeVisible();
+      await expect(page.getByText(testMeters.gas.meterNumber)).toBeVisible();
     });
 
     test('should switch to cold water meters when tab clicked', async ({ page }) => {
@@ -263,7 +266,7 @@ test.describe('Meters Page', () => {
 
       await meterPage.selectMeterType('coldWater');
 
-      await expect(page.getByText(testMeters.coldWater.serialNumber)).toBeVisible();
+      await expect(page.getByText(testMeters.coldWater.meterNumber)).toBeVisible();
     });
 
     test('should highlight active tab', async ({ page }) => {
@@ -284,7 +287,7 @@ test.describe('Meters Page', () => {
     test('should display meter count in tab', async ({ page }) => {
       const metersWithMultipleElectricity = [
         testMeters.electricity,
-        { ...testMeters.electricity, id: 10, serialNumber: 'EL-002-2024', name: 'Електролічильник коридор' },
+        { ...testMeters.electricity, id: 10, meterNumber: 'EL-002-2024', name: 'Електролічильник коридор' },
         testMeters.gas,
       ];
 
@@ -429,10 +432,11 @@ test.describe('Meters Page', () => {
       await meterPage.goto();
       await meterPage.waitForPageLoad();
 
-      await expect(page.getByText('Період')).toBeVisible();
-      await expect(page.getByText('Показання')).toBeVisible();
-      await expect(page.getByText('Статус')).toBeVisible();
-      await expect(page.getByText('Відправлено')).toBeVisible();
+      const historyTable = page.locator('[class*="bg-gray-50"]').filter({ hasText: 'Період' });
+      await expect(historyTable.getByText('Період')).toBeVisible();
+      await expect(historyTable.getByText('Показання', { exact: true })).toBeVisible();
+      await expect(historyTable.getByText('Статус')).toBeVisible();
+      await expect(historyTable.getByText('Відправлено')).toBeVisible();
     });
 
     test('should display download PDF button', async ({ page }) => {
@@ -482,24 +486,24 @@ test.describe('Meters Page', () => {
   test.describe('Error Handling', () => {
     test('should handle meters API error gracefully', async ({ page }) => {
       await mockAddresses(page, defaultAddresses);
-      await mockApiError(page, '/meters*', 500, 'Server Error');
-      await mockReadings(page, []);
+      await mockApiError(page, '/meter/address/*', 500, 'Server Error');
+      await mockReadingsByAddress(page, { 1: [], 2: [] });
 
       await meterPage.goto();
       await meterPage.waitForPageLoad();
 
-      await expect(page.getByText(/немає збережених лічильників|немає доступних лічильників/i)).toBeVisible();
+      await expect(page.getByText(/немає збережених лічильників|немає доступних лічильників/i).first()).toBeVisible();
     });
 
     test('should handle readings API error gracefully', async ({ page }) => {
       await mockAddresses(page, defaultAddresses);
-      await mockMeters(page, defaultMeters);
-      await mockApiError(page, '/readings*', 500, 'Server Error');
+      await mockMetersByAddress(page, { 1: defaultMeters, 2: [] });
+      await mockApiError(page, '/meter-readings/address/*', 500, 'Server Error');
 
       await meterPage.goto();
       await meterPage.waitForPageLoad();
 
-      await expect(page.getByText(testMeters.electricity.serialNumber)).toBeVisible();
+      await expect(page.getByText(testMeters.electricity.meterNumber)).toBeVisible();
     });
   });
 

@@ -2,6 +2,7 @@ import { test as setup } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
+import { MOCK_JWT_TOKEN } from './helpers/constants';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,7 +21,7 @@ setup('authenticate', async ({ page }) => {
   await page.context().addCookies([
     {
       name: 'jwt_token',
-      value: 'mock-jwt-token-for-e2e-tests',
+      value: MOCK_JWT_TOKEN,
       domain: 'localhost',
       path: '/',
     },

@@ -1,5 +1,5 @@
 import { AuthActionType } from '../actionTypes'
-import { authService } from '@shared/api'
+import { authService, userService } from '@shared/api'
 import type { AuthDispatch, IsRefreshingRef, ScheduleTokenRefreshFn, LogoutFn } from './types'
 
 /**
@@ -19,7 +19,6 @@ export async function refreshToken(
   scheduleTokenRefresh: ScheduleTokenRefreshFn,
   logout: LogoutFn
 ): Promise<void> {
-  // Prevent concurrent refresh requests
   if (isRefreshingRef.current) {
     return
   }
@@ -37,17 +36,25 @@ export async function refreshToken(
 
     const response = await authService.refreshToken(refreshTokenValue)
 
+    let user = response.user
+    if (!user) {
+      try {
+        user = await userService.getProfile()
+      } catch {
+        // Profile loading failed - continue without user data
+      }
+    }
+
     dispatch({
       type: AuthActionType.REFRESH_SUCCESS,
       payload: {
         token: response.token,
         refreshToken: response.refreshToken,
         expiresAt: response.expiration,
-        user: response.user,
+        user,
       },
     })
 
-    // Schedule next refresh
     scheduleTokenRefresh(response.expiration)
   } catch {
     dispatch({ type: AuthActionType.REFRESH_ERROR })

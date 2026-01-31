@@ -1,10 +1,10 @@
 import { AuthActionType } from '../actionTypes'
-import { authService } from '@shared/api'
+import { authService, userService } from '@shared/api'
 import type { AuthDispatch, ScheduleTokenRefreshFn, RefreshTokenManuallyFn } from './types'
 
 /**
  * Initialize auth state from storage on mount
- * Checks for existing tokens and validates them
+ * Checks for existing tokens, validates them, and loads user profile
  *
  * @param dispatch - Auth reducer dispatch function
  * @param scheduleTokenRefresh - Function to schedule token refresh
@@ -23,22 +23,24 @@ export async function initializeAuth(
     const expirationTime = new Date(expiresAt).getTime()
     const currentTime = Date.now()
 
-    // Check if token is still valid
     if (expirationTime > currentTime) {
-      // Token is valid, restore session
       dispatch({
         type: AuthActionType.SET_TOKENS,
         payload: { token, refreshToken, expiresAt },
       })
 
-      // Schedule refresh
       scheduleTokenRefresh(expiresAt)
+
+      try {
+        const user = await userService.getProfile()
+        dispatch({ type: AuthActionType.UPDATE_USER, payload: user })
+      } catch {
+        // Profile loading failed - user stays authenticated but without profile data
+      }
     } else {
-      // Token expired, try to refresh
       await refreshTokenManually()
     }
   } else {
-    // No valid session
     dispatch({ type: AuthActionType.LOGOUT })
   }
 }

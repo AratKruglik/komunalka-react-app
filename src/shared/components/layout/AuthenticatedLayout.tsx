@@ -40,6 +40,7 @@ export function AuthenticatedLayout({
       return {
         name: fullName,
         email: authUser.email,
+        avatarUrl: authUser.avatarThumbnailUrl || authUser.avatarUrl,
       }
     }
     return {

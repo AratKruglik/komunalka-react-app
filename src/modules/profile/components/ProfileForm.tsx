@@ -45,12 +45,13 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
   // Sync form with user data from context
   useEffect(() => {
     if (user) {
+      const phoneWithoutPrefix = user.phoneNumber?.replace(/^\+?380/, '') || ''
       setFormData({
         username: user.username || '',
         email: user.email || '',
         firstName: user.firstName || '',
         lastName: user.lastName || '',
-        phone: user.phoneNumber || '',
+        phone: phoneWithoutPrefix,
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
@@ -226,12 +227,13 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
     }
 
     // Call updateProfile from useProfile hook
+    const phoneWithPrefix = formData.phone ? `+380${formData.phone}` : undefined
     await updateProfile({
       username: formData.username,
       email: formData.email,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      phoneNumber: formData.phone,
+      phoneNumber: phoneWithPrefix,
       password: isChangingPassword ? formData.newPassword : undefined,
       // TODO: Add avatar file upload support when backend is ready
       // avatarFile: avatarFile,
@@ -239,7 +241,7 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-6">
+    <form onSubmit={handleSubmit} noValidate className="w-full space-y-6">
       {successMessage ? (
         <Alert variant="success" className="shadow-md">
           <AlertTitle>Готово</AlertTitle>

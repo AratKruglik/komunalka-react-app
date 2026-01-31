@@ -1,0 +1,8 @@
+export { BasePage } from './BasePage'
+export { LoginPage } from './LoginPage'
+export { DashboardPage } from './DashboardPage'
+export { AddressesPage } from './AddressesPage'
+export { AddAddressPage } from './AddAddressPage'
+export { MetersPage } from './MetersPage'
+export { AddMeterPage } from './AddMeterPage'
+export { ReadingsPage } from './ReadingsPage'
