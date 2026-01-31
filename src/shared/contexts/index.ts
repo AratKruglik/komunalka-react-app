@@ -5,3 +5,4 @@
  */
 
 export { AuthProvider, AuthContext } from './auth'
+export { AddressProvider, AddressContext, AddressSyncProvider, useAddressContext } from './address'

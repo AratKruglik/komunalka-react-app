@@ -1,3 +1,5 @@
+import type { Address } from '@shared/types/entities'
+
 /**
  * User information interface
  */
@@ -10,6 +12,7 @@ export interface User {
   phoneNumber?: string;
   avatarUrl?: string;
   avatarThumbnailUrl?: string;
+  addresses?: Address[];
   createdAt?: string;
   updatedAt?: string;
 }
