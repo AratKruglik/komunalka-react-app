@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { tv } from 'tailwind-variants'
-import { Logo, Button, GoogleIcon, FacebookIcon, AppleIcon } from '@shared/components/ui'
+import { Logo, Button, GithubIcon, GoogleIcon } from '@shared/components/ui'
 import {
   PasswordInput,
   getPasswordStrength,
@@ -9,6 +9,16 @@ import {
 } from '@shared/components/ui'
 import { ROUTES } from '@shared/constants'
 import { useAuth } from '@shared/hooks'
+import type { OAuthProvider } from '@shared/types/auth'
+
+const OAUTH_STATE_KEY = 'oauth_state'
+const OAUTH_PROVIDER_KEY = 'oauth_provider'
+
+function generateOAuthState(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+}
 
 interface RegisterFormProps {
   className?: string
@@ -27,7 +37,8 @@ const socialButton = tv({
 
 export function RegisterForm({ className = '' }: RegisterFormProps) {
   const navigate = useNavigate()
-  const { register, state } = useAuth()
+  const { register, state, getOAuthUrl } = useAuth()
+  const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -47,6 +58,31 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
   const isLoading = state.isLoading
 
   const passwordStrength = getPasswordStrength(formData.password, defaultPasswordRequirements)
+
+  const handleOAuthLogin = async (provider: OAuthProvider) => {
+    try {
+      setOauthLoading(provider)
+      setErrors({})
+
+      const oauthState = generateOAuthState()
+      sessionStorage.setItem(OAUTH_STATE_KEY, oauthState)
+      sessionStorage.setItem(OAUTH_PROVIDER_KEY, provider)
+
+      const authUrl = await getOAuthUrl(provider)
+
+      const url = new URL(authUrl)
+      url.searchParams.set('state', oauthState)
+
+      window.location.href = url.toString()
+    } catch (error) {
+      setOauthLoading(null)
+      const message =
+        error && typeof error === 'object' && 'message' in error
+          ? (error as { message: string }).message
+          : `Помилка авторизації через ${provider}`
+      setErrors({ general: message })
+    }
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -143,28 +179,29 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
         <button
           type="button"
           className={socialButton()}
-          disabled={isLoading}
+          disabled={isLoading || oauthLoading !== null}
+          onClick={() => handleOAuthLogin('Google')}
         >
-          <GoogleIcon className="h-4 w-4" />
+          {oauthLoading === 'Google' ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary" />
+          ) : (
+            <GoogleIcon className="h-4 w-4" />
+          )}
           Через Google
         </button>
 
         <button
           type="button"
           className={socialButton()}
-          disabled={isLoading}
+          disabled={isLoading || oauthLoading !== null}
+          onClick={() => handleOAuthLogin('GitHub')}
         >
-          <FacebookIcon className="h-4 w-4" />
-          Через Facebook
-        </button>
-
-        <button
-          type="button"
-          className={socialButton()}
-          disabled={isLoading}
-        >
-          <AppleIcon className="h-5 w-5" />
-          Через Apple
+          {oauthLoading === 'GitHub' ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary" />
+          ) : (
+            <GithubIcon className="h-4 w-4" />
+          )}
+          Через GitHub
         </button>
       </div>
 

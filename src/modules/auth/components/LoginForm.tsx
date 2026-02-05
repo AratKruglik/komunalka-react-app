@@ -2,10 +2,20 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { tv } from 'tailwind-variants'
-import { AppleIcon, FacebookIcon, GoogleIcon } from '@shared/components/ui'
+import { GithubIcon, GoogleIcon } from '@shared/components/ui'
 import { ROUTES } from '@shared/constants'
 import { useAuth } from '@shared/hooks'
+import type { OAuthProvider } from '@shared/types/auth'
 import * as React from "react"
+
+const OAUTH_STATE_KEY = 'oauth_state'
+const OAUTH_PROVIDER_KEY = 'oauth_provider'
+
+function generateOAuthState(): string {
+  const array = new Uint8Array(32)
+  crypto.getRandomValues(array)
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+}
 
 const socialButton = tv({
   base: [
@@ -18,12 +28,13 @@ const socialButton = tv({
 
 export function LoginForm() {
   const navigate = useNavigate()
-  const { login, state } = useAuth()
+  const { login, state, getOAuthUrl } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({})
+  const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null)
 
   const isLoading = state.isLoading
 
@@ -72,6 +83,31 @@ export function LoginForm() {
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev)
+  }
+
+  const handleOAuthLogin = async (provider: OAuthProvider) => {
+    try {
+      setOauthLoading(provider)
+      setErrors({})
+
+      const state = generateOAuthState()
+      sessionStorage.setItem(OAUTH_STATE_KEY, state)
+      sessionStorage.setItem(OAUTH_PROVIDER_KEY, provider)
+
+      const authUrl = await getOAuthUrl(provider)
+
+      const url = new URL(authUrl)
+      url.searchParams.set('state', state)
+
+      window.location.href = url.toString()
+    } catch (error) {
+      setOauthLoading(null)
+      const message =
+        error && typeof error === 'object' && 'message' in error
+          ? (error as { message: string }).message
+          : `Помилка авторизації через ${provider}`
+      setErrors({ general: message })
+    }
   }
 
   return (
@@ -205,33 +241,34 @@ export function LoginForm() {
         </div>
       </div>
 
-      {/* Social Login Buttons - responsive grid */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      {/* Social Login Buttons */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <button
           type="button"
           className={socialButton()}
-          disabled={isLoading}
+          disabled={isLoading || oauthLoading !== null}
           aria-label="Увійти через Google"
+          onClick={() => handleOAuthLogin('Google')}
         >
-          <GoogleIcon size={16} />
+          {oauthLoading === 'Google' ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary" />
+          ) : (
+            <GoogleIcon size={16} />
+          )}
         </button>
 
         <button
           type="button"
           className={socialButton()}
-          disabled={isLoading}
-          aria-label="Увійти через Facebook"
+          disabled={isLoading || oauthLoading !== null}
+          aria-label="Увійти через GitHub"
+          onClick={() => handleOAuthLogin('GitHub')}
         >
-          <FacebookIcon size={16} />
-        </button>
-
-        <button
-          type="button"
-          className={socialButton()}
-          disabled={isLoading}
-          aria-label="Увійти через Apple"
-        >
-          <AppleIcon size={20} />
+          {oauthLoading === 'GitHub' ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-primary" />
+          ) : (
+            <GithubIcon size={16} />
+          )}
         </button>
       </div>
     </div>

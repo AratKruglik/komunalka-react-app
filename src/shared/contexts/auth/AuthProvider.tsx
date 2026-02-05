@@ -2,7 +2,7 @@ import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNo
 import { authService, userService } from '@shared/api'
 import { AuthActionType } from './actionTypes'
 import type { AuthContextValue } from './types'
-import type { UpdateProfilePayload, User } from '@shared/types/auth'
+import type { OAuthProvider, UpdateProfilePayload, User } from '@shared/types/auth'
 import { authReducer, initialState } from './reducer'
 import {
   scheduleTokenRefresh,
@@ -10,6 +10,7 @@ import {
   refreshToken,
   loginAction,
   registerAction,
+  oauthCallbackAction,
   initializeAuth,
   handleVisibilityChange,
 } from './utils'
@@ -115,6 +116,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [state.user]
   )
 
+  const getOAuthUrl = useCallback(async (provider: OAuthProvider): Promise<string> => {
+    if (provider === 'Google') {
+      return authService.getGoogleAuthUrl()
+    }
+    return authService.getGithubAuthUrl()
+  }, [])
+
+  const handleOAuthCallback = useCallback(
+    async (provider: OAuthProvider, code: string, oauthState: string) => {
+      await oauthCallbackAction({ provider, code, state: oauthState }, dispatch, scheduleRefresh)
+    },
+    [scheduleRefresh]
+  )
+
   /**
    * Initialize auth state from storage on mount
    */
@@ -158,6 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     refreshTokenManually,
     updateProfile,
+    getOAuthUrl,
+    handleOAuthCallback,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

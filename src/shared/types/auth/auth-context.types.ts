@@ -1,4 +1,5 @@
 import type { AuthState } from './auth-state.types'
+import type { OAuthProvider } from './oauth.types'
 import type { UpdateProfilePayload, User } from './user.types'
 
 /**
@@ -19,4 +20,6 @@ export interface AuthContextValue {
   }, rememberMe?: boolean) => Promise<void>;
   refreshTokenManually: () => Promise<void>;
   updateProfile: (data: UpdateProfilePayload) => Promise<User>;
+  getOAuthUrl: (provider: OAuthProvider) => Promise<string>;
+  handleOAuthCallback: (provider: OAuthProvider, code: string, state: string) => Promise<void>;
 }

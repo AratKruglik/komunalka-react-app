@@ -11,6 +11,14 @@ export const API_ENDPOINTS = {
     LOGOUT: '/auth/logout',
     VALIDATE: '/auth/validate-token',
   },
+  OAUTH: {
+    GOOGLE_AUTHORIZE: '/auth/oauth/google/authorize',
+    GITHUB_AUTHORIZE: '/auth/oauth/github/authorize',
+    LOGIN: '/auth/oauth/login',
+    CALLBACK: '/auth/oauth/callback',
+    LINK: '/auth/oauth/link',
+    UNLINK: (provider: string) => `/auth/oauth/unlink/${provider}`,
+  },
   ADDRESS: {
     LIST: '/address',
     CREATE: '/address',

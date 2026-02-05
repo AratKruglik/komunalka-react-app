@@ -7,6 +7,7 @@ import AddAddressPage from '@modules/addresses/pages/AddAddressPage'
 import LoginPage from '@modules/auth/pages/LoginPage'
 import RegisterPage from '@modules/auth/pages/RegisterPage'
 import LogoutPage from '@modules/auth/pages/LogoutPage'
+import OAuthCallbackPage from '@modules/auth/pages/OAuthCallbackPage'
 import DashboardPage from '@modules/dashboard/pages/DashboardPage'
 import AddMeterPage from '@modules/meters/pages/AddMeterPage'
 import AddressMetersPage from '@modules/meters/pages/AddressMetersPage'
@@ -28,6 +29,7 @@ export function App() {
           <Route element={<PublicRoute />}>
             <Route path={ROUTES.LOGIN} element={<LoginPage />} />
             <Route path={ROUTES.REGISTER} element={<RegisterPage />} />
+            <Route path={ROUTES.AUTH_CALLBACK} element={<OAuthCallbackPage />} />
           </Route>
 
           {/* Protected routes - require authentication */}

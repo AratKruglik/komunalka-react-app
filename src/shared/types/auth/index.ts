@@ -6,3 +6,12 @@ export type { User, UpdateUserRequest, UpdateProfilePayload, CreateUserRequest }
 export type { AuthState } from './auth-state.types'
 export type { AuthAction } from './auth-action.types'
 export type { AuthContextValue } from './auth-context.types'
+export type {
+  OAuthProvider,
+  OAuthAuthorizationResponse,
+  OAuthLoginRequest,
+  OAuthCallbackRequest,
+  OAuthLinkRequest,
+  OAuthLinkResponse,
+  OAuthUnlinkResponse,
+} from './oauth.types'

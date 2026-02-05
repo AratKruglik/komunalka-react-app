@@ -1,10 +1,16 @@
 import axios from 'axios'
 import { API_CONFIG } from './config'
 import { API_ENDPOINTS } from '../constants'
+import type {
+  OAuthProvider,
+  OAuthAuthorizationResponse,
+  OAuthCallbackRequest,
+  OAuthLoginRequest,
+  OAuthLinkRequest,
+  OAuthLinkResponse,
+  OAuthUnlinkResponse,
+} from '../types/auth'
 
-/**
- * Типи для аутентифікації
- */
 export interface LoginRequest {
   email: string;
   password: string;
@@ -197,5 +203,43 @@ export const authService = {
    */
   getExpiresAt: (): string | null => {
     return getCookie('expires_at')
+  },
+
+  getGoogleAuthUrl: async (): Promise<string> => {
+    const response = await authHttp.get<OAuthAuthorizationResponse>(API_ENDPOINTS.OAUTH.GOOGLE_AUTHORIZE)
+    return response.data.authorizationUrl
+  },
+
+  getGithubAuthUrl: async (): Promise<string> => {
+    const response = await authHttp.get<OAuthAuthorizationResponse>(API_ENDPOINTS.OAUTH.GITHUB_AUTHORIZE)
+    return response.data.authorizationUrl
+  },
+
+  oauthCallback: async (data: OAuthCallbackRequest, rememberMe = true): Promise<AuthResponse> => {
+    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.OAUTH.CALLBACK, data)
+    saveAuthCookies(response.data, rememberMe)
+    return response.data
+  },
+
+  oauthLogin: async (data: OAuthLoginRequest, rememberMe = true): Promise<AuthResponse> => {
+    const response = await authHttp.post<AuthResponse>(API_ENDPOINTS.OAUTH.LOGIN, data)
+    saveAuthCookies(response.data, rememberMe)
+    return response.data
+  },
+
+  linkProvider: async (data: OAuthLinkRequest): Promise<OAuthLinkResponse> => {
+    const token = getCookie('jwt_token')
+    const response = await authHttp.post<OAuthLinkResponse>(API_ENDPOINTS.OAUTH.LINK, data, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    return response.data
+  },
+
+  unlinkProvider: async (provider: OAuthProvider): Promise<OAuthUnlinkResponse> => {
+    const token = getCookie('jwt_token')
+    const response = await authHttp.delete<OAuthUnlinkResponse>(API_ENDPOINTS.OAUTH.UNLINK(provider), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    return response.data
   },
 }

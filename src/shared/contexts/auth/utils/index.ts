@@ -5,7 +5,7 @@
 
 export { scheduleTokenRefresh, clearTokenRefreshTimeout } from './tokenRefreshScheduler'
 export { refreshToken } from './tokenRefresher'
-export { loginAction, registerAction } from './authActions'
+export { loginAction, registerAction, oauthCallbackAction } from './authActions'
 export { initializeAuth } from './authInitializer'
 export { handleVisibilityChange } from './visibilityHandler'
 
