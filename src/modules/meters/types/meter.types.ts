@@ -24,23 +24,21 @@ export const UTILITY_TYPE_FROM_ID: Record<number, MeterType> = {
 
 /**
  * Response from API for meter data
- * Extends base Meter with additional server-provided fields
+ * The base Meter interface already matches the API response exactly
  */
-export interface MeterResponse extends Meter {
-  photoUrl?: string
-  createdAt: string
-  updatedAt: string
-}
+export type MeterResponse = Meter
 
 /**
  * Request payload for creating a new meter
  * Uses PascalCase field names as expected by the API
+ * Matches POST /api/v1/meter multipart/form-data fields
  */
 export interface CreateMeterRequest {
   AddressId: number
   UtilityTypeId: number
   Name: string
   SerialNumber: string
+  Description?: string
   ModelName?: string
   Location?: string
   InstallationDate: string

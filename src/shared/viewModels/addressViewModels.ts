@@ -5,9 +5,16 @@
 
 import type { Address, Meter } from '../types/entities'
 import type { MeterType } from '../constants/meterTypes'
-import { METER_TYPE_TO_SERVICE_LABEL } from '../types/entities'
+import {
+  METER_TYPE_TO_SERVICE_LABEL,
+  UTILITY_TYPE_ID_TO_METER_TYPE,
+} from '../types/entities'
 import type { LucideIcon } from 'lucide-react'
 import { Star } from 'lucide-react'
+
+function getMeterType(meter: Meter): MeterType {
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+}
 
 // =============================================================================
 // View Model Types
@@ -79,9 +86,8 @@ export function toAddressCardViewModel(
     meters.length === 1 ? '1 лічильник' : `${meters.length} лічильників`
   badges.push({ label: meterCountLabel, variant: 'muted' })
 
-  // Формуємо services з унікальних типів лічильників
   const uniqueMeterTypes = new Set<MeterType>()
-  meters.forEach((meter) => uniqueMeterTypes.add(meter.type))
+  meters.forEach((meter) => uniqueMeterTypes.add(getMeterType(meter)))
 
   const services: AddressServiceTag[] = Array.from(uniqueMeterTypes).map((type) => ({
     type,

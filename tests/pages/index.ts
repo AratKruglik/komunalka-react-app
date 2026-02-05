@@ -1,13 +1,13 @@
-export { BasePage } from './BasePage';
-export { LoginPage } from './LoginPage';
-export { RegisterPage } from './RegisterPage';
-export type { RegistrationData } from './RegisterPage';
-export { AddressPage, AddAddressPage, EditAddressPage } from './AddressPage';
-export { MeterPage } from './MeterPage';
-export { AddMeterPage } from './AddMeterPage';
-export type { MeterFormData, MeterType as AddMeterType } from './AddMeterPage';
-export { ReadingPage } from './ReadingPage';
-export { AddReadingsPage } from './AddReadingsPage';
-export { DashboardPage } from './DashboardPage';
-export { ProfilePage } from './ProfilePage';
-export { ProvidersPage, AddProviderPage } from './ProvidersPage';
+export { BasePage } from './BasePage'
+export { LoginPage } from './LoginPage'
+export { RegisterPage } from './RegisterPage'
+export type { RegistrationData } from './RegisterPage'
+export { AddressPage, AddAddressPage, EditAddressPage } from './AddressPage'
+export { MeterPage } from './MeterPage'
+export { AddMeterPage } from './AddMeterPage'
+export type { MeterFormData, MeterType as AddMeterType } from './AddMeterPage'
+export { ReadingPage } from './ReadingPage'
+export { AddReadingsPage } from './AddReadingsPage'
+export { DashboardPage } from './DashboardPage'
+export { ProfilePage } from './ProfilePage'
+export { ProvidersPage, AddProviderPage } from './ProvidersPage'

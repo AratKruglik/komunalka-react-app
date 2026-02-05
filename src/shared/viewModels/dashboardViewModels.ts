@@ -5,10 +5,14 @@
 
 import type { Address, Meter, Reading, Provider } from '../types/entities'
 import type { MeterType } from '../constants/meterTypes'
-import { METER_TYPE_TO_SERVICE_LABEL } from '../types/entities'
+import { METER_TYPE_TO_SERVICE_LABEL, UTILITY_TYPE_ID_TO_METER_TYPE } from '../types/entities'
 import { SERVICE_CONFIG } from '../constants/services'
 import type { LucideIcon } from 'lucide-react'
 import { getPrimaryTariff } from '../utils/providerTariffs'
+
+function getMeterType(meter: Meter): MeterType {
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+}
 
 // =============================================================================
 // View Model Types
@@ -94,12 +98,12 @@ export function toServiceDataViewModel(
   latestReading: Reading | undefined,
   previousReading: Reading | undefined,
 ): ServiceDataViewModel {
-  const config = SERVICE_CONFIG[meter.type]
+  const meterType = getMeterType(meter)
+  const config = SERVICE_CONFIG[meterType]
   const consumption = latestReading?.consumption || 0
   const primaryTariff = getPrimaryTariff(provider)
   const cost = consumption * (primaryTariff?.price ?? 0)
 
-  // Розрахунок зміни споживання у відсотках
   let change = 0
   if (previousReading && previousReading.consumption) {
     const currentConsumption = latestReading?.consumption || 0
@@ -109,7 +113,7 @@ export function toServiceDataViewModel(
 
   return {
     id: meter.id,
-    name: METER_TYPE_TO_SERVICE_LABEL[meter.type],
+    name: METER_TYPE_TO_SERVICE_LABEL[meterType],
     icon: config.icon,
     iconBg: config.iconBg,
     iconColor: config.iconColor,
@@ -129,17 +133,18 @@ export function toReadingViewModel(
   meter: Meter,
   provider: Provider,
 ): ReadingViewModel {
-  const config = SERVICE_CONFIG[meter.type]
+  const meterType = getMeterType(meter)
+  const config = SERVICE_CONFIG[meterType]
 
   return {
     id: reading.id,
     serviceId: meter.id,
-    serviceName: METER_TYPE_TO_SERVICE_LABEL[meter.type],
+    serviceName: METER_TYPE_TO_SERVICE_LABEL[meterType],
     serviceIcon: config.icon,
     serviceIconBg: config.iconBg,
     serviceIconColor: config.iconColor,
-    date: reading.date,
-    value: reading.value,
+    date: reading.readingDate,
+    value: reading.readingValue,
     unit: provider.unitLabel.split('/')[1] || 'од',
     difference: reading.consumption || 0,
   }
@@ -175,11 +180,12 @@ export function toPaymentReminderViewModel(
     urgency = 'low'
   }
 
+  const meterType = getMeterType(meter)
   return {
     id: meter.id,
     serviceId: provider.id,
-    type: meter.type,
-    serviceName: METER_TYPE_TO_SERVICE_LABEL[meter.type],
+    type: meterType,
+    serviceName: METER_TYPE_TO_SERVICE_LABEL[meterType],
     amount: Math.round(amount * 100) / 100,
     dueDate,
     daysUntilDue,
@@ -201,7 +207,8 @@ export function toChartDataViewModel(
     const meter = meters.find((m) => m.id === reading.meterId)
     if (!meter) return
 
-    const date = new Date(reading.date)
+    const meterType = getMeterType(meter)
+    const date = new Date(reading.readingDate)
     const monthKey = date.toLocaleString('uk-UA', { month: 'short' })
 
     if (!monthsMap.has(monthKey)) {
@@ -209,8 +216,8 @@ export function toChartDataViewModel(
     }
 
     const monthData = monthsMap.get(monthKey)!
-    const currentValue = monthData.get(meter.type) || 0
-    monthData.set(meter.type, currentValue + (reading.consumption || 0))
+    const currentValue = monthData.get(meterType) || 0
+    monthData.set(meterType, currentValue + (reading.consumption || 0))
   })
 
   type MutableDataPoint = {
@@ -288,22 +295,22 @@ export function toExpenseDistributionViewModel(
   const now = new Date()
   const startDate = new Date(now.getFullYear(), now.getMonth() - monthsCount, 1)
 
-  const filteredReadings = readings.filter((r) => new Date(r.date) >= startDate)
+  const filteredReadings = readings.filter((r) => new Date(r.readingDate) >= startDate)
 
-  // Групуємо витрати по типу послуги
   const expensesByType = new Map<MeterType, number>()
 
   filteredReadings.forEach((reading) => {
     const meter = meters.find((m) => m.id === reading.meterId)
     if (!meter) return
 
-    const provider = providers.find((p) => p.id === meter.providerId)
+    const meterType = getMeterType(meter)
+    const provider = providers.find((p) => p.id === meter.serviceProviderId)
     if (!provider) return
 
     const primaryTariff = getPrimaryTariff(provider)
     const cost = (reading.consumption || 0) * (primaryTariff?.price ?? 0)
-    const currentValue = expensesByType.get(meter.type) || 0
-    expensesByType.set(meter.type, currentValue + cost)
+    const currentValue = expensesByType.get(meterType) || 0
+    expensesByType.set(meterType, currentValue + cost)
   })
 
   // Перетворюємо в масив ExpenseDistributionItemViewModel

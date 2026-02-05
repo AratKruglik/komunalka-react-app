@@ -49,8 +49,8 @@ export function useProfile() {
         email: string;
         firstName: string;
         lastName: string;
-        phoneNumber: string;
-        password: string | undefined
+        phoneNumber?: string;
+        password?: string
     }) => {
       setIsLoading(true)
       setError(null)

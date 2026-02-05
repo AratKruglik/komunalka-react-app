@@ -38,6 +38,26 @@ export const SERVICE_LABEL_TO_METER_TYPE: Record<ServiceLabel, MeterType> = {
 }
 
 // =============================================================================
+// Utility Type ID Mappings (for API communication)
+// =============================================================================
+
+export const UTILITY_TYPE_ID_TO_METER_TYPE: Record<number, MeterType> = {
+  1: 'electricity',
+  2: 'gas',
+  3: 'coldWater',
+  4: 'hotWater',
+  5: 'heat',
+}
+
+export const METER_TYPE_TO_UTILITY_TYPE_ID: Record<MeterType, number> = {
+  electricity: 1,
+  gas: 2,
+  coldWater: 3,
+  hotWater: 4,
+  heat: 5,
+}
+
+// =============================================================================
 // Reference Entities
 // =============================================================================
 
@@ -99,31 +119,96 @@ export interface Provider {
 
 /**
  * Meter entity - represents a physical meter device
+ * Matches API response from GET /api/v1/meter endpoints
  */
 export interface Meter {
   id: number
-  addressId: number // Foreign key to Address
-  providerId: number // Foreign key to Provider
-  type: MeterType
+  addressId: number
+  utilityTypeId: number
+  serialNumber: string
   name: string
-  meterNumber: string
-  location: string
-  installedAt: string
-  status: 'active' | 'maintenance' | 'inactive'
-  nextCheckDate?: string
+  description?: string | null
+  modelName?: string | null
+  location?: string | null
+  photoPath?: string | null
+  installationDate: string
+  initialReading?: number | null
+  serviceProviderId?: number | null
+  notes?: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  utilityTypeName: string
+  serviceProviderName?: string | null
+}
+
+/**
+ * Photo attached to a reading
+ * Matches API response from meter-readings endpoints
+ */
+export interface ReadingPhoto {
+  id: number
+  optimizedUrl: string
+  thumbnailUrl: string
+  width: number
+  height: number
+  isProcessed: boolean
 }
 
 /**
  * Reading entity - represents a meter reading record
+ * Matches API response from GET /api/v1/meter-readings endpoints
  */
 export interface Reading {
   id: number
-  meterId: number // Foreign key to Meter
-  date: string // ISO date string
-  value: number
-  consumption?: number // Calculated consumption
-  submittedAt: string // ISO datetime string
-  status: 'accepted' | 'processing' | 'rejected'
-  note?: string
-  photoUrl?: string
+  meterId: number
+  readingValue: number
+  readingDate: string
+  previousReadingValue?: number | null
+  consumption?: number | null
+  notes?: string | null
+  isEstimated: boolean
+  createdAt: string
+  updatedAt: string
+  meterName: string
+  utilityTypeName: string
+  unit: string
+  photos: ReadingPhoto[]
+}
+
+/**
+ * Consumption calculation for a reading
+ * Returned as part of BatchReadingsResponse
+ */
+export interface ConsumptionCalculation {
+  meterId: number
+  meterName: string
+  utilityType: string
+  consumption: number
+  unit: string
+  baseRate: number
+  serviceFee: number
+  currencyCode: string
+  currencySymbol: string
+  totalCost: number
+  tariffIdentifier: string
+  tariffEffectiveFrom: string
+  tariffEffectiveTo?: string | null
+  consumptionCost: number
+  serviceFeeCost: number
+}
+
+/**
+ * Response from batch readings submission
+ * Matches API response from POST /api/v1/meter-readings/batch
+ */
+export interface BatchReadingsResponse {
+  addressId: number
+  addressDisplay: string
+  readings: Reading[]
+  calculations: ConsumptionCalculation[]
+  totalCost: number
+  currencyCode: string
+  currencySymbol: string
+  submittedAt: string
 }

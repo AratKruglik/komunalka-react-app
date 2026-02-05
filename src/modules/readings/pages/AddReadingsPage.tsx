@@ -206,14 +206,14 @@ export default function AddReadingsPage() {
 
     if (selectedAddressId === null) return
 
-    // Build batch reading items
     const batchItems: BatchReadingItem[] = meterDrafts.map((draft) => {
       const formState = forms[draft.id]
       return {
         MeterId: draft.id,
-        Value: Number(formState?.currentValue ?? draft.currentValue),
+        ReadingValue: Number(formState?.currentValue ?? draft.currentValue),
         ReadingDate: formState?.readingDate ?? draft.readingDate,
         Notes: undefined,
+        IsEstimated: false,
       }
     })
 

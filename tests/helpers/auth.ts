@@ -1,17 +1,17 @@
-import { Page, BrowserContext } from '@playwright/test';
-import { mockLoginSuccess } from './api-mocks';
-import { MOCK_JWT_TOKEN, BASE_DOMAIN } from './constants';
+import { Page, BrowserContext } from '@playwright/test'
+import { mockLoginSuccess } from './api-mocks'
+import { MOCK_JWT_TOKEN, BASE_DOMAIN } from './constants'
 
-export { MOCK_JWT_TOKEN };
+export { MOCK_JWT_TOKEN }
 
 function getFutureExpirationDate(): string {
-  const date = new Date();
-  date.setDate(date.getDate() + 7);
-  return date.toISOString();
+  const date = new Date()
+  date.setDate(date.getDate() + 7)
+  return date.toISOString()
 }
 
 export function getAuthStorageState() {
-  const expiresAt = getFutureExpirationDate();
+  const expiresAt = getFutureExpirationDate()
 
   return {
     cookies: [
@@ -47,14 +47,14 @@ export function getAuthStorageState() {
       },
     ],
     origins: [],
-  };
+  }
 }
 
 export async function authenticateUser(page: Page): Promise<void> {
-  await mockLoginSuccess(page);
+  await mockLoginSuccess(page)
 
-  const context = page.context();
-  const expiresAt = getFutureExpirationDate();
+  const context = page.context()
+  const expiresAt = getFutureExpirationDate()
 
   await context.addCookies([
     {
@@ -75,11 +75,11 @@ export async function authenticateUser(page: Page): Promise<void> {
       domain: BASE_DOMAIN,
       path: '/',
     },
-  ]);
+  ])
 }
 
 export async function authenticateContext(context: BrowserContext): Promise<void> {
-  const expiresAt = getFutureExpirationDate();
+  const expiresAt = getFutureExpirationDate()
 
   await context.addCookies([
     {
@@ -100,16 +100,16 @@ export async function authenticateContext(context: BrowserContext): Promise<void
       domain: BASE_DOMAIN,
       path: '/',
     },
-  ]);
+  ])
 }
 
 export async function clearAuth(page: Page): Promise<void> {
-  const context = page.context();
-  await context.clearCookies();
+  const context = page.context()
+  await context.clearCookies()
 }
 
 export async function isAuthenticated(page: Page): Promise<boolean> {
-  const context = page.context();
-  const cookies = await context.cookies();
-  return cookies.some(cookie => cookie.name === 'jwt_token');
+  const context = page.context()
+  const cookies = await context.cookies()
+  return cookies.some(cookie => cookie.name === 'jwt_token')
 }

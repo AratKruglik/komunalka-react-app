@@ -1,12 +1,12 @@
-import { defineConfig, devices } from '@playwright/test';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { defineConfig, devices } from '@playwright/test'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
 
 // @ts-ignore
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-const STORAGE_STATE = join(__dirname, 'playwright/.auth/user.json');
+const STORAGE_STATE = join(__dirname, 'playwright/.auth/user.json')
 
 export default defineConfig({
   testDir: './tests',
@@ -87,4 +87,4 @@ export default defineConfig({
     stdout: 'pipe',
     stderr: 'pipe',
   },
-});
+})

@@ -37,7 +37,7 @@ export function useReadingsByAddress(
     } finally {
       setIsLoading(false)
     }
-  }, [addressId, params?.from, params?.to])
+  }, [addressId, params])
 
   const refetch = useCallback(() => {
     fetchReadings()
