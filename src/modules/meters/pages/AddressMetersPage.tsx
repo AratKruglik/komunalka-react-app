@@ -19,8 +19,8 @@ import {
 import { useAddresses } from '@modules/addresses/hooks'
 import { useMetersByAddress } from '@modules/meters/hooks'
 import { useReadingsByAddress } from '@modules/readings/hooks'
+import { useServiceProvidersByAddress } from '@modules/providers/hooks'
 import { METER_TYPE_OPTIONS, type MeterType } from '@shared/constants/meterTypes'
-import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
 import {
   toAddressMetersSnapshotViewModel,
   type MeterTypeGroupViewModel,
@@ -99,6 +99,7 @@ export default function AddressMetersPage() {
   // Fetch meters and readings from API
   const { meters, isLoading: isLoadingMeters } = useMetersByAddress(selectedAddressId)
   const { readings, isLoading: isLoadingReadings } = useReadingsByAddress(selectedAddressId)
+  const { providers, isLoading: isLoadingProviders } = useServiceProvidersByAddress(selectedAddressId)
 
   const [activeMeterType, setActiveMeterType] = useState<MeterType>('electricity')
   const [quickForms, setQuickForms] = useState<QuickFormState>({} as QuickFormState)
@@ -114,11 +115,11 @@ export default function AddressMetersPage() {
       selectedAddressId,
       meters,
       readings,
-      MOCK_PROVIDERS,
+      providers,
     )
-  }, [selectedAddressId, meters, readings])
+  }, [selectedAddressId, meters, readings, providers])
 
-  const isLoading = isLoadingMeters || isLoadingReadings
+  const isLoading = isLoadingMeters || isLoadingReadings || isLoadingProviders
 
   const availableGroups = useMemo(() => {
     if (!addressSnapshot) {

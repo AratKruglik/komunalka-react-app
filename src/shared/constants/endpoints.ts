@@ -43,12 +43,17 @@ export const API_ENDPOINTS = {
     PHOTO_OPTIMIZED: (id: number) => `/meter-readings/photos/${id}/optimized`,
     PHOTO_THUMBNAIL: (id: number) => `/meter-readings/photos/${id}/thumbnail`,
   },
-  PROVIDERS: {
-    LIST: '/providers',
-    CREATE: '/providers',
-    GET: (id: number) => `/providers/${id}`,
-    UPDATE: (id: number) => `/providers/${id}`,
-    DELETE: (id: number) => `/providers/${id}`,
+  SERVICE_PROVIDERS: {
+    LIST: '/service-providers',
+    BY_ID: (id: number) => `/service-providers/${id}`,
+    BY_ADDRESS: (addressId: number) => `/service-providers/address/${addressId}`,
+    CREATE: '/service-providers',
+    UPDATE: (id: number) => `/service-providers/${id}`,
+    DELETE: (id: number) => `/service-providers/${id}`,
+  },
+  UTILITY_TYPES: {
+    LIST: '/utility-types',
+    BY_ID: (id: number) => `/utility-types/${id}`,
   },
   USERS: {
     LIST: '/users',

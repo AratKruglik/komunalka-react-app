@@ -1,12 +1,11 @@
-import type { Meter, Reading, ConsumptionCalculation, Provider } from '@shared/types/entities'
+import type { Meter, Reading, ConsumptionCalculation } from '@shared/types/entities'
 import type { MeterType } from '@shared/constants/meterTypes'
 import {
   METER_TYPE_TO_SERVICE_LABEL,
   UTILITY_TYPE_ID_TO_METER_TYPE,
 } from '@shared/types/entities'
+import { METER_TYPE_UNITS } from '@shared/constants/meterTypes'
 import { SERVICE_CONFIG } from '@shared/constants/services'
-import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
-import { getPrimaryTariff } from '@shared/utils/providerTariffs'
 import type { CostSource } from './types'
 import type {
   ServiceDataViewModel,
@@ -21,16 +20,14 @@ function getMeterType(meter: Meter): MeterType {
   return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
 }
 
-function getProviderForMeter(meter: Meter): Provider | undefined {
-  if (meter.serviceProviderId === null || meter.serviceProviderId === undefined) {
-    return undefined
-  }
-  return MOCK_PROVIDERS.find((p) => p.id === meter.serviceProviderId)
+function getDefaultUnit(meter: Meter): string {
+  const meterType = getMeterType(meter)
+  return METER_TYPE_UNITS[meterType] ?? 'од'
 }
 
 export function resolveCostSource(
   meter: Meter,
-  reading: Reading | undefined,
+  _reading: Reading | undefined,
   calculation: ConsumptionCalculation | undefined
 ): CostSource {
   if (calculation) {
@@ -42,25 +39,11 @@ export function resolveCostSource(
     }
   }
 
-  const provider = getProviderForMeter(meter)
-  if (provider) {
-    const tariff = getPrimaryTariff(provider)
-    const consumption = reading?.consumption ?? 0
-    const rate = tariff?.price ?? 0
-
-    return {
-      type: 'fallback',
-      cost: consumption * rate,
-      rate,
-      unit: provider.unitLabel.split('/')[1] || 'од',
-    }
-  }
-
   return {
     type: 'fallback',
     cost: 0,
     rate: 0,
-    unit: 'од',
+    unit: getDefaultUnit(meter),
   }
 }
 
@@ -203,55 +186,9 @@ export function adaptToExpenseDistribution(
 }
 
 export function adaptToPaymentReminders(
-  meters: readonly Meter[],
-  readings: readonly Reading[],
-  calculations: Map<number, ConsumptionCalculation>
+  ..._args: [readonly Meter[], readonly Reading[], Map<number, ConsumptionCalculation>]
 ): readonly PaymentReminderViewModel[] {
-  const reminders: PaymentReminderViewModel[] = []
-
-  meters.slice(0, 3).forEach((meter) => {
-    const provider = getProviderForMeter(meter)
-    if (!provider?.reminderDay) return
-
-    const meterReadings = readings
-      .filter((r) => r.meterId === meter.id)
-      .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())
-    const latestReading = meterReadings[0]
-
-    const calculation = calculations.get(meter.id)
-    const costSource = resolveCostSource(meter, latestReading, calculation)
-
-    const today = new Date()
-    const dueDate = new Date(today.getFullYear(), today.getMonth(), provider.reminderDay)
-
-    const daysUntilDue = Math.ceil(
-      (dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    )
-
-    let urgency: 'high' | 'medium' | 'low'
-    if (daysUntilDue <= 5) {
-      urgency = 'high'
-    } else if (daysUntilDue <= 10) {
-      urgency = 'medium'
-    } else {
-      urgency = 'low'
-    }
-
-    const meterType = getMeterType(meter)
-
-    reminders.push({
-      id: meter.id,
-      serviceId: provider.id,
-      type: meterType,
-      serviceName: METER_TYPE_TO_SERVICE_LABEL[meterType],
-      amount: Math.round(costSource.cost * 100) / 100,
-      dueDate: dueDate.toISOString().split('T')[0],
-      daysUntilDue,
-      urgency,
-    })
-  })
-
-  return reminders
+  return []
 }
 
 export function adaptToReadingViewModel(

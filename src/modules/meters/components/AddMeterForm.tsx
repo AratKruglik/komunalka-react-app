@@ -21,11 +21,12 @@ import {
   METER_TYPE_OPTIONS,
   METER_TYPE_UNITS,
 } from '@shared/constants/meterTypes'
-import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
 import { useAddresses } from '@modules/addresses/hooks'
 import { useCreateMeter } from '@modules/meters/hooks'
+import { useServiceProvidersByAddress } from '@modules/providers/hooks'
 import { toUtilityTypeId, type CreateMeterRequest } from '@modules/meters/types'
-import { formatTariffLabel, getPrimaryTariff } from '@shared/utils/providerTariffs'
+import { formatApiTariffLabel, getApiPrimaryTariff } from '@shared/utils/providerTariffs'
+import { METER_TYPE_TO_UTILITY_TYPE_ID } from '@shared/types/entities'
 
 type SubmissionIntent = 'draft' | 'submit'
 
@@ -73,6 +74,8 @@ export interface AddMeterFormProps {
 export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const { addresses } = useAddresses()
   const { createMeter, isLoading: isCreating, error: createError } = useCreateMeter()
+  const [currentAddressId, setCurrentAddressId] = useState<number | null>(null)
+  const { providers: addressProviders, isLoading: providersLoading } = useServiceProvidersByAddress(currentAddressId)
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
@@ -144,15 +147,25 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     setValue('meterType', value, { shouldValidate: true })
   }
 
+  useEffect(() => {
+    if (addressId) {
+      setCurrentAddressId(Number(addressId))
+    } else {
+      setCurrentAddressId(null)
+    }
+  }, [addressId])
+
   const availableProviders = useMemo(() => {
-    if (!meterType) {
+    if (!meterType || !addressProviders.length) {
       return []
     }
 
-    return MOCK_PROVIDERS.filter((provider) => {
-      return provider.serviceType === meterType
+    const targetUtilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[meterType]
+
+    return addressProviders.filter((provider) => {
+      return provider.tariffs.some((tariff) => tariff.utilityTypeId === targetUtilityTypeId)
     })
-  }, [meterType])
+  }, [meterType, addressProviders])
 
   const selectedProvider = useMemo(() => {
     if (!providerId) {
@@ -163,7 +176,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   }, [availableProviders, providerId])
 
   const selectedTariff = useMemo(() => {
-    return selectedProvider ? getPrimaryTariff(selectedProvider) : null
+    return selectedProvider ? getApiPrimaryTariff(selectedProvider) : null
   }, [selectedProvider])
 
   useEffect(() => {
@@ -185,7 +198,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
       return
     }
 
-    setValue('tariffValue', selectedTariff.price.toString(), {
+    setValue('tariffValue', selectedTariff.baseRate.toString(), {
       shouldDirty: true,
       shouldValidate: true,
     })
@@ -287,8 +300,11 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   }
 
   const readingUnit = meterType && meterType in METER_TYPE_UNITS ? METER_TYPE_UNITS[meterType] : 'од.'
-  const tariffUnitLabel =
-    selectedProvider?.unitLabel ?? (meterType ? `грн/${readingUnit}` : 'грн')
+  const tariffUnitLabel = selectedTariff
+    ? `${selectedTariff.currencySymbol}/${readingUnit}`
+    : meterType
+      ? `грн/${readingUnit}`
+      : 'грн'
 
   useEffect(() => {
     return () => {
@@ -467,24 +483,28 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
                 <Select
                   id="providerId"
                   {...register('providerId')}
-                  disabled={!meterType || availableProviders.length === 0}
+                  disabled={!meterType || !addressId || providersLoading || availableProviders.length === 0}
                 >
                   <option value="">
-                    {meterType
-                      ? availableProviders.length
-                        ? 'Оберіть провайдера'
-                        : 'Немає шаблонів для цього типу'
-                      : 'Спочатку оберіть тип лічильника'}
+                    {!addressId
+                      ? 'Спочатку оберіть адресу'
+                      : !meterType
+                        ? 'Спочатку оберіть тип лічильника'
+                        : providersLoading
+                          ? 'Завантаження...'
+                          : availableProviders.length
+                            ? 'Оберіть провайдера'
+                            : 'Немає провайдерів для цієї адреси'}
                   </option>
-                  {availableProviders.map((provider) => (
-                    <option key={provider.id} value={provider.id}>
-                      {provider.name} · {(() => {
-                        const tariff = getPrimaryTariff(provider)
-                        if (!tariff) return provider.unitLabel
-                        return `${tariff.name} · ${formatTariffLabel(tariff.price, provider.unitLabel)}`
-                      })()}
-                    </option>
-                  ))}
+                  {availableProviders.map((provider) => {
+                    const tariff = getApiPrimaryTariff(provider)
+                    return (
+                      <option key={provider.id} value={provider.id}>
+                        {provider.name}
+                        {tariff ? ` · ${formatApiTariffLabel(tariff)}` : ''}
+                      </option>
+                    )
+                  })}
                 </Select>
                 <p className="text-sm text-gray-500 dark:text-slate-400">
                   {selectedProvider
