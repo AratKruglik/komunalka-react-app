@@ -28,9 +28,8 @@ export class RegisterPage extends BasePage {
   readonly submitButton: Locator
   readonly loginLink: Locator
   readonly generalError: Locator
-  readonly googleButton: Locator
-  readonly facebookButton: Locator
-  readonly appleButton: Locator
+  readonly googleOAuthButton: Locator
+  readonly githubOAuthButton: Locator
 
   constructor(page: Page) {
     super(page)
@@ -46,9 +45,8 @@ export class RegisterPage extends BasePage {
     this.submitButton = page.getByRole('button', { name: /створити акаунт/i })
     this.loginLink = page.getByRole('link', { name: /увійти/i })
     this.generalError = page.locator('.bg-red-50, .dark\\:bg-red-900\\/20')
-    this.googleButton = page.getByRole('button', { name: /google/i })
-    this.facebookButton = page.getByRole('button', { name: /facebook/i })
-    this.appleButton = page.getByRole('button', { name: /apple/i })
+    this.googleOAuthButton = page.getByRole('button', { name: /google/i })
+    this.githubOAuthButton = page.getByRole('button', { name: /github/i })
   }
 
   async fillRegistrationForm(data: RegistrationData): Promise<void> {

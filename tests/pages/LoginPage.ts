@@ -9,6 +9,8 @@ export class LoginPage extends BasePage {
   readonly submitButton: Locator
   readonly errorMessage: Locator
   readonly registerLink: Locator
+  readonly googleOAuthButton: Locator
+  readonly githubOAuthButton: Locator
 
   constructor(page: Page) {
     super(page)
@@ -17,6 +19,8 @@ export class LoginPage extends BasePage {
     this.submitButton = page.getByRole('button', { name: 'Увійти', exact: true })
     this.errorMessage = page.locator('.bg-red-50, [role="alert"]')
     this.registerLink = page.getByRole('link', { name: /реєстрація/i })
+    this.googleOAuthButton = page.getByRole('button', { name: /google/i })
+    this.githubOAuthButton = page.getByRole('button', { name: /github/i })
   }
 
   async login(email: string, password: string): Promise<void> {

@@ -1415,3 +1415,59 @@ export async function mockBatchReadingsWithPartialFailure(
     })
   })
 }
+
+export type OAuthProvider = 'Google' | 'GitHub'
+
+export async function mockOAuthAuthorizeUrl(
+  page: Page,
+  provider: OAuthProvider,
+  authorizationUrl: string,
+  options: MockOptions = {}
+): Promise<void> {
+  await page.route(`**/auth/oauth/${provider.toLowerCase()}/authorize`, async (route: Route) => {
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay))
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        authorizationUrl,
+      }),
+    })
+  })
+}
+
+export async function mockOAuthCallback(
+  page: Page,
+  provider: OAuthProvider,
+  options: MockOptions = {}
+): Promise<void> {
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 7)
+
+  await page.route('**/auth/oauth/callback', async (route: Route) => {
+    if (options.delay) {
+      await new Promise(resolve => setTimeout(resolve, options.delay))
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        token: MOCK_JWT_TOKEN,
+        refreshToken: 'mock-oauth-refresh-token',
+        expiration: expiresAt.toISOString(),
+        user: {
+          id: 1,
+          username: `${provider.toLowerCase()}user`,
+          email: `user@${provider.toLowerCase()}.com`,
+          firstName: 'OAuth',
+          lastName: 'User',
+          authProvider: provider,
+        },
+      }),
+    })
+  })
+}
