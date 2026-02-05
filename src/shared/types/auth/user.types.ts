@@ -29,6 +29,17 @@ export interface UpdateUserRequest {
 }
 
 /**
+ * Extended profile update payload with avatar and password support
+ * Used for PUT /users/{id} with multipart/form-data when avatar is included
+ */
+export interface UpdateProfilePayload extends UpdateUserRequest {
+  currentPassword?: string;
+  newPassword?: string;
+  confirmNewPassword?: string;
+  avatar?: File;
+}
+
+/**
  * Request type for creating a new user
  */
 export interface CreateUserRequest {
@@ -38,12 +49,4 @@ export interface CreateUserRequest {
   lastName: string;
   phoneNumber: string;
   password: string;
-}
-
-/**
- * Request type for changing user password
- */
-export interface ChangePasswordRequest {
-  currentPassword: string;
-  newPassword: string;
 }

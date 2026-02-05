@@ -3,15 +3,7 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { createElement, type ReactNode } from 'react'
 import { useProfile } from './useProfile'
 import { AuthContext } from '@shared/contexts/auth'
-import { userService } from '@shared/api'
 import type { AuthContextValue, AuthState, User } from '@shared/types/auth'
-import type { ChangePasswordRequest } from '@shared/types/auth'
-
-vi.mock('@shared/api', () => ({
-  userService: {
-    changePassword: vi.fn(),
-  },
-}))
 
 const mockUser: User = {
   id: 1,
@@ -245,6 +237,10 @@ describe('useProfile', () => {
       expect(result.current.error).toBe('Failed to update profile')
     })
 
+    // TODO(human): Add test for password change through updateProfile
+    // The test should verify that updateProfile correctly handles password fields
+    // (currentPassword, newPassword, confirmNewPassword) and sets isSuccess to true
+
     it('clears previous error on new update attempt', async () => {
       const mockUpdateProfile = vi
         .fn()
@@ -280,128 +276,6 @@ describe('useProfile', () => {
       })
 
       expect(result.current.error).toBeNull()
-    })
-  })
-
-  describe('changePassword', () => {
-    it('calls userService.changePassword with correct data', async () => {
-      vi.mocked(userService.changePassword).mockResolvedValueOnce(undefined)
-      const authContext = createMockAuthContext()
-      const { result } = renderHook(() => useProfile(), {
-        wrapper: createWrapper(authContext),
-      })
-
-      const passwordData: ChangePasswordRequest = {
-        currentPassword: 'oldpassword',
-        newPassword: 'newpassword123',
-      }
-
-      await act(async () => {
-        await result.current.changePassword(passwordData)
-      })
-
-      expect(userService.changePassword).toHaveBeenCalledWith(passwordData)
-    })
-
-    it('sets isLoading to true during password change', async () => {
-      let resolvePromise: () => void
-      vi.mocked(userService.changePassword).mockImplementation(
-        () => new Promise((resolve) => { resolvePromise = resolve })
-      )
-
-      const authContext = createMockAuthContext()
-      const { result } = renderHook(() => useProfile(), {
-        wrapper: createWrapper(authContext),
-      })
-
-      const passwordData: ChangePasswordRequest = {
-        currentPassword: 'oldpassword',
-        newPassword: 'newpassword123',
-      }
-
-      act(() => {
-        result.current.changePassword(passwordData)
-      })
-
-      expect(result.current.isLoading).toBe(true)
-
-      await act(async () => {
-        resolvePromise!()
-      })
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
-    })
-
-    it('sets isSuccess to true on successful password change', async () => {
-      vi.mocked(userService.changePassword).mockResolvedValueOnce(undefined)
-      const authContext = createMockAuthContext()
-      const { result } = renderHook(() => useProfile(), {
-        wrapper: createWrapper(authContext),
-      })
-
-      const passwordData: ChangePasswordRequest = {
-        currentPassword: 'oldpassword',
-        newPassword: 'newpassword123',
-      }
-
-      await act(async () => {
-        await result.current.changePassword(passwordData)
-      })
-
-      expect(result.current.isSuccess).toBe(true)
-    })
-
-    it('sets error on password change failure', async () => {
-      const errorMessage = 'Invalid current password'
-      vi.mocked(userService.changePassword).mockRejectedValueOnce(new Error(errorMessage))
-
-      const authContext = createMockAuthContext()
-      const { result } = renderHook(() => useProfile(), {
-        wrapper: createWrapper(authContext),
-      })
-
-      const passwordData: ChangePasswordRequest = {
-        currentPassword: 'wrongpassword',
-        newPassword: 'newpassword123',
-      }
-
-      let thrownError: Error | undefined
-      await act(async () => {
-        try {
-          await result.current.changePassword(passwordData)
-        } catch (err) {
-          thrownError = err as Error
-        }
-      })
-
-      expect(thrownError?.message).toBe(errorMessage)
-      expect(result.current.error).toBe(errorMessage)
-    })
-
-    it('handles non-Error error objects', async () => {
-      vi.mocked(userService.changePassword).mockRejectedValueOnce('String error')
-
-      const authContext = createMockAuthContext()
-      const { result } = renderHook(() => useProfile(), {
-        wrapper: createWrapper(authContext),
-      })
-
-      const passwordData: ChangePasswordRequest = {
-        currentPassword: 'oldpassword',
-        newPassword: 'newpassword123',
-      }
-
-      await act(async () => {
-        try {
-          await result.current.changePassword(passwordData)
-        } catch {
-          // Expected to throw
-        }
-      })
-
-      expect(result.current.error).toBe('Failed to change password')
     })
   })
 
@@ -477,13 +351,11 @@ describe('useProfile', () => {
       })
 
       const updateProfile1 = result.current.updateProfile
-      const changePassword1 = result.current.changePassword
       const clearError1 = result.current.clearError
 
       rerender()
 
       expect(result.current.updateProfile).toBe(updateProfile1)
-      expect(result.current.changePassword).toBe(changePassword1)
       expect(result.current.clearError).toBe(clearError1)
     })
   })

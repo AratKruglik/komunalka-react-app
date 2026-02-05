@@ -2,7 +2,7 @@ import { createContext, useReducer, useEffect, useRef, useCallback, type ReactNo
 import { authService, userService } from '@shared/api'
 import { AuthActionType } from './actionTypes'
 import type { AuthContextValue } from './types'
-import type { UpdateUserRequest, User } from '@shared/types/auth'
+import type { UpdateProfilePayload, User } from '@shared/types/auth'
 import { authReducer, initialState } from './reducer'
 import {
   scheduleTokenRefresh,
@@ -101,14 +101,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   /**
-   * Update user profile
+   * Update user profile with optional avatar and password change
    */
   const updateProfile = useCallback(
-    async (data: UpdateUserRequest): Promise<User> => {
+    async (data: UpdateProfilePayload): Promise<User> => {
       if (!state.user) {
         throw new Error('User not authenticated')
       }
-      const updatedUser = await userService.update(state.user.id, data)
+      const updatedUser = await userService.updateWithAvatar(state.user.id, data)
       dispatch({ type: AuthActionType.UPDATE_USER, payload: updatedUser })
       return updatedUser
     },

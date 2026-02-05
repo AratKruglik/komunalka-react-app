@@ -50,15 +50,14 @@ export const API_ENDPOINTS = {
     UPDATE: (id: number) => `/providers/${id}`,
     DELETE: (id: number) => `/providers/${id}`,
   },
-  USER: {
-    CHANGE_PASSWORD: '/user/change-password',
-  },
   USERS: {
     LIST: '/users',
     CREATE: '/users',
     GET: (id: number) => `/users/${id}`,
     UPDATE: (id: number) => `/users/${id}`,
     DELETE: (id: number) => `/users/${id}`,
+    AVATAR: (id: number) => `/users/${id}/avatar`,
+    AVATAR_THUMBNAIL: (id: number) => `/users/${id}/avatar/thumbnail`,
   },
 } as const
 
