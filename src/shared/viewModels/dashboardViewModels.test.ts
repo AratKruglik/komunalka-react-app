@@ -50,13 +50,16 @@ function createMockMeter(overrides: Partial<Meter> = {}): Meter {
   return {
     id: 1,
     addressId: 1,
-    providerId: 1,
-    type: 'electricity',
+    utilityTypeId: 1,
+    serialNumber: 'E-12345',
     name: 'Основний лічильник',
-    meterNumber: 'E-12345',
     location: 'Щитова',
-    installedAt: '2023-01-01',
-    status: 'active',
+    installationDate: '2023-01-01',
+    isActive: true,
+    serviceProviderId: 1,
+    createdAt: '2023-01-01T00:00:00Z',
+    updatedAt: '2023-01-01T00:00:00Z',
+    utilityTypeName: 'Електроенергія',
     ...overrides,
   }
 }
@@ -65,11 +68,16 @@ function createMockReading(overrides: Partial<Reading> = {}): Reading {
   return {
     id: 1,
     meterId: 1,
-    date: '2025-02-01',
-    value: 1234,
+    readingDate: '2025-02-01',
+    readingValue: 1234,
     consumption: 100,
-    submittedAt: '2025-02-01T10:00:00Z',
-    status: 'accepted',
+    isEstimated: false,
+    createdAt: '2025-02-01T10:00:00Z',
+    updatedAt: '2025-02-01T10:00:00Z',
+    meterName: 'Основний лічильник',
+    utilityTypeName: 'Електроенергія',
+    unit: 'кВт·год',
+    photos: [],
     ...overrides,
   }
 }
@@ -90,7 +98,7 @@ function createMockProvider(overrides: Partial<Provider> = {}): Provider {
 describe('dashboardViewModels', () => {
   describe('toServiceDataViewModel', () => {
     it('transforms meter data to service card format', () => {
-      const meter = createMockMeter({ id: 5, type: 'electricity' })
+      const meter = createMockMeter({ id: 5, utilityTypeId: 1 })
       const provider = createMockProvider({
         unitLabel: 'грн/кВт·год',
         tariffs: [{ id: 'day', name: 'Денний', price: 2.64 }],
@@ -203,7 +211,7 @@ describe('dashboardViewModels', () => {
     })
 
     it('includes icon configuration from SERVICE_CONFIG', () => {
-      const meter = createMockMeter({ type: 'electricity' })
+      const meter = createMockMeter({ utilityTypeId: 1 })
       const provider = createMockProvider()
 
       const result = toServiceDataViewModel(meter, provider, undefined, undefined)
@@ -216,7 +224,7 @@ describe('dashboardViewModels', () => {
     it('handles different meter types', () => {
       const provider = createMockProvider({ serviceType: 'gas' })
 
-      const gasMeter = createMockMeter({ type: 'gas' })
+      const gasMeter = createMockMeter({ utilityTypeId: 2 })
       const result = toServiceDataViewModel(gasMeter, provider, undefined, undefined)
 
       expect(result.name).toBe('Газ')
@@ -238,11 +246,11 @@ describe('dashboardViewModels', () => {
     it('transforms reading to view model for table', () => {
       const reading = createMockReading({
         id: 10,
-        date: '2025-02-15',
-        value: 1500,
+        readingDate: '2025-02-15',
+        readingValue: 1500,
         consumption: 75,
       })
-      const meter = createMockMeter({ id: 5, type: 'electricity' })
+      const meter = createMockMeter({ id: 5, utilityTypeId: 1 })
       const provider = createMockProvider({ unitLabel: 'грн/кВт·год' })
 
       const result = toReadingViewModel(reading, meter, provider)
@@ -258,7 +266,7 @@ describe('dashboardViewModels', () => {
 
     it('includes service icon configuration', () => {
       const reading = createMockReading()
-      const meter = createMockMeter({ type: 'gas' })
+      const meter = createMockMeter({ utilityTypeId: 2 })
       const provider = createMockProvider()
 
       const result = toReadingViewModel(reading, meter, provider)
@@ -303,7 +311,7 @@ describe('dashboardViewModels', () => {
       const provider = createMockProvider({
         tariffs: [{ id: 'day', name: 'Денний', price: 2.64 }],
       })
-      const meter = createMockMeter({ type: 'electricity' })
+      const meter = createMockMeter({ utilityTypeId: 1 })
       const latestReading = createMockReading({ consumption: 100 })
 
       const result = toPaymentReminderViewModel(provider, meter, latestReading, '2025-03-18')
@@ -391,7 +399,7 @@ describe('dashboardViewModels', () => {
 
     it('includes meter type and service name', () => {
       const provider = createMockProvider()
-      const meter = createMockMeter({ id: 5, type: 'gas' })
+      const meter = createMockMeter({ id: 5, utilityTypeId: 2 })
       const latestReading = createMockReading()
 
       const result = toPaymentReminderViewModel(provider, meter, latestReading, '2025-03-30')
@@ -416,10 +424,10 @@ describe('dashboardViewModels', () => {
   describe('toChartDataViewModel', () => {
     it('groups readings by month', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-01-15', consumption: 100 }),
-        createMockReading({ meterId: 1, date: '2025-02-15', consumption: 120 }),
+        createMockReading({ meterId: 1, readingDate: '2025-01-15', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-15', consumption: 120 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, type: 'electricity' })]
+      const meters: Meter[] = [createMockMeter({ id: 1, utilityTypeId: 1 })]
 
       const result = toChartDataViewModel(readings, meters)
 
@@ -428,12 +436,12 @@ describe('dashboardViewModels', () => {
 
     it('aggregates consumption by meter type within month', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-01-15', consumption: 100 }),
-        createMockReading({ meterId: 2, date: '2025-01-20', consumption: 50 }),
+        createMockReading({ meterId: 1, readingDate: '2025-01-15', consumption: 100 }),
+        createMockReading({ meterId: 2, readingDate: '2025-01-20', consumption: 50 }),
       ]
       const meters: Meter[] = [
-        createMockMeter({ id: 1, type: 'electricity' }),
-        createMockMeter({ id: 2, type: 'electricity' }),
+        createMockMeter({ id: 1, utilityTypeId: 1 }),
+        createMockMeter({ id: 2, utilityTypeId: 1 }),
       ]
 
       const result = toChartDataViewModel(readings, meters)
@@ -444,12 +452,12 @@ describe('dashboardViewModels', () => {
 
     it('creates separate values for different meter types', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-01-15', consumption: 100 }),
-        createMockReading({ meterId: 2, date: '2025-01-15', consumption: 50 }),
+        createMockReading({ meterId: 1, readingDate: '2025-01-15', consumption: 100 }),
+        createMockReading({ meterId: 2, readingDate: '2025-01-15', consumption: 50 }),
       ]
       const meters: Meter[] = [
-        createMockMeter({ id: 1, type: 'electricity' }),
-        createMockMeter({ id: 2, type: 'gas' }),
+        createMockMeter({ id: 1, utilityTypeId: 1 }),
+        createMockMeter({ id: 2, utilityTypeId: 2 }),
       ]
 
       const result = toChartDataViewModel(readings, meters)
@@ -460,12 +468,12 @@ describe('dashboardViewModels', () => {
 
     it('combines coldWater and hotWater into water total', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-01-15', consumption: 5 }),
-        createMockReading({ meterId: 2, date: '2025-01-15', consumption: 3 }),
+        createMockReading({ meterId: 1, readingDate: '2025-01-15', consumption: 5 }),
+        createMockReading({ meterId: 2, readingDate: '2025-01-15', consumption: 3 }),
       ]
       const meters: Meter[] = [
-        createMockMeter({ id: 1, type: 'coldWater' }),
-        createMockMeter({ id: 2, type: 'hotWater' }),
+        createMockMeter({ id: 1, utilityTypeId: 3 }),
+        createMockMeter({ id: 2, utilityTypeId: 4 }),
       ]
 
       const result = toChartDataViewModel(readings, meters)
@@ -477,9 +485,9 @@ describe('dashboardViewModels', () => {
 
     it('maps heat meter type to heating', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-01-15', consumption: 2.5 }),
+        createMockReading({ meterId: 1, readingDate: '2025-01-15', consumption: 2.5 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, type: 'heat' })]
+      const meters: Meter[] = [createMockMeter({ id: 1, utilityTypeId: 5 })]
 
       const result = toChartDataViewModel(readings, meters)
 
@@ -506,9 +514,9 @@ describe('dashboardViewModels', () => {
 
     it('handles undefined consumption', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-01-15', consumption: undefined }),
+        createMockReading({ meterId: 1, readingDate: '2025-01-15', consumption: undefined }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, type: 'electricity' })]
+      const meters: Meter[] = [createMockMeter({ id: 1, utilityTypeId: 1 })]
 
       const result = toChartDataViewModel(readings, meters)
 
@@ -554,12 +562,12 @@ describe('dashboardViewModels', () => {
 
     it('calculates expenses by service type for 3 months period', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-02-01', consumption: 100 }),
-        createMockReading({ meterId: 2, date: '2025-02-01', consumption: 50 }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-01', consumption: 100 }),
+        createMockReading({ meterId: 2, readingDate: '2025-02-01', consumption: 50 }),
       ]
       const meters: Meter[] = [
-        createMockMeter({ id: 1, providerId: 1, type: 'electricity' }),
-        createMockMeter({ id: 2, providerId: 2, type: 'gas' }),
+        createMockMeter({ id: 1, serviceProviderId: 1, utilityTypeId: 1 }),
+        createMockMeter({ id: 2, serviceProviderId: 2, utilityTypeId: 2 }),
       ]
       const providers: Provider[] = [
         createMockProvider({
@@ -584,10 +592,10 @@ describe('dashboardViewModels', () => {
 
     it('filters readings by 6 months period', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-02-01', consumption: 100 }),
-        createMockReading({ meterId: 1, date: '2024-08-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2024-08-01', consumption: 100 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 1, type: 'electricity' })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 1, utilityTypeId: 1 })]
       const providers: Provider[] = [
         createMockProvider({
           id: 1,
@@ -602,11 +610,11 @@ describe('dashboardViewModels', () => {
 
     it('filters readings by 1 year period', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-02-01', consumption: 100 }),
-        createMockReading({ meterId: 1, date: '2024-05-01', consumption: 100 }),
-        createMockReading({ meterId: 1, date: '2024-01-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2024-05-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2024-01-01', consumption: 100 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 1, type: 'electricity' })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 1, utilityTypeId: 1 })]
       const providers: Provider[] = [
         createMockProvider({
           id: 1,
@@ -621,9 +629,9 @@ describe('dashboardViewModels', () => {
 
     it('rounds values to 2 decimal places', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-02-01', consumption: 33 }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-01', consumption: 33 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 1, type: 'electricity' })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 1, utilityTypeId: 1 })]
       const providers: Provider[] = [
         createMockProvider({
           id: 1,
@@ -638,9 +646,9 @@ describe('dashboardViewModels', () => {
 
     it('includes chart color from SERVICE_CONFIG', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-02-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-01', consumption: 100 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 1, type: 'electricity' })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 1, utilityTypeId: 1 })]
       const providers: Provider[] = [createMockProvider({ id: 1 })]
 
       const result = toExpenseDistributionViewModel(readings, meters, providers, '3months')
@@ -650,9 +658,9 @@ describe('dashboardViewModels', () => {
 
     it('returns empty array when no readings in period', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2024-01-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2024-01-01', consumption: 100 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 1 })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 1 })]
       const providers: Provider[] = [createMockProvider({ id: 1 })]
 
       const result = toExpenseDistributionViewModel(readings, meters, providers, '3months')
@@ -662,9 +670,9 @@ describe('dashboardViewModels', () => {
 
     it('skips readings without matching meter', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 999, date: '2025-02-01', consumption: 100 }),
+        createMockReading({ meterId: 999, readingDate: '2025-02-01', consumption: 100 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 1 })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 1 })]
       const providers: Provider[] = [createMockProvider({ id: 1 })]
 
       const result = toExpenseDistributionViewModel(readings, meters, providers, '3months')
@@ -674,9 +682,9 @@ describe('dashboardViewModels', () => {
 
     it('skips readings without matching provider', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-02-01', consumption: 100 }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-01', consumption: 100 }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 999 })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 999 })]
       const providers: Provider[] = [createMockProvider({ id: 1 })]
 
       const result = toExpenseDistributionViewModel(readings, meters, providers, '3months')
@@ -686,9 +694,9 @@ describe('dashboardViewModels', () => {
 
     it('handles undefined consumption', () => {
       const readings: Reading[] = [
-        createMockReading({ meterId: 1, date: '2025-02-01', consumption: undefined }),
+        createMockReading({ meterId: 1, readingDate: '2025-02-01', consumption: undefined }),
       ]
-      const meters: Meter[] = [createMockMeter({ id: 1, providerId: 1 })]
+      const meters: Meter[] = [createMockMeter({ id: 1, serviceProviderId: 1 })]
       const providers: Provider[] = [createMockProvider({ id: 1 })]
 
       const result = toExpenseDistributionViewModel(readings, meters, providers, '3months')

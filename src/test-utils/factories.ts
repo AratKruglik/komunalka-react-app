@@ -74,33 +74,48 @@ export function createMockAddress(overrides: Partial<Address> = {}): Address {
 
 export function createMockMeter(overrides: Partial<Meter> = {}): Meter {
   const id = overrides.id ?? nextId()
+  const now = new Date().toISOString()
   return {
     id,
     addressId: 1,
-    providerId: 1,
-    type: 'electricity',
+    utilityTypeId: 1,
+    serialNumber: `M-${String(id).padStart(6, '0')}`,
     name: 'Electricity Meter',
-    meterNumber: `M-${String(id).padStart(6, '0')}`,
+    description: null,
+    modelName: null,
     location: 'Entrance hall',
-    installedAt: new Date().toISOString(),
-    status: 'active',
-    nextCheckDate: undefined,
+    photoPath: null,
+    installationDate: now,
+    initialReading: null,
+    serviceProviderId: 1,
+    notes: null,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+    utilityTypeName: 'Електроенергія',
+    serviceProviderName: 'ДТЕК Київські енергомережі',
     ...overrides,
   }
 }
 
 export function createMockReading(overrides: Partial<Reading> = {}): Reading {
   const id = overrides.id ?? nextId()
+  const now = new Date().toISOString()
   return {
     id,
     meterId: 1,
-    date: new Date().toISOString().split('T')[0],
-    value: 1000 + id * 50,
+    readingValue: 1000 + id * 50,
+    readingDate: now.split('T')[0],
+    previousReadingValue: null,
     consumption: 50,
-    submittedAt: new Date().toISOString(),
-    status: 'accepted',
-    note: undefined,
-    photoUrl: undefined,
+    notes: null,
+    isEstimated: false,
+    createdAt: now,
+    updatedAt: now,
+    meterName: 'Electricity Meter',
+    utilityTypeName: 'Електроенергія',
+    unit: 'кВт·год',
+    photos: [],
     ...overrides,
   }
 }

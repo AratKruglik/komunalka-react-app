@@ -48,15 +48,13 @@ export default function DashboardPage() {
     [addresses]
   )
 
-  // Generate service cards data
   const services = useMemo(() => {
     return meters.map((meter) => {
-      // Get readings for this meter from all readings
       const meterReadings = allReadings
         .filter((r) => r.meterId === meter.id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())
 
-      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.providerId)
+      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.serviceProviderId)
       if (!provider) return null
 
       const latestReading = meterReadings[0]
@@ -85,30 +83,26 @@ export default function DashboardPage() {
     }, {} as ExpenseDistributionByPeriod)
   }, [allReadings, meters])
 
-  // Generate recent readings (last 5)
   const recentReadings = useMemo(() => {
     return allReadings.slice(0, 5).map((reading) => {
       const meter = meters.find((m) => m.id === reading.meterId)
       if (!meter) return null
 
-      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.providerId)
+      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.serviceProviderId)
       if (!provider) return null
 
       return toReadingViewModel(reading, meter, provider)
     }).filter(Boolean) as ReturnType<typeof toReadingViewModel>[]
   }, [allReadings, meters])
 
-  // Generate payment reminders
   const paymentReminders = useMemo(() => {
-    // Calculate due dates based on provider's reminderDay
     return meters.slice(0, 3).map((meter) => {
-      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.providerId)
+      const provider = MOCK_PROVIDERS.find((p) => p.id === meter.serviceProviderId)
       if (!provider || !provider.reminderDay) return null
 
-      // Get readings for this meter from allReadings
       const meterReadings = allReadings
         .filter((r) => r.meterId === meter.id)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())
       const latestReading = meterReadings[0]
 
       // Calculate due date for current month

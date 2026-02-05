@@ -26,13 +26,117 @@
  * - Reading: auto-generated
  */
 
-import type { Address, Provider, Meter, Reading, Region, AddressType } from '../types/entities'
+import type {
+  Address,
+  Provider,
+  Meter,
+  Reading,
+  Region,
+  AddressType,
+} from '../types/entities'
+import type { MeterType } from '../constants/meterTypes'
+import { METER_TYPE_TO_UTILITY_TYPE_ID } from '../types/entities'
 import {
   generateAddressId,
   generateProviderId,
   generateMeterId,
   generateReadingId,
 } from '../utils/mockIdGenerator'
+
+const UTILITY_TYPE_NAMES: Record<number, string> = {
+  1: 'Електроенергія',
+  2: 'Газ',
+  3: 'Холодна вода',
+  4: 'Гаряча вода',
+  5: 'Опалення',
+}
+
+const UTILITY_UNITS: Record<number, string> = {
+  1: 'кВт·год',
+  2: 'м³',
+  3: 'м³',
+  4: 'м³',
+  5: 'Гкал',
+}
+
+const PROVIDER_NAMES: Record<number, string> = {
+  1: 'ДТЕК Київські енергомережі',
+  2: 'Київгаз',
+  3: 'Київводоканал',
+  4: 'Київтеплоенерго',
+}
+
+interface LegacyMeterInput {
+  id: number
+  addressId: number
+  providerId: number
+  type: MeterType
+  name: string
+  meterNumber: string
+  location: string
+  installedAt: string
+  status: 'active' | 'maintenance' | 'inactive'
+  nextCheckDate?: string
+}
+
+function transformLegacyMeter(legacy: LegacyMeterInput): Meter {
+  const utilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[legacy.type]
+  const now = new Date().toISOString()
+  return {
+    id: legacy.id,
+    addressId: legacy.addressId,
+    utilityTypeId,
+    serialNumber: legacy.meterNumber,
+    name: legacy.name,
+    description: null,
+    modelName: null,
+    location: legacy.location,
+    photoPath: null,
+    installationDate: legacy.installedAt,
+    initialReading: null,
+    serviceProviderId: legacy.providerId,
+    notes: null,
+    isActive: legacy.status === 'active',
+    createdAt: now,
+    updatedAt: now,
+    utilityTypeName: UTILITY_TYPE_NAMES[utilityTypeId],
+    serviceProviderName: PROVIDER_NAMES[legacy.providerId] ?? null,
+  }
+}
+
+interface LegacyReadingInput {
+  id: number
+  meterId: number
+  date: string
+  value: number
+  consumption?: number
+  submittedAt: string
+  status: 'accepted' | 'processing' | 'rejected'
+  note?: string
+}
+
+function transformLegacyReading(
+  legacy: LegacyReadingInput,
+  meterName: string,
+  utilityTypeId: number,
+): Reading {
+  return {
+    id: legacy.id,
+    meterId: legacy.meterId,
+    readingValue: legacy.value,
+    readingDate: legacy.date,
+    previousReadingValue: null,
+    consumption: legacy.consumption ?? null,
+    notes: legacy.note ?? null,
+    isEstimated: false,
+    createdAt: legacy.submittedAt,
+    updatedAt: legacy.submittedAt,
+    meterName,
+    utilityTypeName: UTILITY_TYPE_NAMES[utilityTypeId],
+    unit: UTILITY_UNITS[utilityTypeId],
+    photos: [],
+  }
+}
 
 // =============================================================================
 // REGIONS (довідник регіонів)
@@ -387,7 +491,7 @@ export const MOCK_ADDRESSES: Address[] = [
 // METERS (3-5 meters per address)
 // =============================================================================
 
-export const MOCK_METERS: Meter[] = [
+const LEGACY_METERS: LegacyMeterInput[] = [
   // === Address 1: Kyiv, Khreshchatyk, 22 (4 meters) ===
   {
     id: generateMeterId(), // 100
@@ -905,23 +1009,21 @@ export const MOCK_METERS: Meter[] = [
   },
 ]
 
+export const MOCK_METERS: Meter[] = LEGACY_METERS.map(transformLegacyMeter)
+
 // =============================================================================
 // READINGS (6 months of history per meter)
 // =============================================================================
 
-/**
- * Helper function to create readings for a given period
- */
-function createReadingsForMeter(
+function createLegacyReadingsForMeter(
   meterId: number,
   startValue: number,
   monthlyIncrements: number[],
-): Reading[] {
-  const readings: Reading[] = []
+): LegacyReadingInput[] {
+  const readings: LegacyReadingInput[] = []
   let currentValue = startValue
   const now = new Date()
 
-  // Create readings for the last N months (count = monthlyIncrements.length)
   for (let i = monthlyIncrements.length - 1; i >= 0; i--) {
     const monthsAgo = i
     const date = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 25)
@@ -935,7 +1037,7 @@ function createReadingsForMeter(
       date: date.toISOString().split('T')[0],
       value: currentValue,
       consumption: increment,
-      submittedAt: new Date(date.getTime() + 3600000).toISOString(), // +1 hour
+      submittedAt: new Date(date.getTime() + 3600000).toISOString(),
       status: i === 0 ? 'processing' : 'accepted',
       note: i === 0 ? 'Очікує підтвердження' : undefined,
     })
@@ -944,157 +1046,161 @@ function createReadingsForMeter(
   return readings
 }
 
-export const MOCK_READINGS: Reading[] = [
+function getMeterInfo(meterId: number): { name: string; utilityTypeId: number } {
+  const meter = MOCK_METERS.find((m) => m.id === meterId)
+  return {
+    name: meter?.name ?? 'Unknown',
+    utilityTypeId: meter?.utilityTypeId ?? 1,
+  }
+}
+
+const LEGACY_READINGS: LegacyReadingInput[] = [
   // Meter 100: Address 1 - Electricity (6 months)
-  ...createReadingsForMeter(100, 4200, [151, 144, 147, 152, 149, 154]),
+  ...createLegacyReadingsForMeter(100, 4200, [151, 144, 147, 152, 149, 154]),
 
   // Meter 101: Address 1 - Gas (6 months)
-  ...createReadingsForMeter(101, 560, [6, 5, 7, 9, 11, 8]),
+  ...createLegacyReadingsForMeter(101, 560, [6, 5, 7, 9, 11, 8]),
 
   // Meter 102: Address 1 - Cold Water (6 months)
-  ...createReadingsForMeter(102, 103, [2, 3, 2, 3, 2, 3]),
+  ...createLegacyReadingsForMeter(102, 103, [2, 3, 2, 3, 2, 3]),
 
   // Meter 103: Address 1 - Hot Water (6 months)
-  ...createReadingsForMeter(103, 67, [5, 6, 5, 6, 5, 5]),
+  ...createLegacyReadingsForMeter(103, 67, [5, 6, 5, 6, 5, 5]),
 
   // Meter 104: Address 2 - Electricity (6 months)
-  ...createReadingsForMeter(104, 2300, [107, 114, 109, 112, 108, 115]),
+  ...createLegacyReadingsForMeter(104, 2300, [107, 114, 109, 112, 108, 115]),
 
   // Meter 105: Address 2 - Gas (6 months)
-  ...createReadingsForMeter(105, 180, [24, 20, 18, 16, 22, 19]),
+  ...createLegacyReadingsForMeter(105, 180, [24, 20, 18, 16, 22, 19]),
 
   // Meter 106: Address 2 - Cold Water (6 months)
-  ...createReadingsForMeter(106, 45, [3, 4, 3, 4, 3, 4]),
+  ...createLegacyReadingsForMeter(106, 45, [3, 4, 3, 4, 3, 4]),
 
   // Meter 107: Address 2 - Hot Water (6 months)
-  ...createReadingsForMeter(107, 58, [1, 2, 1, 2, 1, 2]),
+  ...createLegacyReadingsForMeter(107, 58, [1, 2, 1, 2, 1, 2]),
 
   // Meter 108: Address 2 - Heat (6 months)
-  ...createReadingsForMeter(108, 28, [3.0, 4.1, 4.5, 3.8, 3.2, 2.8]),
+  ...createLegacyReadingsForMeter(108, 28, [3.0, 4.1, 4.5, 3.8, 3.2, 2.8]),
 
   // Meter 109: Address 3 - Electricity (6 months)
-  ...createReadingsForMeter(109, 680, [63, 65, 70, 58, 62, 67]),
+  ...createLegacyReadingsForMeter(109, 680, [63, 65, 70, 58, 62, 67]),
 
   // Meter 110: Address 3 - Gas (6 months)
-  ...createReadingsForMeter(110, 175, [5, 7, 8, 6, 9, 7]),
+  ...createLegacyReadingsForMeter(110, 175, [5, 7, 8, 6, 9, 7]),
 
   // Meter 111: Address 3 - Cold Water (6 months)
-  ...createReadingsForMeter(111, 88, [4, 5, 4, 5, 4, 4]),
+  ...createLegacyReadingsForMeter(111, 88, [4, 5, 4, 5, 4, 4]),
 
   // Meter 112: Address 4 - Electricity (6 months)
-  ...createReadingsForMeter(112, 420, [88, 92, 85, 90, 95, 87]),
+  ...createLegacyReadingsForMeter(112, 420, [88, 92, 85, 90, 95, 87]),
 
   // Meter 113: Address 4 - Gas (6 months)
-  ...createReadingsForMeter(113, 65, [6, 8, 7, 9, 8, 7]),
+  ...createLegacyReadingsForMeter(113, 65, [6, 8, 7, 9, 8, 7]),
 
   // Meter 114: Address 4 - Cold Water (6 months)
-  ...createReadingsForMeter(114, 32, [3, 3, 4, 3, 4, 3]),
+  ...createLegacyReadingsForMeter(114, 32, [3, 3, 4, 3, 4, 3]),
 
   // Meter 115: Address 4 - Hot Water (6 months)
-  ...createReadingsForMeter(115, 18, [2, 2, 3, 2, 3, 2]),
+  ...createLegacyReadingsForMeter(115, 18, [2, 2, 3, 2, 3, 2]),
 
   // Meter 116: Address 5 - Electricity (6 months)
-  ...createReadingsForMeter(116, 2850, [102, 98, 105, 100, 97, 103]),
+  ...createLegacyReadingsForMeter(116, 2850, [102, 98, 105, 100, 97, 103]),
 
   // Meter 117: Address 5 - Gas (6 months)
-  ...createReadingsForMeter(117, 340, [8, 7, 9, 8, 10, 7]),
+  ...createLegacyReadingsForMeter(117, 340, [8, 7, 9, 8, 10, 7]),
 
   // Meter 118: Address 5 - Cold Water (6 months)
-  ...createReadingsForMeter(118, 112, [3, 4, 3, 4, 3, 3]),
+  ...createLegacyReadingsForMeter(118, 112, [3, 4, 3, 4, 3, 3]),
 
   // Meter 119: Address 5 - Hot Water (6 months)
-  ...createReadingsForMeter(119, 45, [2, 3, 2, 3, 2, 2]),
+  ...createLegacyReadingsForMeter(119, 45, [2, 3, 2, 3, 2, 2]),
 
   // Meter 120: Address 6 - Electricity (6 months)
-  ...createReadingsForMeter(120, 1240, [85, 88, 82, 90, 87, 85]),
+  ...createLegacyReadingsForMeter(120, 1240, [85, 88, 82, 90, 87, 85]),
 
   // Meter 121: Address 6 - Cold Water (6 months)
-  ...createReadingsForMeter(121, 67, [2, 3, 2, 3, 2, 3]),
+  ...createLegacyReadingsForMeter(121, 67, [2, 3, 2, 3, 2, 3]),
 
   // Meter 122: Address 7 - Electricity (6 months)
-  ...createReadingsForMeter(122, 1560, [95, 92, 98, 94, 96, 93]),
+  ...createLegacyReadingsForMeter(122, 1560, [95, 92, 98, 94, 96, 93]),
 
   // Meter 123: Address 7 - Gas (6 months)
-  ...createReadingsForMeter(123, 285, [7, 8, 6, 9, 7, 8]),
+  ...createLegacyReadingsForMeter(123, 285, [7, 8, 6, 9, 7, 8]),
 
   // Meter 124: Address 7 - Hot Water (6 months)
-  ...createReadingsForMeter(124, 52, [3, 4, 3, 4, 3, 3]),
+  ...createLegacyReadingsForMeter(124, 52, [3, 4, 3, 4, 3, 3]),
 
   // Meter 125: Address 8 - Electricity (6 months)
-  ...createReadingsForMeter(125, 1890, [110, 115, 108, 112, 114, 111]),
+  ...createLegacyReadingsForMeter(125, 1890, [110, 115, 108, 112, 114, 111]),
 
   // Meter 126: Address 8 - Gas (6 months)
-  ...createReadingsForMeter(126, 420, [12, 10, 14, 11, 13, 12]),
+  ...createLegacyReadingsForMeter(126, 420, [12, 10, 14, 11, 13, 12]),
 
   // Meter 127: Address 8 - Cold Water (6 months)
-  ...createReadingsForMeter(127, 98, [4, 5, 4, 5, 4, 4]),
+  ...createLegacyReadingsForMeter(127, 98, [4, 5, 4, 5, 4, 4]),
 
   // Meter 128: Address 8 - Hot Water (6 months)
-  ...createReadingsForMeter(128, 73, [2, 3, 2, 3, 2, 3]),
+  ...createLegacyReadingsForMeter(128, 73, [2, 3, 2, 3, 2, 3]),
 
   // Meter 129: Address 8 - Heat (6 months)
-  ...createReadingsForMeter(129, 15, [2.8, 3.5, 3.2, 2.9, 3.1, 2.7]),
+  ...createLegacyReadingsForMeter(129, 15, [2.8, 3.5, 3.2, 2.9, 3.1, 2.7]),
 
   // Meter 130: Address 9 - Electricity (6 months)
-  ...createReadingsForMeter(130, 950, [68, 72, 65, 70, 69, 71]),
+  ...createLegacyReadingsForMeter(130, 950, [68, 72, 65, 70, 69, 71]),
 
   // Meter 131: Address 9 - Gas (6 months)
-  ...createReadingsForMeter(131, 190, [5, 6, 7, 5, 6, 6]),
+  ...createLegacyReadingsForMeter(131, 190, [5, 6, 7, 5, 6, 6]),
 
   // Meter 132: Address 10 - Electricity (6 months)
-  ...createReadingsForMeter(132, 1340, [88, 92, 85, 90, 89, 91]),
+  ...createLegacyReadingsForMeter(132, 1340, [88, 92, 85, 90, 89, 91]),
 
   // Meter 133: Address 10 - Cold Water (6 months)
-  ...createReadingsForMeter(133, 78, [3, 4, 3, 4, 3, 4]),
+  ...createLegacyReadingsForMeter(133, 78, [3, 4, 3, 4, 3, 4]),
 
   // Meter 134: Address 10 - Hot Water (6 months)
-  ...createReadingsForMeter(134, 56, [2, 3, 2, 3, 2, 2]),
+  ...createLegacyReadingsForMeter(134, 56, [2, 3, 2, 3, 2, 2]),
 
   // Meter 135: Address 11 - Electricity (6 months)
-  ...createReadingsForMeter(135, 1680, [98, 102, 95, 100, 99, 101]),
+  ...createLegacyReadingsForMeter(135, 1680, [98, 102, 95, 100, 99, 101]),
 
   // Meter 136: Address 11 - Gas (6 months)
-  ...createReadingsForMeter(136, 310, [8, 9, 7, 10, 8, 9]),
+  ...createLegacyReadingsForMeter(136, 310, [8, 9, 7, 10, 8, 9]),
 
   // Meter 137: Address 11 - Cold Water (6 months)
-  ...createReadingsForMeter(137, 92, [4, 5, 4, 5, 4, 4]),
+  ...createLegacyReadingsForMeter(137, 92, [4, 5, 4, 5, 4, 4]),
 
   // Meter 138: Address 11 - Hot Water (6 months)
-  ...createReadingsForMeter(138, 64, [3, 4, 3, 4, 3, 3]),
+  ...createLegacyReadingsForMeter(138, 64, [3, 4, 3, 4, 3, 3]),
 
   // Meter 139: Address 12 - Electricity (6 months)
-  ...createReadingsForMeter(139, 780, [55, 58, 52, 60, 57, 56]),
+  ...createLegacyReadingsForMeter(139, 780, [55, 58, 52, 60, 57, 56]),
 
   // Meter 140: Address 12 - Cold Water (6 months)
-  ...createReadingsForMeter(140, 43, [2, 3, 2, 3, 2, 2]),
+  ...createLegacyReadingsForMeter(140, 43, [2, 3, 2, 3, 2, 2]),
 ]
+
+export const MOCK_READINGS: Reading[] = LEGACY_READINGS.map((legacy) => {
+  const { name, utilityTypeId } = getMeterInfo(legacy.meterId)
+  return transformLegacyReading(legacy, name, utilityTypeId)
+})
 
 // =============================================================================
 // HELPER FUNCTIONS (for testing purposes)
 // =============================================================================
 
-/**
- * Get all meters for a specific address
- */
 export function getMetersByAddressId(addressId: number): Meter[] {
   return MOCK_METERS.filter((meter) => meter.addressId === addressId)
 }
 
-/**
- * Get all readings for a specific meter
- */
 export function getReadingsByMeterId(meterId: number): Reading[] {
   return MOCK_READINGS.filter((reading) => reading.meterId === meterId).sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    (a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime(),
   )
 }
 
-/**
- * Get the latest reading for a meter
- */
 export function getLatestReadingByMeterId(meterId: number): Reading | undefined {
   const readings = getReadingsByMeterId(meterId)
-  return readings[0] // Already sorted by date (newest first)
+  return readings[0]
 }
 
 /**
@@ -1111,43 +1217,31 @@ export function getAddressById(addressId: number): Address | undefined {
   return MOCK_ADDRESSES.find((address) => address.id === addressId)
 }
 
-/**
- * Get meter by ID
- */
 export function getMeterById(meterId: number): Meter | undefined {
   return MOCK_METERS.find((meter) => meter.id === meterId)
 }
 
-/**
- * Get all readings for an address (via all meters of that address)
- */
 export function getReadingsByAddressId(addressId: number): Reading[] {
   const meters = getMetersByAddressId(addressId)
   const meterIds = meters.map((m) => m.id)
 
   return MOCK_READINGS.filter((reading) => meterIds.includes(reading.meterId)).sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    (a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime(),
   )
 }
 
-/**
- * Get statistics for an address
- */
 export function getAddressStats(addressId: number): {
   totalMeters: number
   activeMeters: number
   pendingReadings: number
 } {
   const meters = getMetersByAddressId(addressId)
-  const activeMeters = meters.filter((m) => m.status === 'active').length
-
-  const readings = getReadingsByAddressId(addressId)
-  const pendingReadings = readings.filter((r) => r.status === 'processing').length
+  const activeMeters = meters.filter((m) => m.isActive).length
 
   return {
     totalMeters: meters.length,
     activeMeters,
-    pendingReadings,
+    pendingReadings: 0,
   }
 }
 

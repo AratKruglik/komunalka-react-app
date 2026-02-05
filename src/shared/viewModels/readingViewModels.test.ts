@@ -11,13 +11,16 @@ function createMockMeter(overrides: Partial<Meter> = {}): Meter {
   return {
     id: 1,
     addressId: 1,
-    providerId: 1,
-    type: 'electricity',
+    utilityTypeId: 1,
+    serialNumber: 'E-12345',
     name: 'Основний тариф',
-    meterNumber: 'E-12345',
     location: 'Щитова',
-    installedAt: '2023-01-01',
-    status: 'active',
+    installationDate: '2023-01-01',
+    isActive: true,
+    serviceProviderId: 1,
+    createdAt: '2023-01-01T00:00:00Z',
+    updatedAt: '2023-01-01T00:00:00Z',
+    utilityTypeName: 'Електроенергія',
     ...overrides,
   }
 }
@@ -26,11 +29,16 @@ function createMockReading(overrides: Partial<Reading> = {}): Reading {
   return {
     id: 1,
     meterId: 1,
-    date: '2025-02-01',
-    value: 1234,
+    readingDate: '2025-02-01',
+    readingValue: 1234,
     consumption: 56,
-    submittedAt: '2025-02-01T10:00:00Z',
-    status: 'accepted',
+    isEstimated: false,
+    createdAt: '2025-02-01T10:00:00Z',
+    updatedAt: '2025-02-01T10:00:00Z',
+    meterName: 'Основний тариф',
+    utilityTypeName: 'Електроенергія',
+    unit: 'кВт·год',
+    photos: [],
     ...overrides,
   }
 }
@@ -63,8 +71,8 @@ describe('readingViewModels', () => {
     })
 
     it('transforms meter to draft view model', () => {
-      const meter = createMockMeter({ id: 5, name: 'Основний тариф', meterNumber: 'E-12345' })
-      const latestReading = createMockReading({ value: 1234 })
+      const meter = createMockMeter({ id: 5, name: 'Основний тариф', serialNumber: 'E-12345' })
+      const latestReading = createMockReading({ readingValue: 1234 })
       const provider = createMockProvider()
 
       const result = toMeterReadingDraftViewModel(meter, latestReading, undefined, provider)
@@ -87,7 +95,7 @@ describe('readingViewModels', () => {
 
     it('uses previous reading value', () => {
       const meter = createMockMeter()
-      const latestReading = createMockReading({ value: 1500, date: '2025-02-15' })
+      const latestReading = createMockReading({ readingValue: 1500, readingDate: '2025-02-15' })
       const provider = createMockProvider()
 
       const result = toMeterReadingDraftViewModel(meter, latestReading, undefined, provider)
@@ -174,7 +182,7 @@ describe('readingViewModels', () => {
     it('handles different meter types', () => {
       const provider = createMockProvider({ serviceType: 'gas', serviceLabel: 'Газ' })
 
-      const gasMeter = createMockMeter({ type: 'gas' })
+      const gasMeter = createMockMeter({ utilityTypeId: 2 })
       const result = toMeterReadingDraftViewModel(gasMeter, undefined, undefined, provider)
 
       expect(result.type).toBe('gas')
@@ -187,14 +195,14 @@ describe('readingViewModels', () => {
 
       const result = toMeterReadingDraftViewModel(meter, undefined, undefined, provider)
 
-      expect(result.unit).toBe('>4')
+      expect(result.unit).toBe('од')
     })
   })
 
   describe('toMeterReadingSummaryRowViewModel', () => {
     it('transforms meter to summary row view model', () => {
-      const meter = createMockMeter({ id: 3, type: 'gas' })
-      const latestReading = createMockReading({ value: 500 })
+      const meter = createMockMeter({ id: 3, utilityTypeId: 2 })
+      const latestReading = createMockReading({ readingValue: 500 })
       const provider = createMockProvider({ unitLabel: 'грн/м³' })
 
       const result = toMeterReadingSummaryRowViewModel(meter, latestReading, 550, provider)
@@ -265,7 +273,7 @@ describe('readingViewModels', () => {
 
       const result = toMeterReadingSummaryRowViewModel(meter, undefined, 100, provider)
 
-      expect(result.unit).toBe('>4')
+      expect(result.unit).toBe('од')
     })
   })
 
@@ -273,11 +281,11 @@ describe('readingViewModels', () => {
     it('transforms reading to history record view model', () => {
       const reading = createMockReading({
         id: 10,
-        value: 1500,
+        readingValue: 1500,
         consumption: 100,
-        submittedAt: '2025-02-15T14:30:00Z',
+        createdAt: '2025-02-15T14:30:00Z',
       })
-      const meter = createMockMeter({ type: 'electricity' })
+      const meter = createMockMeter({ utilityTypeId: 1 })
       const provider = createMockProvider()
 
       const result = toMeterReadingHistoryRecordViewModel(reading, meter, provider)
@@ -367,7 +375,7 @@ describe('readingViewModels', () => {
     })
 
     it('creates snapshot view model with address id', () => {
-      const meters = [createMockMeter({ id: 1, providerId: 1 })]
+      const meters = [createMockMeter({ id: 1, serviceProviderId: 1 })]
       const readings = [createMockReading({ meterId: 1 })]
       const providers = [createMockProvider({ id: 1 })]
 
@@ -378,8 +386,8 @@ describe('readingViewModels', () => {
 
     it('creates meter drafts for each meter', () => {
       const meters = [
-        createMockMeter({ id: 1, providerId: 1 }),
-        createMockMeter({ id: 2, providerId: 1, type: 'gas' }),
+        createMockMeter({ id: 1, serviceProviderId: 1 }),
+        createMockMeter({ id: 2, serviceProviderId: 1, utilityTypeId: 2 }),
       ]
       const readings: Reading[] = []
       const providers = [createMockProvider({ id: 1 })]
@@ -393,8 +401,8 @@ describe('readingViewModels', () => {
 
     it('creates summary rows for each meter', () => {
       const meters = [
-        createMockMeter({ id: 1, providerId: 1 }),
-        createMockMeter({ id: 2, providerId: 1 }),
+        createMockMeter({ id: 1, serviceProviderId: 1 }),
+        createMockMeter({ id: 2, serviceProviderId: 1 }),
       ]
       const readings: Reading[] = []
       const providers = [createMockProvider({ id: 1 })]
@@ -405,11 +413,11 @@ describe('readingViewModels', () => {
     })
 
     it('uses latest reading for each meter', () => {
-      const meters = [createMockMeter({ id: 1, providerId: 1 })]
+      const meters = [createMockMeter({ id: 1, serviceProviderId: 1 })]
       const readings = [
-        createMockReading({ id: 1, meterId: 1, date: '2025-01-01', value: 100 }),
-        createMockReading({ id: 2, meterId: 1, date: '2025-02-01', value: 150 }),
-        createMockReading({ id: 3, meterId: 1, date: '2025-03-01', value: 200 }),
+        createMockReading({ id: 1, meterId: 1, readingDate: '2025-01-01', readingValue: 100 }),
+        createMockReading({ id: 2, meterId: 1, readingDate: '2025-02-01', readingValue: 150 }),
+        createMockReading({ id: 3, meterId: 1, readingDate: '2025-03-01', readingValue: 200 }),
       ]
       const providers = [createMockProvider({ id: 1 })]
 
@@ -419,7 +427,7 @@ describe('readingViewModels', () => {
     })
 
     it('throws error when provider not found for meter', () => {
-      const meters = [createMockMeter({ id: 1, providerId: 999 })]
+      const meters = [createMockMeter({ id: 1, serviceProviderId: 999 })]
       const readings: Reading[] = []
       const providers = [createMockProvider({ id: 1 })]
 
@@ -441,13 +449,13 @@ describe('readingViewModels', () => {
 
     it('filters readings by meter id', () => {
       const meters = [
-        createMockMeter({ id: 1, providerId: 1 }),
-        createMockMeter({ id: 2, providerId: 1 }),
+        createMockMeter({ id: 1, serviceProviderId: 1 }),
+        createMockMeter({ id: 2, serviceProviderId: 1 }),
       ]
       const readings = [
-        createMockReading({ meterId: 1, value: 100, date: '2025-01-01' }),
-        createMockReading({ meterId: 2, value: 200, date: '2025-02-01' }),
-        createMockReading({ meterId: 1, value: 150, date: '2025-02-15' }),
+        createMockReading({ meterId: 1, readingValue: 100, readingDate: '2025-01-01' }),
+        createMockReading({ meterId: 2, readingValue: 200, readingDate: '2025-02-01' }),
+        createMockReading({ meterId: 1, readingValue: 150, readingDate: '2025-02-15' }),
       ]
       const providers = [createMockProvider({ id: 1 })]
 

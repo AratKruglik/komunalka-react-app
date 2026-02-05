@@ -48,13 +48,16 @@ function createMockMeter(overrides: Partial<Meter> = {}): Meter {
   return {
     id: 1,
     addressId: 1,
-    providerId: 1,
-    type: 'electricity',
+    utilityTypeId: 1,
+    serialNumber: 'E-12345',
     name: 'Основний лічильник',
-    meterNumber: 'E-12345',
     location: 'Щитова',
-    installedAt: '2023-01-01',
-    status: 'active',
+    installationDate: '2023-01-01',
+    isActive: true,
+    serviceProviderId: 1,
+    createdAt: '2023-01-01T00:00:00Z',
+    updatedAt: '2023-01-01T00:00:00Z',
+    utilityTypeName: 'Електроенергія',
     ...overrides,
   }
 }
@@ -161,9 +164,9 @@ describe('addressViewModels', () => {
     it('creates services from unique meter types', () => {
       const address = createMockAddress()
       const meters: Meter[] = [
-        createMockMeter({ id: 1, type: 'electricity' }),
-        createMockMeter({ id: 2, type: 'gas' }),
-        createMockMeter({ id: 3, type: 'electricity' }),
+        createMockMeter({ id: 1, utilityTypeId: 1 }),
+        createMockMeter({ id: 2, utilityTypeId: 2 }),
+        createMockMeter({ id: 3, utilityTypeId: 1 }),
       ]
 
       const result = toAddressCardViewModel(address, meters)
@@ -191,11 +194,11 @@ describe('addressViewModels', () => {
     it('includes all meter types with correct labels', () => {
       const address = createMockAddress()
       const meters: Meter[] = [
-        createMockMeter({ id: 1, type: 'electricity' }),
-        createMockMeter({ id: 2, type: 'gas' }),
-        createMockMeter({ id: 3, type: 'coldWater' }),
-        createMockMeter({ id: 4, type: 'hotWater' }),
-        createMockMeter({ id: 5, type: 'heat' }),
+        createMockMeter({ id: 1, utilityTypeId: 1 }),
+        createMockMeter({ id: 2, utilityTypeId: 2 }),
+        createMockMeter({ id: 3, utilityTypeId: 3 }),
+        createMockMeter({ id: 4, utilityTypeId: 4 }),
+        createMockMeter({ id: 5, utilityTypeId: 5 }),
       ]
 
       const result = toAddressCardViewModel(address, meters)

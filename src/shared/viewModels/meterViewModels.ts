@@ -6,7 +6,11 @@
 
 import type { Meter, Reading, Provider } from '../types/entities'
 import type { MeterType } from '../constants/meterTypes'
-import { METER_TYPE_TO_SERVICE_LABEL } from '../types/entities'
+import { METER_TYPE_TO_SERVICE_LABEL, UTILITY_TYPE_ID_TO_METER_TYPE } from '../types/entities'
+
+function getMeterType(meter: Meter): MeterType {
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+}
 
 // =============================================================================
 // View Model Types
@@ -88,13 +92,13 @@ export function toMeterDeviceViewModel(
   return {
     id: meter.id,
     name: meter.name,
-    meterNumber: meter.meterNumber,
-    location: meter.location,
-    installedAt: meter.installedAt,
+    meterNumber: meter.serialNumber,
+    location: meter.location ?? '',
+    installedAt: meter.installationDate,
     providerName: provider.name,
-    status: meter.status,
+    status: meter.isActive ? 'active' : 'inactive',
     lastSubmission,
-    nextCheckDate: meter.nextCheckDate,
+    nextCheckDate: undefined,
   }
 }
 
@@ -110,7 +114,7 @@ export function toMeterLatestReadingViewModel(
   return {
     id: reading.id,
     monthLabel,
-    value: reading.value,
+    value: reading.readingValue,
     delta: Math.abs(reading.consumption || 0),
     trend,
   }
@@ -123,18 +127,14 @@ export function toMeterHistoryRecordViewModel(
   reading: Reading,
   periodLabel: string,
 ): MeterHistoryRecordViewModel {
-  let status: ReadingStatusType = 'accepted'
-  if (reading.status === 'processing') status = 'processing'
-  if (reading.status === 'rejected') status = 'error'
-
   return {
     id: reading.id,
     periodLabel,
-    submittedAt: reading.submittedAt,
-    value: reading.value,
+    submittedAt: reading.createdAt,
+    value: reading.readingValue,
     consumption: reading.consumption || 0,
-    status,
-    note: reading.note,
+    status: 'accepted',
+    note: reading.notes ?? undefined,
   }
 }
 
@@ -171,35 +171,31 @@ export function toMeterTypeGroupViewModel(
 ): MeterTypeGroupViewModel {
   const typeName = METER_TYPE_TO_SERVICE_LABEL[type]
 
-  // Mapper для devices
   const meterDevices = meters.map((meter) => {
     const lastReading = readings
       .filter((r) => r.meterId === meter.id)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+      .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())[0]
 
     const lastSubmission = lastReading
-      ? formatMonthLabel(lastReading.date)
+      ? formatMonthLabel(lastReading.readingDate)
       : 'Ще не передано'
 
     return toMeterDeviceViewModel(meter, provider, lastSubmission)
   })
 
-  // Latest readings (останні 3 місяці)
   const latestReadings = readings
     .slice(0, 3)
-    .map((r) => toMeterLatestReadingViewModel(r, formatMonthLabel(r.date)))
+    .map((r) => toMeterLatestReadingViewModel(r, formatMonthLabel(r.readingDate)))
 
-  // History (останні 3 записи)
   const history = readings
     .slice(0, 3)
-    .map((r) => toMeterHistoryRecordViewModel(r, formatMonthLabel(r.date)))
+    .map((r) => toMeterHistoryRecordViewModel(r, formatMonthLabel(r.readingDate)))
 
-  // Quick draft
   const previousReading = readings[0]
   const quickDraft: MeterQuickDraftViewModel = {
     meterId: meters[0]?.id || 0,
     monthLabel: formatMonthLabel(new Date().toISOString()),
-    previousValue: previousReading?.value || 0,
+    previousValue: previousReading?.readingValue || 0,
     unit: provider.unitLabel.split('/')[1] || 'од',
   }
 
@@ -223,13 +219,13 @@ export function toAddressMetersSnapshotViewModel(
   readings: readonly Reading[],
   providers: readonly Provider[],
 ): AddressMetersSnapshotViewModel {
-  // Групуємо лічильники за типом
   const metersByType = meters.reduce(
     (acc, meter) => {
-      if (!acc[meter.type]) {
-        acc[meter.type] = []
+      const meterType = getMeterType(meter)
+      if (!acc[meterType]) {
+        acc[meterType] = []
       }
-      acc[meter.type].push(meter)
+      acc[meterType].push(meter)
       return acc
     },
     {} as Record<MeterType, Meter[]>,
@@ -241,14 +237,12 @@ export function toAddressMetersSnapshotViewModel(
   for (const [type, typeMeters] of Object.entries(metersByType)) {
     const meterType = type as MeterType
 
-    // Отримуємо readings для цих лічильників
     const meterIds = typeMeters.map((m) => m.id)
     const typeReadings = readings
       .filter((r) => meterIds.includes(r.meterId))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())
 
-    // Знаходимо провайдера
-    const provider = providers.find((p) => p.id === typeMeters[0]?.providerId)
+    const provider = providers.find((p) => p.id === typeMeters[0]?.serviceProviderId)
     if (!provider) continue
 
     groups[meterType] = toMeterTypeGroupViewModel(
@@ -259,9 +253,8 @@ export function toAddressMetersSnapshotViewModel(
     )
   }
 
-  // Рахуємо summary
-  const activeMeters = meters.filter((m) => m.status === 'active').length
-  const pendingReadings = readings.filter((r) => r.status === 'processing').length
+  const activeMeters = meters.filter((m) => m.isActive).length
+  const pendingReadings = 0
 
   return {
     addressId,

@@ -6,8 +6,8 @@ import type {
   MockRegion,
   MockAddressType,
   MockCurrency,
-} from '../helpers/api-mocks';
-import { UTILITY_TYPES, ADDRESS_TYPES } from '../helpers/api-mocks';
+} from '../helpers'
+import { UTILITY_TYPES, ADDRESS_TYPES } from '../helpers'
 
 export const testUsers = {
   validUser: {
@@ -51,7 +51,7 @@ export const testUsers = {
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
   },
-};
+}
 
 export const testUserProfiles: Record<string, MockUser> = {
   default: {
@@ -80,26 +80,26 @@ export const testUserProfiles: Record<string, MockUser> = {
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-15T10:00:00Z',
   },
-};
+}
 
 export const testRegions: MockRegion[] = [
   { id: 1, name: 'Вінницька область' },
   { id: 9, name: 'Київська область' },
   { id: 12, name: 'Львівська область' },
   { id: 25, name: 'м. Київ' },
-];
+]
 
 export const testAddressTypes: (MockAddressType & { icon?: string })[] = [
   { id: ADDRESS_TYPES.APARTMENT, name: 'Квартира', description: 'Багатоквартирний будинок у місті', icon: 'apartment' },
   { id: ADDRESS_TYPES.PRIVATE_HOUSE, name: 'Приватний будинок', description: 'Окрема садиба або дача', icon: 'house' },
   { id: ADDRESS_TYPES.OFFICE, name: 'Офіс', description: 'Комерційне або офісне приміщення', icon: 'office' },
-];
+]
 
 export const testCurrencies: MockCurrency[] = [
   { id: 1, name: 'Українська гривня', code: 'UAH', symbol: '₴' },
   { id: 2, name: 'US Dollar', code: 'USD', symbol: '$' },
   { id: 3, name: 'Euro', code: 'EUR', symbol: '€' },
-];
+]
 
 export const testAddresses: Record<string, MockAddress> = {
   primary: {
@@ -153,7 +153,7 @@ export const testAddresses: Record<string, MockAddress> = {
     createdAt: '2025-01-10T00:00:00Z',
     updatedAt: '2025-01-10T00:00:00Z',
   },
-};
+}
 
 export const testNewAddressInput = {
   regionId: 9,
@@ -165,7 +165,7 @@ export const testNewAddressInput = {
   notes: 'Тестова адреса',
   isPrimary: false,
   addressTypeId: ADDRESS_TYPES.APARTMENT,
-};
+}
 
 export const testNewAddressFormData = {
   propertyType: 'apartment' as const,
@@ -177,7 +177,7 @@ export const testNewAddressFormData = {
   postalCode: '01001',
   notes: 'Тестова адреса',
   isPrimary: false,
-};
+}
 
 export const testEditedAddressFormData = {
   propertyType: 'apartment' as const,
@@ -189,7 +189,7 @@ export const testEditedAddressFormData = {
   postalCode: '01002',
   notes: 'Оновлена адреса',
   isPrimary: false,
-};
+}
 
 type FrontendCompatibleMeter = MockMeter & {
   meterNumber: string;
@@ -359,7 +359,7 @@ export const testMeters: Record<string, FrontendCompatibleMeter> = {
     createdAt: '2015-01-01T00:00:00Z',
     updatedAt: '2024-01-15T00:00:00Z',
   },
-};
+}
 
 export const testNewMeterInput = {
   addressId: 1,
@@ -373,7 +373,7 @@ export const testNewMeterInput = {
   serviceProviderId: 1,
   notes: 'Тестовий лічильник',
   isActive: true,
-};
+}
 
 export const testReadings: Record<string, MockMeterReading> = {
   electricity: {
@@ -456,7 +456,7 @@ export const testReadings: Record<string, MockMeterReading> = {
     createdAt: '2025-12-25T10:00:00Z',
     updatedAt: '2025-12-25T10:00:00Z',
   },
-};
+}
 
 export const testBatchReadingsInput = {
   addressId: 1,
@@ -483,31 +483,31 @@ export const testBatchReadingsInput = {
       isEstimated: false,
     },
   ],
-};
+}
 
 export function getActiveMeters(): MockMeter[] {
-  return Object.values(testMeters).filter(m => m.isActive);
+  return Object.values(testMeters).filter(m => m.isActive)
 }
 
 export function getMetersByAddressId(addressId: number): MockMeter[] {
-  return Object.values(testMeters).filter(m => m.addressId === addressId && m.isActive);
+  return Object.values(testMeters).filter(m => m.addressId === addressId && m.isActive)
 }
 
 export function getReadingsByMeterId(meterId: number): MockMeterReading[] {
-  return Object.values(testReadings).filter(r => r.meterId === meterId);
+  return Object.values(testReadings).filter(r => r.meterId === meterId)
 }
 
 export function getAllAddresses(): MockAddress[] {
-  return Object.values(testAddresses);
+  return Object.values(testAddresses)
 }
 
 export function getAllReadings(): MockMeterReading[] {
-  return Object.values(testReadings);
+  return Object.values(testReadings)
 }
 
 export function formatAddressLabel(address: MockAddress): string {
-  const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : '';
-  return `${address.street}, ${address.buildingNumber}${apartment}`;
+  const apartment = address.apartmentNumber ? `, кв. ${address.apartmentNumber}` : ''
+  return `${address.street}, ${address.buildingNumber}${apartment}`
 }
 
 export function getUtilityTypeName(utilityTypeId: number): string {
@@ -517,8 +517,8 @@ export function getUtilityTypeName(utilityTypeId: number): string {
     [UTILITY_TYPES.COLD_WATER]: 'Холодна вода',
     [UTILITY_TYPES.HOT_WATER]: 'Гаряча вода',
     [UTILITY_TYPES.HEATING]: 'Опалення',
-  };
-  return names[utilityTypeId] ?? 'Невідомо';
+  }
+  return names[utilityTypeId] ?? 'Невідомо'
 }
 
 export function getAddressTypeName(addressTypeId: number): string {
@@ -526,8 +526,8 @@ export function getAddressTypeName(addressTypeId: number): string {
     [ADDRESS_TYPES.APARTMENT]: 'Квартира',
     [ADDRESS_TYPES.PRIVATE_HOUSE]: 'Приватний будинок',
     [ADDRESS_TYPES.OFFICE]: 'Офіс',
-  };
-  return names[addressTypeId] ?? 'Невідомо';
+  }
+  return names[addressTypeId] ?? 'Невідомо'
 }
 
 export const testProviders = [
@@ -581,7 +581,7 @@ export const testProviders = [
     website: 'https://www.kyivenergo.ua',
     description: 'Централізоване теплопостачання для м. Києва',
   },
-];
+]
 
 export const testNewProvider = {
   name: 'Новий провайдер',
@@ -589,4 +589,4 @@ export const testNewProvider = {
   website: 'https://example.com',
   description: 'Тестовий опис провайдера',
   tariffs: [{ name: 'Базовий', price: '5.00' }],
-};
+}

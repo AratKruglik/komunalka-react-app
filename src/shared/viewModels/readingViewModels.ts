@@ -1,13 +1,18 @@
 /**
  * Reading View Models and Mappers
- *
- * : AV :;NGV 0=3;V9AL:>N, C:@0W=AL:V B5:AB8 BV;L:8 2 label/name ?>;OE
  */
 
 import type { Meter, Reading, Provider } from '../types/entities'
 import type { MeterType } from '../constants/meterTypes'
-import { METER_TYPE_TO_SERVICE_LABEL } from '../types/entities'
+import {
+  METER_TYPE_TO_SERVICE_LABEL,
+  UTILITY_TYPE_ID_TO_METER_TYPE,
+} from '../types/entities'
 import { formatTariffLabel } from '../utils/providerTariffs'
+
+function getMeterType(meter: Meter): MeterType {
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+}
 
 // =============================================================================
 // View Model Types
@@ -15,9 +20,9 @@ import { formatTariffLabel } from '../utils/providerTariffs'
 
 export interface MeterReadingDraftViewModel {
   readonly id: number
-  readonly type: MeterType //  0=3;V9AL:>N
-  readonly serviceName: string // ";5:B@>5=5@3VO" - C:@0W=AL:>N 4;O UI
-  readonly meterLabel: string // "A=>2=89 B0@8D" - C:@0W=AL:>N
+  readonly type: MeterType
+  readonly serviceName: string
+  readonly meterLabel: string
   readonly meterNumber: string
   readonly unit: string
   readonly previousValue: number
@@ -43,8 +48,8 @@ export interface TariffOptionViewModel {
 
 export interface MeterReadingSummaryRowViewModel {
   readonly id: number
-  readonly type: MeterType //  0=3;V9AL:>N
-  readonly serviceName: string // ";5:B@>5=5@3VO" - C:@0W=AL:>N
+  readonly type: MeterType
+  readonly serviceName: string
   readonly previousValue: number | null
   readonly currentValue: number | null
   readonly unit: string
@@ -56,8 +61,8 @@ export interface MeterReadingSummaryRowViewModel {
 export interface MeterReadingHistoryRecordViewModel {
   readonly id: number
   readonly submittedAt: string
-  readonly serviceName: string // ";5:B@>5=5@3VO" - C:@0W=AL:>N
-  readonly type: MeterType //  0=3;V9AL:>N
+  readonly serviceName: string
+  readonly type: MeterType
   readonly currentValue: number
   readonly consumption: number
   readonly tariff: number
@@ -94,7 +99,7 @@ const resolveTariff = (provider: Provider, tariffId?: string) => {
 // =============================================================================
 
 /**
- * Mapper: Meter + Reading + Provider � MeterReadingDraftViewModel
+ * Mapper: Meter + Reading + Provider -> MeterReadingDraftViewModel
  */
 export function toMeterReadingDraftViewModel(
   meter: Meter,
@@ -102,19 +107,20 @@ export function toMeterReadingDraftViewModel(
   _previousReading: Reading | undefined,
   provider: Provider,
 ): MeterReadingDraftViewModel {
-  const serviceName = METER_TYPE_TO_SERVICE_LABEL[meter.type]
+  const meterType = getMeterType(meter)
+  const serviceName = METER_TYPE_TO_SERVICE_LABEL[meterType]
   const { tariffs, selected } = resolveTariff(provider)
 
   return {
     id: meter.id,
-    type: meter.type,
+    type: meterType,
     serviceName,
     meterLabel: meter.name,
-    meterNumber: meter.meterNumber,
-    unit: provider.unitLabel.split('/')[1] || '>4',
-    previousValue: latestReading?.value || 0,
-    previousDate: latestReading?.date || new Date().toISOString().split('T')[0],
-    currentValue: latestReading?.value || 0,
+    meterNumber: meter.serialNumber,
+    unit: provider.unitLabel.split('/')[1] || 'од',
+    previousValue: latestReading?.readingValue || 0,
+    previousDate: latestReading?.readingDate || new Date().toISOString().split('T')[0],
+    currentValue: latestReading?.readingValue || 0,
     readingDate: new Date().toISOString().split('T')[0],
     tariffId: selected?.id ?? '',
     tariff: selected?.price ?? 0,
@@ -128,7 +134,7 @@ export function toMeterReadingDraftViewModel(
 }
 
 /**
- * Mapper: Meter + Reading + Provider � MeterReadingSummaryRowViewModel
+ * Mapper: Meter + Reading + Provider -> MeterReadingSummaryRowViewModel
  */
 export function toMeterReadingSummaryRowViewModel(
   meter: Meter,
@@ -137,17 +143,18 @@ export function toMeterReadingSummaryRowViewModel(
   provider: Provider,
   selectedTariffId?: string,
 ): MeterReadingSummaryRowViewModel {
-  const serviceName = METER_TYPE_TO_SERVICE_LABEL[meter.type]
+  const meterType = getMeterType(meter)
+  const serviceName = METER_TYPE_TO_SERVICE_LABEL[meterType]
   const { selected } = resolveTariff(provider, selectedTariffId)
   const tariffPrice = selected?.price ?? 0
 
   return {
     id: meter.id,
-    type: meter.type,
+    type: meterType,
     serviceName,
-    previousValue: latestReading?.value || null,
+    previousValue: latestReading?.readingValue || null,
     currentValue,
-    unit: provider.unitLabel.split('/')[1] || '>4',
+    unit: provider.unitLabel.split('/')[1] || 'од',
     tariffId: selected?.id ?? '',
     tariff: tariffPrice,
     tariffLabel: selected?.label ?? provider.unitLabel,
@@ -155,7 +162,7 @@ export function toMeterReadingSummaryRowViewModel(
 }
 
 /**
- * Mapper: Reading + Meter + Provider � MeterReadingHistoryRecordViewModel
+ * Mapper: Reading + Meter + Provider -> MeterReadingHistoryRecordViewModel
  */
 export function toMeterReadingHistoryRecordViewModel(
   reading: Reading,
@@ -163,7 +170,8 @@ export function toMeterReadingHistoryRecordViewModel(
   provider: Provider,
   tariffId?: string,
 ): MeterReadingHistoryRecordViewModel {
-  const serviceName = METER_TYPE_TO_SERVICE_LABEL[meter.type]
+  const meterType = getMeterType(meter)
+  const serviceName = METER_TYPE_TO_SERVICE_LABEL[meterType]
   const consumption = reading.consumption || 0
   const { selected } = resolveTariff(provider, tariffId)
   const tariffPrice = selected?.price ?? 0
@@ -171,10 +179,10 @@ export function toMeterReadingHistoryRecordViewModel(
 
   return {
     id: reading.id,
-    submittedAt: reading.submittedAt,
+    submittedAt: reading.createdAt,
     serviceName,
-    type: meter.type,
-    currentValue: reading.value,
+    type: meterType,
+    currentValue: reading.readingValue,
     consumption,
     tariff: tariffPrice,
     cost: Math.round(cost * 100) / 100,
@@ -191,29 +199,30 @@ export function toAddressReadingsSnapshotViewModel(
   providers: readonly Provider[],
 ): AddressReadingsSnapshotViewModel {
   const meterDrafts: MeterReadingDraftViewModel[] = meters.map((meter) => {
-    const provider = providers.find((p) => p.id === meter.providerId)
+    const provider = providers.find((p) => p.id === meter.serviceProviderId)
     if (!provider) {
       throw new Error(`Provider not found for meter ${meter.id}`)
     }
 
     const meterReadings = readings
       .filter((r) => r.meterId === meter.id)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime(),
+      )
 
-    return toMeterReadingDraftViewModel(
-      meter,
-      meterReadings[0],
-      meterReadings[1],
-      provider,
-    )
+    return toMeterReadingDraftViewModel(meter, meterReadings[0], meterReadings[1], provider)
   })
 
   const summaryRows: MeterReadingSummaryRowViewModel[] = meterDrafts.map((draft) => {
     const meter = meters.find((m) => m.id === draft.id)!
-    const provider = providers.find((p) => p.id === meter.providerId)!
+    const provider = providers.find((p) => p.id === meter.serviceProviderId)!
     const latestReading = readings
       .filter((r) => r.meterId === meter.id)
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+      .sort(
+        (a, b) =>
+          new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime(),
+      )[0]
 
     return toMeterReadingSummaryRowViewModel(
       meter,

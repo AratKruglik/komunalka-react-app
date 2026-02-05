@@ -1,22 +1,22 @@
-import { test as setup } from '@playwright/test';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import fs from 'fs';
-import { MOCK_JWT_TOKEN } from './helpers/constants';
+import { test as setup } from '@playwright/test'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import fs from 'fs'
+import { MOCK_JWT_TOKEN } from './helpers/constants'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-const authDir = join(__dirname, '../playwright/.auth');
-const authFile = join(authDir, 'user.json');
+const authDir = join(__dirname, '../playwright/.auth')
+const authFile = join(authDir, 'user.json')
 
 setup('authenticate', async ({ page }) => {
   if (!fs.existsSync(authDir)) {
-    fs.mkdirSync(authDir, { recursive: true });
+    fs.mkdirSync(authDir, { recursive: true })
   }
 
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 7)
 
   await page.context().addCookies([
     {
@@ -37,7 +37,7 @@ setup('authenticate', async ({ page }) => {
       domain: 'localhost',
       path: '/',
     },
-  ]);
+  ])
 
-  await page.context().storageState({ path: authFile });
-});
+  await page.context().storageState({ path: authFile })
+})
