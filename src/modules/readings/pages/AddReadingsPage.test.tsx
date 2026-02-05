@@ -14,7 +14,9 @@ import AddReadingsPage from './AddReadingsPage'
 import { useAddresses } from '@modules/addresses/hooks'
 import { useMetersByAddress } from '@modules/meters/hooks'
 import { useReadingsByAddress, useCreateBatchReadings } from '@modules/readings/hooks'
+import { useServiceProvidersByAddress } from '@modules/providers/hooks'
 import type { Address, Meter, Reading } from '@shared/types/entities'
+import type { ApiServiceProvider } from '@shared/types/api'
 
 vi.mock('@modules/addresses/hooks', () => ({
   useAddresses: vi.fn(),
@@ -29,33 +31,74 @@ vi.mock('@modules/readings/hooks', () => ({
   useCreateBatchReadings: vi.fn(),
 }))
 
-vi.mock('@shared/data/mockDatabase', () => ({
-  MOCK_PROVIDERS: [
-    {
-      id: 1,
-      name: 'YASNO',
-      serviceType: 'electricity',
-      serviceLabel: 'Електроенергія',
-      unitLabel: 'грн/кВт·год',
-      tariffs: [
-        { id: 'yasno-day', name: 'Денний', price: 4.32 },
-        { id: 'yasno-night', name: 'Нічний', price: 2.64 },
-      ],
-      billingCycle: 'monthly',
-    },
-    {
-      id: 2,
-      name: 'Київгаз',
-      serviceType: 'gas',
-      serviceLabel: 'Газ',
-      unitLabel: 'грн/м³',
-      tariffs: [
-        { id: 'kyivgas-standard', name: 'Побутовий', price: 7.96 },
-      ],
-      billingCycle: 'monthly',
-    },
-  ],
+vi.mock('@modules/providers/hooks', () => ({
+  useServiceProvidersByAddress: vi.fn(),
 }))
+
+const mockApiProviders: ApiServiceProvider[] = [
+  {
+    id: 1,
+    addressId: 1,
+    name: 'YASNO',
+    description: null,
+    phone: null,
+    email: null,
+    website: null,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    tariffs: [
+      {
+        id: 1,
+        serviceProviderId: 1,
+        utilityTypeId: 1,
+        currencyId: 1,
+        pricingModel: 'fixed',
+        baseRate: 4.32,
+        serviceFee: 0,
+        effectiveFrom: '2024-01-01T00:00:00Z',
+        effectiveTo: null,
+        notes: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        utilityTypeName: 'Електроенергія',
+        currencyCode: 'UAH',
+        currencySymbol: '₴',
+      },
+    ],
+  },
+  {
+    id: 2,
+    addressId: 1,
+    name: 'Київгаз',
+    description: null,
+    phone: null,
+    email: null,
+    website: null,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    tariffs: [
+      {
+        id: 2,
+        serviceProviderId: 2,
+        utilityTypeId: 2,
+        currencyId: 1,
+        pricingModel: 'fixed',
+        baseRate: 7.96,
+        serviceFee: 0,
+        effectiveFrom: '2024-01-01T00:00:00Z',
+        effectiveTo: null,
+        notes: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        utilityTypeName: 'Газ',
+        currencyCode: 'UAH',
+        currencySymbol: '₴',
+      },
+    ],
+  },
+]
 
 const mockNavigate = vi.fn()
 
@@ -90,20 +133,20 @@ const mockMeters: Meter[] = [
   createMockMeter({
     id: 100,
     addressId: 1,
-    providerId: 1,
-    type: 'electricity',
+    serviceProviderId: 1,
+    utilityTypeId: 1,
     name: 'Основний тариф',
-    meterNumber: 'EL-238923',
-    status: 'active',
+    serialNumber: 'EL-238923',
+    isActive: true,
   }),
   createMockMeter({
     id: 101,
     addressId: 1,
-    providerId: 2,
-    type: 'gas',
+    serviceProviderId: 2,
+    utilityTypeId: 2,
     name: 'Плита на кухні',
-    meterNumber: 'GS-88342',
-    status: 'active',
+    serialNumber: 'GS-88342',
+    isActive: true,
   }),
 ]
 
@@ -111,18 +154,16 @@ const mockReadings: Reading[] = [
   createMockReading({
     id: 1,
     meterId: 100,
-    value: 1500,
+    readingValue: 1500,
     consumption: 150,
-    date: '2025-01-15',
-    status: 'accepted',
+    readingDate: '2025-01-15',
   }),
   createMockReading({
     id: 2,
     meterId: 101,
-    value: 350,
+    readingValue: 350,
     consumption: 25,
-    date: '2025-01-15',
-    status: 'accepted',
+    readingDate: '2025-01-15',
   }),
 ]
 
@@ -130,9 +171,11 @@ function setupDefaultMocks(overrides: {
   addresses?: Address[]
   meters?: Meter[]
   readings?: Reading[]
+  providers?: ApiServiceProvider[]
   isLoadingAddresses?: boolean
   isLoadingMeters?: boolean
   isLoadingReadings?: boolean
+  isLoadingProviders?: boolean
   isSubmitting?: boolean
   submitError?: string | null
 } = {}) {
@@ -140,15 +183,18 @@ function setupDefaultMocks(overrides: {
     addresses = mockAddresses,
     meters = mockMeters,
     readings = mockReadings,
+    providers = mockApiProviders,
     isLoadingAddresses = false,
     isLoadingMeters = false,
     isLoadingReadings = false,
+    isLoadingProviders = false,
     isSubmitting = false,
     submitError = null,
   } = overrides
 
   const mockCreateBatchReadings = vi.fn().mockResolvedValue(readings)
   const mockRefetchReadings = vi.fn()
+  const mockRefetchProviders = vi.fn()
 
   vi.mocked(useAddresses).mockReturnValue({
     addresses,
@@ -173,6 +219,13 @@ function setupDefaultMocks(overrides: {
     refetch: mockRefetchReadings,
   })
 
+  vi.mocked(useServiceProvidersByAddress).mockReturnValue({
+    providers,
+    isLoading: isLoadingProviders,
+    error: null,
+    refetch: mockRefetchProviders,
+  })
+
   vi.mocked(useCreateBatchReadings).mockReturnValue({
     createBatchReadings: mockCreateBatchReadings,
     isLoading: isSubmitting,
@@ -184,6 +237,7 @@ function setupDefaultMocks(overrides: {
   return {
     mockCreateBatchReadings,
     mockRefetchReadings,
+    mockRefetchProviders,
   }
 }
 

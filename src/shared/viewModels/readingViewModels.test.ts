@@ -426,14 +426,15 @@ describe('readingViewModels', () => {
       expect(result.meterDrafts[0].previousValue).toBe(200)
     })
 
-    it('throws error when provider not found for meter', () => {
+    it('handles missing provider gracefully', () => {
       const meters = [createMockMeter({ id: 1, serviceProviderId: 999 })]
       const readings: Reading[] = []
       const providers = [createMockProvider({ id: 1 })]
 
-      expect(() => toAddressReadingsSnapshotViewModel(1, meters, readings, providers)).toThrow(
-        'Provider not found for meter 1',
-      )
+      const result = toAddressReadingsSnapshotViewModel(1, meters, readings, providers)
+
+      expect(result.meterDrafts).toHaveLength(1)
+      expect(result.meterDrafts[0].tariffs).toHaveLength(0)
     })
 
     it('handles empty meters array', () => {

@@ -7,6 +7,7 @@ import {
   userEvent,
   createMockAddress,
 } from '@test-utils'
+import type { ApiServiceProvider } from '@shared/types/api'
 
 const mockCreateMeter = vi.fn()
 let mockIsLoading = false
@@ -15,6 +16,71 @@ let mockError: string | null = null
 const mockAddresses = [
   createMockAddress({ id: 1, street: 'вул. Хрещатик', buildingNumber: '22', apartmentNumber: '15' }),
   createMockAddress({ id: 2, street: 'вул. Дарницька', buildingNumber: '5', apartmentNumber: '42' }),
+]
+
+const mockApiProviders: ApiServiceProvider[] = [
+  {
+    id: 1,
+    addressId: 1,
+    name: 'YASNO',
+    description: null,
+    phone: null,
+    email: null,
+    website: null,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    tariffs: [
+      {
+        id: 1,
+        serviceProviderId: 1,
+        utilityTypeId: 1,
+        currencyId: 1,
+        pricingModel: 'fixed',
+        baseRate: 4.32,
+        serviceFee: 0,
+        effectiveFrom: '2024-01-01T00:00:00Z',
+        effectiveTo: null,
+        notes: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        utilityTypeName: 'Електроенергія',
+        currencyCode: 'UAH',
+        currencySymbol: '₴',
+      },
+    ],
+  },
+  {
+    id: 2,
+    addressId: 1,
+    name: 'Київгаз',
+    description: null,
+    phone: null,
+    email: null,
+    website: null,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    tariffs: [
+      {
+        id: 2,
+        serviceProviderId: 2,
+        utilityTypeId: 2,
+        currencyId: 1,
+        pricingModel: 'fixed',
+        baseRate: 7.96,
+        serviceFee: 0,
+        effectiveFrom: '2024-01-01T00:00:00Z',
+        effectiveTo: null,
+        notes: null,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+        utilityTypeName: 'Газ',
+        currencyCode: 'UAH',
+        currencySymbol: '₴',
+      },
+    ],
+  },
 ]
 
 vi.mock('react-router', async () => {
@@ -44,6 +110,15 @@ vi.mock('@modules/meters/hooks', () => ({
     },
     createdMeter: null,
     reset: vi.fn(),
+  }),
+}))
+
+vi.mock('@modules/providers/hooks', () => ({
+  useServiceProvidersByAddress: () => ({
+    providers: mockApiProviders,
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
   }),
 }))
 
@@ -213,21 +288,32 @@ describe('AddMeterForm', () => {
   })
 
   describe('provider selection', () => {
-    it('disables provider select when meter type not selected', () => {
+    it('disables provider select when address not selected', () => {
       renderWithProviders(<AddMeterForm />)
 
       expect(getProviderSelect()).toBeDisabled()
     })
 
-    it('shows placeholder message when meter type not selected', () => {
+    it('shows placeholder message when address not selected', () => {
       renderWithProviders(<AddMeterForm />)
+
+      expect(screen.getByText(/спочатку оберіть адресу/i)).toBeInTheDocument()
+    })
+
+    it('shows meter type placeholder after address selected', async () => {
+      const user = userEvent.setup()
+      renderWithProviders(<AddMeterForm />)
+
+      await user.selectOptions(getAddressSelect(), '1')
 
       expect(screen.getByText(/спочатку оберіть тип лічильника/i)).toBeInTheDocument()
     })
 
-    it('enables provider select after meter type selected', async () => {
+    it('enables provider select after address and meter type selected', async () => {
       const user = userEvent.setup()
       renderWithProviders(<AddMeterForm />)
+
+      await user.selectOptions(getAddressSelect(), '1')
 
       const electricityCard = screen.getByText('Електролічильник').closest('button')!
       await user.click(electricityCard)
@@ -239,6 +325,8 @@ describe('AddMeterForm', () => {
       const user = userEvent.setup()
       renderWithProviders(<AddMeterForm />)
 
+      await user.selectOptions(getAddressSelect(), '1')
+
       const electricityCard = screen.getByText('Електролічильник').closest('button')!
       await user.click(electricityCard)
 
@@ -248,6 +336,8 @@ describe('AddMeterForm', () => {
     it('updates tariff when provider selected', async () => {
       const user = userEvent.setup()
       renderWithProviders(<AddMeterForm />)
+
+      await user.selectOptions(getAddressSelect(), '1')
 
       const electricityCard = screen.getByText('Електролічильник').closest('button')!
       await user.click(electricityCard)
