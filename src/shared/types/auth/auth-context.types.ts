@@ -1,5 +1,5 @@
 import type { AuthState } from './auth-state.types'
-import type { UpdateUserRequest, User } from './user.types'
+import type { UpdateProfilePayload, User } from './user.types'
 
 /**
  * Authentication context value interface
@@ -18,5 +18,5 @@ export interface AuthContextValue {
     confirmPassword: string;
   }, rememberMe?: boolean) => Promise<void>;
   refreshTokenManually: () => Promise<void>;
-  updateProfile: (data: UpdateUserRequest) => Promise<User>;
+  updateProfile: (data: UpdateProfilePayload) => Promise<User>;
 }

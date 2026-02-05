@@ -20,13 +20,14 @@ import {
   defaultPasswordRequirements,
   getPasswordStrength,
 } from '@shared/components/ui/form/PasswordInput'
+import { userService } from '@shared/api'
 import { useProfile } from '../hooks'
 
 interface ProfileFormProps {
   onCancel?: () => void
 }
 
-const AVATAR_SIZE_LIMIT = 5 * 1024 * 1024
+const AVATAR_SIZE_LIMIT = 2 * 1024 * 1024
 
 export function ProfileForm({ onCancel }: ProfileFormProps) {
   const { user, isLoading: isProfileLoading, error: profileError, isSuccess, updateProfile, clearError } = useProfile()
@@ -42,6 +43,11 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
     confirmPassword: '',
   })
 
+  const initialAvatarPreview = user?.avatarUrl
+    ? userService.getAvatarUrl(user.id, 'full')
+    : null
+  const initialAvatarLabel = initialAvatarPreview ? 'Поточний аватар' : null
+
   // Sync form with user data from context
   useEffect(() => {
     if (user) {
@@ -56,11 +62,12 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
         newPassword: '',
         confirmPassword: '',
       })
+      if (user.avatarUrl) {
+        setAvatarPreview(userService.getAvatarUrl(user.id, 'full'))
+        setAvatarFileName('Поточний аватар')
+      }
     }
   }, [user])
-
-  const initialAvatarPreview: string | null = null
-  const initialAvatarLabel = initialAvatarPreview ? 'Поточний аватар' : null
 
   const [avatarFileName, setAvatarFileName] = useState<string | null>(initialAvatarLabel)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(initialAvatarPreview)
@@ -140,7 +147,7 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
     if (file.size > AVATAR_SIZE_LIMIT) {
       setErrors((previous) => ({
         ...previous,
-        avatar: 'Розмір файлу не повинен перевищувати 5 МБ',
+        avatar: 'Розмір файлу не повинен перевищувати 2 МБ',
       }))
       return
     }
@@ -218,7 +225,7 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
     }
 
     if (avatarFile && avatarFile.size > AVATAR_SIZE_LIMIT) {
-      newErrors.avatar = 'Розмір файлу не повинен перевищувати 5 МБ'
+      newErrors.avatar = 'Розмір файлу не повинен перевищувати 2 МБ'
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -226,7 +233,6 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
       return
     }
 
-    // Call updateProfile from useProfile hook
     const phoneWithPrefix = formData.phone ? `+380${formData.phone}` : undefined
     await updateProfile({
       username: formData.username,
@@ -234,9 +240,10 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
       firstName: formData.firstName,
       lastName: formData.lastName,
       phoneNumber: phoneWithPrefix,
-      password: isChangingPassword ? formData.newPassword : undefined,
-      // TODO: Add avatar file upload support when backend is ready
-      // avatarFile: avatarFile,
+      currentPassword: isChangingPassword ? formData.currentPassword : undefined,
+      newPassword: isChangingPassword ? formData.newPassword : undefined,
+      confirmNewPassword: isChangingPassword ? formData.confirmPassword : undefined,
+      avatar: avatarFile ?? undefined,
     })
   }
 
@@ -273,7 +280,7 @@ export function ProfileForm({ onCancel }: ProfileFormProps) {
                   previewUrl={avatarPreview}
                   emptyIcon={<Camera className="h-10 w-10 text-primary" />}
                   emptyTitle="Перетягніть фото сюди або натисніть, щоб обрати"
-                  emptyDescription="JPG, PNG, HEIC до 5 МБ. Фото зʼявиться у меню та шапці."
+                  emptyDescription="JPG, PNG, HEIC до 2 МБ. Фото зʼявиться у меню та шапці."
                   helperText="Щоб замінити аватар, перетягніть новий файл або натисніть для вибору"
                   buttonLabel="Оновити фото"
                   clearLabel={initialAvatarPreview ? 'Повернути попереднє фото' : 'Видалити фото'}

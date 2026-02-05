@@ -486,7 +486,7 @@ test.describe('Profile - Avatar Upload', () => {
   test('should display file size limit', async ({ page }) => {
     await profilePage.goto()
 
-    const sizeLimit = page.getByText(/до 5 мб/i)
+    const sizeLimit = page.getByText(/до 2 мб/i)
     await expect(sizeLimit).toBeVisible()
   })
 

@@ -38,7 +38,6 @@ function setupDefaultMocks(overrides: {
   } = overrides
 
   const mockUpdateProfile = vi.fn().mockResolvedValue(undefined)
-  const mockChangePassword = vi.fn().mockResolvedValue(undefined)
   const mockClearError = vi.fn()
 
   vi.mocked(useProfile).mockReturnValue({
@@ -47,13 +46,11 @@ function setupDefaultMocks(overrides: {
     error,
     isSuccess,
     updateProfile: mockUpdateProfile,
-    changePassword: mockChangePassword,
     clearError: mockClearError,
   })
 
   return {
     mockUpdateProfile,
-    mockChangePassword,
     mockClearError,
   }
 }
@@ -440,12 +437,15 @@ describe('ProfileForm', () => {
           firstName: 'Test',
           lastName: 'User',
           phoneNumber: '+380501234567',
-          password: undefined,
+          currentPassword: undefined,
+          newPassword: undefined,
+          confirmNewPassword: undefined,
+          avatar: undefined,
         })
       })
     })
 
-    it('includes password in submission when changing password', async () => {
+    it('includes password fields in submission when changing password', async () => {
       const user = userEvent.setup()
       const { mockUpdateProfile } = setupDefaultMocks()
 
@@ -467,7 +467,9 @@ describe('ProfileForm', () => {
       await waitFor(() => {
         expect(mockUpdateProfile).toHaveBeenCalledWith(
           expect.objectContaining({
-            password: 'NewPassword123!',
+            currentPassword: 'currentpassword',
+            newPassword: 'NewPassword123!',
+            confirmNewPassword: 'NewPassword123!',
           })
         )
       })

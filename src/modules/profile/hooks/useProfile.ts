@@ -1,20 +1,20 @@
 import { useState, useCallback } from 'react'
 import { useAuth } from '@shared/hooks'
-import { userService } from '@shared/api'
-import type { ChangePasswordRequest } from '@shared/types/auth'
+import type { UpdateProfilePayload } from '@shared/types/auth'
 
 /**
  * Profile management hook
- * Provides functionality for updating user profile and changing password
+ * Provides functionality for updating user profile including password change
+ * Password change is now integrated into updateProfile (via PUT /users/{id})
  *
  * @returns Profile state and methods
  *
  * @example
  * ```tsx
  * function ProfilePage() {
- *   const { user, isLoading, error, updateProfile, changePassword } = useProfile();
+ *   const { user, isLoading, error, updateProfile } = useProfile();
  *
- *   const handleUpdateProfile = async (data: UpdateUserRequest) => {
+ *   const handleUpdateProfile = async (data: UpdateProfilePayload) => {
  *     await updateProfile(data);
  *   };
  *
@@ -37,21 +37,14 @@ export function useProfile() {
   }, [])
 
   /**
-   * Update user profile
+   * Update user profile with optional avatar and password change
    * Delegates to AuthContext to keep user state synchronized
    *
-   * @param data - Profile update data
+   * @param data - Profile update data including optional avatar and password fields
    * @throws {Error} if update fails
    */
   const updateProfile = useCallback(
-    async (data: {
-        username: string;
-        email: string;
-        firstName: string;
-        lastName: string;
-        phoneNumber?: string;
-        password?: string
-    }) => {
+    async (data: UpdateProfilePayload) => {
       setIsLoading(true)
       setError(null)
       setIsSuccess(false)
@@ -70,36 +63,12 @@ export function useProfile() {
     [updateProfileContext]
   )
 
-  /**
-   * Change user password
-   *
-   * @param data - Current and new password
-   * @throws {Error} if password change fails
-   */
-  const changePassword = useCallback(async (data: ChangePasswordRequest) => {
-    setIsLoading(true)
-    setError(null)
-    setIsSuccess(false)
-
-    try {
-      await userService.changePassword(data)
-      setIsSuccess(true)
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to change password'
-      setError(errorMessage)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
   return {
     user: state.user,
     isLoading,
     error,
     isSuccess,
     updateProfile,
-    changePassword,
     clearError,
   }
 }
