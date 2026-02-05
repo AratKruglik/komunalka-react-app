@@ -5,8 +5,40 @@
  */
 
 import type { Meter, Reading, Provider } from '../types/entities'
+import type { ApiServiceProvider } from '../types/api'
 import type { MeterType } from '../constants/meterTypes'
 import { METER_TYPE_TO_SERVICE_LABEL, UTILITY_TYPE_ID_TO_METER_TYPE } from '../types/entities'
+import { METER_TYPE_UNITS } from '../constants/meterTypes'
+import { getApiPrimaryTariff } from '../utils/providerTariffs'
+
+type ProviderInput = Provider | ApiServiceProvider
+
+function isApiProvider(provider: ProviderInput): provider is ApiServiceProvider {
+  return 'addressId' in provider && 'tariffs' in provider && provider.tariffs.length > 0 && 'utilityTypeId' in provider.tariffs[0]
+}
+
+function getProviderUnit(provider: ProviderInput | undefined, meterType: MeterType): string {
+  if (!provider) {
+    return METER_TYPE_UNITS[meterType] ?? 'од'
+  }
+
+  if (isApiProvider(provider)) {
+    const tariff = getApiPrimaryTariff(provider)
+    if (tariff) {
+      const unitMap: Record<number, string> = {
+        1: 'кВт·год',
+        2: 'м³',
+        3: 'м³',
+        4: 'м³',
+        5: 'Гкал',
+      }
+      return unitMap[tariff.utilityTypeId] ?? 'од'
+    }
+    return METER_TYPE_UNITS[meterType] ?? 'од'
+  }
+
+  return provider.unitLabel.split('/')[1] || 'од'
+}
 
 function getMeterType(meter: Meter): MeterType {
   return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
@@ -86,7 +118,7 @@ export interface AddressMetersSnapshotViewModel {
  */
 export function toMeterDeviceViewModel(
   meter: Meter,
-  provider: Provider,
+  provider: ProviderInput | undefined,
   lastSubmission: string,
 ): MeterDeviceViewModel {
   return {
@@ -95,7 +127,7 @@ export function toMeterDeviceViewModel(
     meterNumber: meter.serialNumber,
     location: meter.location ?? '',
     installedAt: meter.installationDate,
-    providerName: provider.name,
+    providerName: provider?.name ?? 'Не вказано',
     status: meter.isActive ? 'active' : 'inactive',
     lastSubmission,
     nextCheckDate: undefined,
@@ -167,7 +199,7 @@ export function toMeterTypeGroupViewModel(
   type: MeterType,
   meters: readonly Meter[],
   readings: readonly Reading[],
-  provider: Provider,
+  provider: ProviderInput | undefined,
 ): MeterTypeGroupViewModel {
   const typeName = METER_TYPE_TO_SERVICE_LABEL[type]
 
@@ -196,7 +228,7 @@ export function toMeterTypeGroupViewModel(
     meterId: meters[0]?.id || 0,
     monthLabel: formatMonthLabel(new Date().toISOString()),
     previousValue: previousReading?.readingValue || 0,
-    unit: provider.unitLabel.split('/')[1] || 'од',
+    unit: getProviderUnit(provider, type),
   }
 
   return {
@@ -212,12 +244,13 @@ export function toMeterTypeGroupViewModel(
 /**
  * Створює AddressMetersSnapshotViewModel з meters та readings
  * Групує лічильники за типом і формує viewModel для UI
+ * Supports both legacy Provider type and new ApiServiceProvider type
  */
 export function toAddressMetersSnapshotViewModel(
   addressId: number,
   meters: readonly Meter[],
   readings: readonly Reading[],
-  providers: readonly Provider[],
+  providers: readonly ProviderInput[],
 ): AddressMetersSnapshotViewModel {
   const metersByType = meters.reduce(
     (acc, meter) => {
@@ -231,7 +264,6 @@ export function toAddressMetersSnapshotViewModel(
     {} as Record<MeterType, Meter[]>,
   )
 
-  // Створюємо groups
   const groups: Partial<Record<MeterType, MeterTypeGroupViewModel>> = {}
 
   for (const [type, typeMeters] of Object.entries(metersByType)) {
@@ -243,7 +275,6 @@ export function toAddressMetersSnapshotViewModel(
       .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())
 
     const provider = providers.find((p) => p.id === typeMeters[0]?.serviceProviderId)
-    if (!provider) continue
 
     groups[meterType] = toMeterTypeGroupViewModel(
       meterType,

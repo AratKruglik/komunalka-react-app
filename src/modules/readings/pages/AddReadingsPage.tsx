@@ -7,8 +7,8 @@ import { Button, Card, CardContent, FormMessage, Label, Select } from '@shared/c
 import { useAddresses } from '@modules/addresses/hooks'
 import { useMetersByAddress } from '@modules/meters/hooks'
 import { useReadingsByAddress, useCreateBatchReadings } from '@modules/readings/hooks'
+import { useServiceProvidersByAddress } from '@modules/providers/hooks'
 import type { BatchReadingItem } from '@modules/readings/types'
-import { MOCK_PROVIDERS } from '@shared/data/mockDatabase'
 import {
   toAddressSelectViewModel,
   toAddressReadingsSnapshotViewModel,
@@ -64,6 +64,7 @@ export default function AddReadingsPage() {
   // Fetch meters and readings from API
   const { meters, isLoading: isLoadingMeters } = useMetersByAddress(selectedAddressId)
   const { readings, isLoading: isLoadingReadings, refetch: refetchReadings } = useReadingsByAddress(selectedAddressId)
+  const { providers, isLoading: isLoadingProviders } = useServiceProvidersByAddress(selectedAddressId)
   const { createBatchReadings, isLoading: isSubmitting, error: submitError } = useCreateBatchReadings()
 
   // Generate address options for dropdown
@@ -82,11 +83,11 @@ export default function AddReadingsPage() {
       selectedAddressId,
       meters,
       readings,
-      MOCK_PROVIDERS
+      providers
     )
-  }, [selectedAddressId, meters, readings])
+  }, [selectedAddressId, meters, readings, providers])
 
-  const isLoading = isLoadingMeters || isLoadingReadings
+  const isLoading = isLoadingMeters || isLoadingReadings || isLoadingProviders
   const [forms, setForms] = useState<MeterFormState>(() => buildFormState(snapshot?.meterDrafts ?? []))
   const generatedPreviews = useRef<Record<string, string>>({})
 
