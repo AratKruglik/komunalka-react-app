@@ -87,9 +87,9 @@ const mapTariffs = (provider: ProviderInput): TariffOptionViewModel[] => {
   if (isApiProvider(provider)) {
     return provider.tariffs.map((tariff) => ({
       id: String(tariff.id),
-      name: tariff.utilityTypeName,
+      name: tariff.name,
       price: tariff.baseRate,
-      label: `${tariff.utilityTypeName} · ${formatApiTariffLabel(tariff)}`,
+      label: `${tariff.name} · ${formatApiTariffLabel(tariff)}`,
     }))
   }
 

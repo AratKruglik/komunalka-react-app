@@ -203,11 +203,10 @@ export function AddProviderForm({ onCancel, onSuccess }: AddProviderFormProps) {
       .map((t) => ({
         utilityTypeId: Number(data.utilityTypeId),
         currencyId: 1,
-        pricingModel: 'fixed' as const,
+        name: t.name,
         baseRate: Number(t.baseRate),
         serviceFee: Number(t.serviceFee) || 0,
         effectiveFrom: new Date().toISOString(),
-        notes: t.name || null,
       }))
 
     const request: CreateServiceProviderRequest = {

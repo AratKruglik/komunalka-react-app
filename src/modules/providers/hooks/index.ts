@@ -5,4 +5,7 @@ export {
   useCreateServiceProvider,
   useUpdateServiceProvider,
   useDeleteServiceProvider,
+  useCreateTariff,
+  useUpdateTariff,
+  useDeleteTariff,
 } from './useServiceProviders'

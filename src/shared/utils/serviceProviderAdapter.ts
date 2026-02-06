@@ -43,7 +43,7 @@ export function meterTypeToServiceLabel(meterType: MeterType): ServiceLabel {
 export function adaptApiTariffToLegacy(tariff: ApiTariff): ProviderTariff {
   return {
     id: String(tariff.id),
-    name: tariff.utilityTypeName,
+    name: tariff.name,
     price: tariff.baseRate,
   }
 }

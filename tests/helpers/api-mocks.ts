@@ -1139,12 +1139,49 @@ export const ADDRESS_TYPES = {
   OFFICE: 3,
 } as const
 
+export interface MockTariff {
+  id: number;
+  serviceProviderId: number;
+  utilityTypeId: number;
+  currencyId: number;
+  name: string;
+  baseRate: number;
+  serviceFee: number;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  utilityTypeName: string;
+  currencyCode: string;
+  currencySymbol: string;
+}
+
+export interface MockServiceProvider {
+  id: number;
+  addressId: number;
+  name: string;
+  description: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tariffs: MockTariff[];
+}
+
 export async function mockProviders(
   page: Page,
-  providers: unknown[],
+  providers: MockServiceProvider[],
   options: MockOptions = {}
 ): Promise<void> {
-  await page.route(`${API_BASE_URL}/providers*`, async (route: Route) => {
+  await page.route(`${API_BASE_URL}/service-providers*`, async (route: Route) => {
+    if (route.request().method() !== 'GET') {
+      await route.continue()
+      return
+    }
+
     if (options.delay) {
       await new Promise(resolve => setTimeout(resolve, options.delay))
     }
@@ -1159,7 +1196,7 @@ export async function mockProviders(
 }
 
 export async function mockCreateProvider(page: Page, options: MockOptions = {}): Promise<void> {
-  await page.route(`${API_BASE_URL}/providers`, async (route: Route) => {
+  await page.route(`${API_BASE_URL}/service-providers`, async (route: Route) => {
     if (route.request().method() !== 'POST') {
       await route.continue()
       return
@@ -1170,6 +1207,7 @@ export async function mockCreateProvider(page: Page, options: MockOptions = {}):
     }
 
     const requestBody = route.request().postDataJSON()
+    const now = new Date().toISOString()
 
     await route.fulfill({
       status: options.status ?? 201,
@@ -1178,6 +1216,9 @@ export async function mockCreateProvider(page: Page, options: MockOptions = {}):
         data: {
           id: Date.now(),
           ...requestBody,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
         },
       }),
     })
@@ -1186,23 +1227,27 @@ export async function mockCreateProvider(page: Page, options: MockOptions = {}):
 
 export interface MockUtilityType {
   id: number;
-  name: string;
+  name?: string;
+  slug: string;
+  displayName: string;
+  unit: string;
+  isActive: boolean;
 }
 
 export async function mockUtilityTypes(page: Page, types?: MockUtilityType[]): Promise<void> {
   const defaultTypes: MockUtilityType[] = [
-    { id: UTILITY_TYPES.ELECTRICITY, name: 'Електроенергія' },
-    { id: UTILITY_TYPES.GAS, name: 'Газ' },
-    { id: UTILITY_TYPES.COLD_WATER, name: 'Холодна вода' },
-    { id: UTILITY_TYPES.HOT_WATER, name: 'Гаряча вода' },
-    { id: UTILITY_TYPES.HEATING, name: 'Опалення' },
+    { id: UTILITY_TYPES.ELECTRICITY, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год', isActive: true },
+    { id: UTILITY_TYPES.GAS, slug: 'gas', displayName: 'Газ', unit: 'м³', isActive: true },
+    { id: UTILITY_TYPES.COLD_WATER, slug: 'cold_water', displayName: 'Холодна вода', unit: 'м³', isActive: true },
+    { id: UTILITY_TYPES.HOT_WATER, slug: 'hot_water', displayName: 'Гаряча вода', unit: 'м³', isActive: true },
+    { id: UTILITY_TYPES.HEATING, slug: 'heating', displayName: 'Опалення', unit: 'Гкал', isActive: true },
   ]
 
   await page.route(`${API_BASE_URL}/utility-type*`, async (route: Route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(types ?? defaultTypes),
+      body: JSON.stringify({ data: types ?? defaultTypes }),
     })
   })
 }
@@ -1233,7 +1278,7 @@ export async function mockAddMeterPageData(
   page: Page,
   data: {
     addresses: MockAddress[];
-    providers?: unknown[];
+    providers?: MockServiceProvider[];
   },
   options: MockOptions = {}
 ): Promise<void> {

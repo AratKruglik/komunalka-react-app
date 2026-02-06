@@ -58,6 +58,9 @@ export const API_ENDPOINTS = {
     CREATE: '/service-providers',
     UPDATE: (id: number) => `/service-providers/${id}`,
     DELETE: (id: number) => `/service-providers/${id}`,
+    TARIFFS: (providerId: number) => `/service-providers/${providerId}/tariffs`,
+    TARIFF: (providerId: number, tariffId: number) =>
+      `/service-providers/${providerId}/tariffs/${tariffId}`,
   },
   UTILITY_TYPES: {
     LIST: '/utility-types',

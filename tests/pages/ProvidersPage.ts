@@ -12,7 +12,6 @@ export class ProvidersPage extends BasePage {
   readonly whatsNextInfo: Locator
   readonly securityInfo: Locator
 
-  readonly templatesSection: Locator
   readonly providerCards: Locator
 
   constructor(page: Page) {
@@ -20,13 +19,12 @@ export class ProvidersPage extends BasePage {
 
     this.pageHeading = page.getByRole('heading', { name: /мої провайдери/i, level: 1 })
     this.pageSubtitle = page.getByText(/керуйте тарифами води, газу, електрики та тепла/i)
-    this.addProviderButton = page.getByRole('button', { name: /додати провайдера/i })
+    this.addProviderButton = page.getByRole('button', { name: /додати провайдера/i }).first()
 
     this.journalHeading = page.getByRole('heading', { name: /журнал провайдерів/i })
     this.whatsNextInfo = page.getByText(/що далі\?/i)
     this.securityInfo = page.getByText(/безпека даних/i)
 
-    this.templatesSection = page.getByText(/шаблони провайдерів/i)
     this.providerCards = page.locator('article')
   }
 
@@ -73,11 +71,6 @@ export class ProvidersPage extends BasePage {
     await expect(tariff).toBeVisible()
   }
 
-  async expectServiceCategoryVisible(category: string): Promise<void> {
-    const categoryHeading = this.page.getByRole('heading', { name: category })
-    await expect(categoryHeading).toBeVisible()
-  }
-
   async getProviderCount(): Promise<number> {
     const cards = await this.providerCards.all()
     return cards.length
@@ -97,11 +90,8 @@ export class AddProviderPage extends BasePage {
   readonly breadcrumb: Locator
 
   readonly nameInput: Locator
-  readonly serviceTypeSelect: Locator
   readonly websiteInput: Locator
   readonly descriptionInput: Locator
-  readonly tariffNameInput: Locator
-  readonly tariffPriceInput: Locator
   readonly addTariffButton: Locator
 
   readonly cancelButton: Locator
@@ -114,11 +104,8 @@ export class AddProviderPage extends BasePage {
     this.breadcrumb = page.getByRole('navigation', { name: 'Breadcrumb' })
 
     this.nameInput = page.getByLabel(/назва провайдера/i)
-    this.serviceTypeSelect = page.getByRole('combobox', { name: /тип послуги/i })
-    this.websiteInput = page.getByLabel(/веб-сайт/i)
-    this.descriptionInput = page.getByLabel(/опис/i)
-    this.tariffNameInput = page.getByLabel(/назва тарифу/i)
-    this.tariffPriceInput = page.getByLabel(/ціна/i)
+    this.websiteInput = page.getByLabel(/офіційний сайт/i)
+    this.descriptionInput = page.getByLabel(/нотатки/i)
     this.addTariffButton = page.getByRole('button', { name: /додати тариф/i })
 
     this.cancelButton = page.getByRole('button', { name: /скасувати/i })
@@ -127,14 +114,10 @@ export class AddProviderPage extends BasePage {
 
   async fillProviderForm(data: {
     name: string;
-    serviceType?: string;
     website?: string;
     description?: string;
   }): Promise<void> {
     await this.nameInput.fill(data.name)
-    if (data.serviceType) {
-      await this.serviceTypeSelect.selectOption({ label: data.serviceType })
-    }
     if (data.website) {
       await this.websiteInput.fill(data.website)
     }
@@ -143,10 +126,39 @@ export class AddProviderPage extends BasePage {
     }
   }
 
-  async addTariff(name: string, price: string): Promise<void> {
-    await this.tariffNameInput.fill(name)
-    await this.tariffPriceInput.fill(price)
+  async selectUtilityType(utilityTypeName: string): Promise<void> {
+    const radioCard = this.page.getByText(utilityTypeName, { exact: true }).first()
+    await radioCard.click()
+  }
+
+  getTariffNameInput(index: number): Locator {
+    return this.page.getByLabel(/назва тарифу/i).nth(index)
+  }
+
+  getTariffBaseRateInput(index: number): Locator {
+    return this.page.getByLabel(/базова ставка/i).nth(index)
+  }
+
+  getTariffServiceFeeInput(index: number): Locator {
+    return this.page.getByLabel(/абонплата/i).nth(index)
+  }
+
+  async fillTariff(index: number, data: {
+    name: string;
+    baseRate: string;
+    serviceFee?: string;
+  }): Promise<void> {
+    await this.getTariffNameInput(index).fill(data.name)
+    await this.getTariffBaseRateInput(index).fill(data.baseRate)
+    if (data.serviceFee) {
+      await this.getTariffServiceFeeInput(index).fill(data.serviceFee)
+    }
+  }
+
+  async addTariff(name: string, baseRate: string): Promise<void> {
     await this.addTariffButton.click()
+    const lastIndex = await this.page.getByLabel(/назва тарифу/i).count() - 1
+    await this.fillTariff(lastIndex, { name, baseRate })
   }
 
   async submit(): Promise<void> {
