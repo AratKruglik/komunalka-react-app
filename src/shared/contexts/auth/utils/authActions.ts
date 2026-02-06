@@ -2,6 +2,7 @@ import { AuthActionType } from '../actionTypes'
 import { authService, userService } from '@shared/api'
 import type { AuthDispatch, ScheduleTokenRefreshFn } from './types'
 import type { User } from '@shared/types/auth/user.types'
+import type { OAuthProvider } from '@shared/types/auth/oauth.types'
 
 /**
  * Parameters for login action
@@ -129,6 +130,58 @@ export async function registerAction(
       error && typeof error === 'object' && 'message' in error
         ? (error as { message: string }).message
         : 'Registration failed'
+    dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage })
+    throw error
+  }
+}
+
+export interface OAuthCallbackParams {
+  provider: OAuthProvider;
+  code: string;
+  state: string;
+}
+
+export async function oauthCallbackAction(
+  params: OAuthCallbackParams,
+  dispatch: AuthDispatch,
+  scheduleTokenRefresh: ScheduleTokenRefreshFn
+): Promise<void> {
+  const { provider, code, state } = params
+
+  try {
+    dispatch({ type: AuthActionType.AUTH_START })
+
+    const response = await authService.oauthCallback({ provider, code, state })
+
+    const minimalUser: User = {
+      id: response.userId,
+      username: response.username,
+      email: response.email,
+    }
+
+    dispatch({
+      type: AuthActionType.AUTH_SUCCESS,
+      payload: {
+        user: minimalUser,
+        token: response.token,
+        refreshToken: response.refreshToken,
+        expiresAt: response.expiration,
+      },
+    })
+
+    scheduleTokenRefresh(response.expiration)
+
+    try {
+      const fullUser = await userService.getProfile()
+      dispatch({ type: AuthActionType.UPDATE_USER, payload: fullUser })
+    } catch {
+      // Profile loading failed - minimal user data already set
+    }
+  } catch (error) {
+    const errorMessage =
+      error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
+        : 'Помилка авторизації через OAuth'
     dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage })
     throw error
   }
