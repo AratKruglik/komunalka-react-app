@@ -91,22 +91,19 @@ test.describe('Providers List', () => {
     await providersPage.expectProviderVisible('Київтеплоенерго')
   })
 
-  test('should display provider tariffs with pricingModel for non-fixed tariffs', async () => {
+  test('should display provider tariff names', async () => {
     await providersPage.goto()
 
     const card = await providersPage.getProviderCard('YASNO')
     await expect(card).toContainText('Денний')
-    await expect(card).toContainText('(day)')
     await expect(card).toContainText('Нічний')
-    await expect(card).toContainText('(night)')
   })
 
-  test('should not display pricingModel label for fixed tariffs', async () => {
+  test('should display tariff name for single-tariff provider', async () => {
     await providersPage.goto()
 
     const card = await providersPage.getProviderCard('Київгаз')
     await expect(card).toContainText('Побутовий')
-    await expect(card).not.toContainText('(fixed)')
   })
 
   test('should display edit button for provider', async () => {
@@ -239,28 +236,25 @@ test.describe('Add Provider', () => {
     await expect(addProviderPage.nameInput).toHaveValue(testNewProvider.name)
   })
 
-  test('should fill tariff with pricingModel', async () => {
+  test('should fill tariff name and rate', async () => {
     await addProviderPage.goto()
 
     const tariff = testNewProvider.tariffs[0]
     await addProviderPage.fillTariff(0, {
       name: tariff.name,
-      pricingModel: tariff.pricingModel,
       baseRate: tariff.price,
     })
 
     await expect(addProviderPage.getTariffNameInput(0)).toHaveValue(tariff.name)
-    await expect(addProviderPage.getTariffPricingModelInput(0)).toHaveValue(tariff.pricingModel)
     await expect(addProviderPage.getTariffBaseRateInput(0)).toHaveValue(tariff.price)
   })
 
   test('should add second tariff to provider', async () => {
     await addProviderPage.goto()
 
-    await addProviderPage.addTariff('Нічний', 'night', '2.64')
+    await addProviderPage.addTariff('Нічний', '2.64')
 
     await expect(addProviderPage.getTariffNameInput(1)).toHaveValue('Нічний')
-    await expect(addProviderPage.getTariffPricingModelInput(1)).toHaveValue('night')
     await expect(addProviderPage.getTariffBaseRateInput(1)).toHaveValue('2.64')
   })
 
@@ -281,7 +275,6 @@ test.describe('Add Provider', () => {
     })
     await addProviderPage.fillTariff(0, {
       name: 'Базовий',
-      pricingModel: 'fixed',
       baseRate: '5.00',
     })
     await addProviderPage.submit()
@@ -300,18 +293,15 @@ test.describe('Add Provider', () => {
 
     await addProviderPage.fillTariff(0, {
       name: 'Денний',
-      pricingModel: 'day',
       baseRate: '4.32',
     })
 
-    await addProviderPage.addTariff('Нічний', 'night', '2.64')
+    await addProviderPage.addTariff('Нічний', '2.64')
 
     await expect(addProviderPage.getTariffNameInput(0)).toHaveValue('Денний')
-    await expect(addProviderPage.getTariffPricingModelInput(0)).toHaveValue('day')
     await expect(addProviderPage.getTariffBaseRateInput(0)).toHaveValue('4.32')
 
     await expect(addProviderPage.getTariffNameInput(1)).toHaveValue('Нічний')
-    await expect(addProviderPage.getTariffPricingModelInput(1)).toHaveValue('night')
     await expect(addProviderPage.getTariffBaseRateInput(1)).toHaveValue('2.64')
 
     await addProviderPage.submit()

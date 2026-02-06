@@ -1144,7 +1144,7 @@ export interface MockTariff {
   serviceProviderId: number;
   utilityTypeId: number;
   currencyId: number;
-  pricingModel: string;
+  name: string;
   baseRate: number;
   serviceFee: number;
   effectiveFrom: string;

@@ -264,14 +264,7 @@ function ProviderCard({ provider, onEdit, onDelete }: ProviderCardProps) {
                 key={tariff.id}
                 className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-900 dark:border-amber-300/30 dark:bg-amber-200/10 dark:text-amber-100"
               >
-                <span>
-                  {tariff.notes || tariff.utilityTypeName}
-                  {tariff.pricingModel && tariff.pricingModel !== 'fixed' && (
-                    <span className="ml-1 text-amber-600 dark:text-amber-300">
-                      ({tariff.pricingModel})
-                    </span>
-                  )}
-                </span>
+                <span>{tariff.name}</span>
                 <span className="text-[11px] font-medium text-amber-700 dark:text-amber-200">
                   {formatApiTariffLabel(tariff)}
                 </span>

@@ -135,10 +135,6 @@ export class AddProviderPage extends BasePage {
     return this.page.getByLabel(/назва тарифу/i).nth(index)
   }
 
-  getTariffPricingModelInput(index: number): Locator {
-    return this.page.getByLabel(/тип тарифу/i).nth(index)
-  }
-
   getTariffBaseRateInput(index: number): Locator {
     return this.page.getByLabel(/базова ставка/i).nth(index)
   }
@@ -149,22 +145,20 @@ export class AddProviderPage extends BasePage {
 
   async fillTariff(index: number, data: {
     name: string;
-    pricingModel: string;
     baseRate: string;
     serviceFee?: string;
   }): Promise<void> {
     await this.getTariffNameInput(index).fill(data.name)
-    await this.getTariffPricingModelInput(index).fill(data.pricingModel)
     await this.getTariffBaseRateInput(index).fill(data.baseRate)
     if (data.serviceFee) {
       await this.getTariffServiceFeeInput(index).fill(data.serviceFee)
     }
   }
 
-  async addTariff(name: string, pricingModel: string, baseRate: string): Promise<void> {
+  async addTariff(name: string, baseRate: string): Promise<void> {
     await this.addTariffButton.click()
     const lastIndex = await this.page.getByLabel(/назва тарифу/i).count() - 1
-    await this.fillTariff(lastIndex, { name, pricingModel, baseRate })
+    await this.fillTariff(lastIndex, { name, baseRate })
   }
 
   async submit(): Promise<void> {

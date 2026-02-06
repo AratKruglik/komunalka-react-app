@@ -27,7 +27,6 @@ import type { CreateServiceProviderRequest, CreateTariffRequest } from '@shared/
 type TariffFormValue = {
   id: string
   name: string
-  pricingModel: string
   baseRate: string
   serviceFee: string
 }
@@ -116,7 +115,7 @@ const defaultValues: ProviderFormValues = {
   description: '',
   autoReminder: true,
   reminderDay: '5',
-  tariffs: [{ id: 'tariff-1', name: 'Базовий тариф', pricingModel: 'fixed', baseRate: '', serviceFee: '0' }],
+  tariffs: [{ id: 'tariff-1', name: 'Базовий тариф', baseRate: '', serviceFee: '0' }],
 }
 
 export function AddProviderForm({ onCancel, onSuccess }: AddProviderFormProps) {
@@ -202,10 +201,12 @@ export function AddProviderForm({ onCancel, onSuccess }: AddProviderFormProps) {
     const tariffRequests: CreateTariffRequest[] = data.tariffs
       .filter((t) => t.baseRate)
       .map((t) => ({
-        pricingModel: t.pricingModel || 'fixed',
+        utilityTypeId: Number(data.utilityTypeId),
+        currencyId: 1,
+        name: t.name,
         baseRate: Number(t.baseRate),
         serviceFee: Number(t.serviceFee) || 0,
-        notes: t.name || null,
+        effectiveFrom: new Date().toISOString(),
       }))
 
     const request: CreateServiceProviderRequest = {
@@ -365,7 +366,6 @@ export function AddProviderForm({ onCancel, onSuccess }: AddProviderFormProps) {
                       append({
                         id: `tariff-${tariffFields.length + 1}-${Date.now()}`,
                         name: '',
-                        pricingModel: '',
                         baseRate: '',
                         serviceFee: '0',
                       })
@@ -412,7 +412,7 @@ export function AddProviderForm({ onCancel, onSuccess }: AddProviderFormProps) {
                           )}
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-2 md:gap-6 md:pt-2">
+                        <div className="grid gap-4 md:grid-cols-3 md:gap-6 md:pt-2">
                           <FormField
                             id={`tariff-name-${tariff.id}`}
                             label="Назва тарифу"
@@ -430,26 +430,6 @@ export function AddProviderForm({ onCancel, onSuccess }: AddProviderFormProps) {
                             />
                           </FormField>
 
-                          {/* TODO(human): Визначити UX для вибору pricingModel */}
-                          <FormField
-                            id={`tariff-pricing-${tariff.id}`}
-                            label="Тип тарифу"
-                            required
-                            helper="Наприклад: day, night, peak, fixed"
-                            error={errors.tariffs?.[index]?.pricingModel?.message}
-                          >
-                            <Input
-                              id={`tariff-pricing-${tariff.id}`}
-                              placeholder="fixed"
-                              {...register(`tariffs.${index}.pricingModel` as const, {
-                                required: 'Вкажіть тип тарифу',
-                              })}
-                              isInvalid={Boolean(errors.tariffs?.[index]?.pricingModel)}
-                            />
-                          </FormField>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2 md:gap-6">
                           <FormField
                             id={`tariff-rate-${tariff.id}`}
                             label="Базова ставка"
