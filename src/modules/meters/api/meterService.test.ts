@@ -42,7 +42,7 @@ describe('meterService', () => {
   describe('list', () => {
     it('returns list of meters without params', async () => {
       const mockMeters = [mockMeter]
-      vi.mocked(api.get).mockResolvedValueOnce(mockMeters)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeters })
 
       const result = await meterService.list()
 
@@ -51,7 +51,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with page param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ page: 2 })
 
@@ -59,7 +59,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with perPage param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ perPage: 20 })
 
@@ -67,7 +67,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with addressId param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ addressId: 5 })
 
@@ -75,7 +75,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with utilityTypeId param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ utilityTypeId: 1 })
 
@@ -83,7 +83,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with isActive=true', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ isActive: true })
 
@@ -91,7 +91,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with isActive=false', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ isActive: false })
 
@@ -99,7 +99,7 @@ describe('meterService', () => {
     })
 
     it('combines multiple params in query string', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({
         page: 1,
@@ -130,7 +130,7 @@ describe('meterService', () => {
   describe('getByAddress', () => {
     it('returns meters for a specific address', async () => {
       const mockMeters = [mockMeter, { ...mockMeter, id: 2, type: 'gas' as const }]
-      vi.mocked(api.get).mockResolvedValueOnce(mockMeters)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeters })
 
       const result = await meterService.getByAddress(1)
 
@@ -139,7 +139,7 @@ describe('meterService', () => {
     })
 
     it('calls correct endpoint with different address ids', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.getByAddress(42)
 
@@ -147,7 +147,7 @@ describe('meterService', () => {
     })
 
     it('returns empty array when no meters found', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       const result = await meterService.getByAddress(999)
 
@@ -170,7 +170,7 @@ describe('meterService', () => {
   describe('getActive', () => {
     it('returns all active meters', async () => {
       const activeMeters = [mockMeter]
-      vi.mocked(api.get).mockResolvedValueOnce(activeMeters)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: activeMeters })
 
       const result = await meterService.getActive()
 
@@ -179,7 +179,7 @@ describe('meterService', () => {
     })
 
     it('returns empty array when no active meters', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       const result = await meterService.getActive()
 

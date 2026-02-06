@@ -1,6 +1,7 @@
 import { api } from '@shared/api/apiClient'
 import { API_ENDPOINTS } from '@shared/constants'
 import type { Meter } from '@shared/types/entities'
+import type { ApiListResponse } from '@shared/types/api'
 import type {
   MeterResponse,
   CreateMeterRequest,
@@ -8,16 +9,7 @@ import type {
   MeterListParams,
 } from '../types'
 
-/**
- * Service for managing meters
- * Provides CRUD operations for meter management
- */
 export const meterService = {
-  /**
-   * Get list of all meters
-   * @param params - Optional pagination and filtering parameters
-   * @returns List of meters
-   */
   list: async (params?: MeterListParams): Promise<Meter[]> => {
     const queryParams = new URLSearchParams()
 
@@ -30,31 +22,20 @@ export const meterService = {
     const queryString = queryParams.toString()
     const url = queryString ? `${API_ENDPOINTS.METERS.LIST}?${queryString}` : API_ENDPOINTS.METERS.LIST
 
-    return api.get<Meter[]>(url)
+    const response = await api.get<ApiListResponse<Meter>>(url)
+    return response.data
   },
 
-  /**
-   * Get meters for a specific address
-   * @param addressId - Address ID
-   * @returns List of meters for the address
-   */
   getByAddress: async (addressId: number): Promise<Meter[]> => {
-    return api.get<Meter[]>(API_ENDPOINTS.METERS.BY_ADDRESS(addressId))
+    const response = await api.get<ApiListResponse<Meter>>(API_ENDPOINTS.METERS.BY_ADDRESS(addressId))
+    return response.data
   },
 
-  /**
-   * Get all active meters
-   * @returns List of active meters
-   */
   getActive: async (): Promise<Meter[]> => {
-    return api.get<Meter[]>(API_ENDPOINTS.METERS.ACTIVE)
+    const response = await api.get<ApiListResponse<Meter>>(API_ENDPOINTS.METERS.ACTIVE)
+    return response.data
   },
 
-  /**
-   * Get a specific meter by ID
-   * @param id - Meter ID
-   * @returns Meter data
-   */
   getById: async (id: number): Promise<MeterResponse> => {
     return api.get<MeterResponse>(API_ENDPOINTS.METERS.GET(id))
   },
@@ -63,21 +44,10 @@ export const meterService = {
     return api.post<MeterResponse>(API_ENDPOINTS.METERS.CREATE, data)
   },
 
-  /**
-   * Update an existing meter
-   * @param id - Meter ID
-   * @param data - Fields to update
-   * @returns Updated meter
-   */
   update: async (id: number, data: UpdateMeterRequest): Promise<MeterResponse> => {
     return api.put<MeterResponse>(API_ENDPOINTS.METERS.UPDATE(id), data)
   },
 
-  /**
-   * Delete a meter
-   * @param id - Meter ID
-   * @returns void
-   */
   delete: async (id: number): Promise<void> => {
     return api.delete<void>(API_ENDPOINTS.METERS.DELETE(id))
   },

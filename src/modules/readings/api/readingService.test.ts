@@ -49,7 +49,7 @@ describe('readingService', () => {
   describe('getByAddress', () => {
     it('returns readings for a specific address without params', async () => {
       const mockReadings = [mockReading]
-      vi.mocked(api.get).mockResolvedValueOnce(mockReadings)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockReadings })
 
       const result = await readingService.getByAddress(1)
 
@@ -58,7 +58,7 @@ describe('readingService', () => {
     })
 
     it('calls correct endpoint with different address ids', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await readingService.getByAddress(42)
 
@@ -66,7 +66,7 @@ describe('readingService', () => {
     })
 
     it('builds query string with from param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await readingService.getByAddress(1, { from: '2025-01-01' })
 
@@ -76,7 +76,7 @@ describe('readingService', () => {
     })
 
     it('builds query string with to param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await readingService.getByAddress(1, { to: '2025-01-31' })
 
@@ -86,7 +86,7 @@ describe('readingService', () => {
     })
 
     it('builds query string with both from and to params', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await readingService.getByAddress(1, {
         from: '2025-01-01',
@@ -99,7 +99,7 @@ describe('readingService', () => {
     })
 
     it('returns empty array when no readings found', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       const result = await readingService.getByAddress(999)
 
