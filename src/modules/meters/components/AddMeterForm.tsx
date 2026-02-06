@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { PageSectionHeader } from '@shared/components/pages'
 import {
@@ -10,12 +9,11 @@ import {
   FormMessage,
   Input,
   Label,
-  PhotoDropzone,
   RadioCard,
   Select,
   Textarea,
 } from '@shared/components/ui'
-import { CalendarDays, UploadCloud } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 import {
   type MeterType,
   METER_TYPE_OPTIONS,
@@ -40,7 +38,6 @@ interface MeterFormValues {
   initialReading: string
   providerId: string
   notes: string
-  photo: FileList | null
 }
 
 const defaultValues: MeterFormValues = {
@@ -53,7 +50,6 @@ const defaultValues: MeterFormValues = {
   initialReading: '',
   providerId: '',
   notes: '',
-  photo: null,
 }
 
 const requiredFieldKeys: Array<keyof Pick<MeterFormValues, 'addressId' | 'meterType' | 'serialNumber' | 'installationDate' | 'initialReading' | 'providerId'>> = [
@@ -74,10 +70,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const { createMeter, isLoading: isCreating, error: createError } = useCreateMeter()
   const [currentAddressId, setCurrentAddressId] = useState<number | null>(null)
   const { providers: addressProviders, isLoading: providersLoading } = useServiceProvidersByAddress(currentAddressId)
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [submitSuccess, setSubmitSuccess] = useState(false)
-  const photoInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
     register,
@@ -96,8 +89,6 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const installationDate = watch('installationDate')
   const initialReading = watch('initialReading')
   const providerId = watch('providerId')
-
-  const { ref: photoRef, onChange: photoOnChange, ...photoField } = register('photo')
 
   const progress = useMemo(() => {
     const completed = requiredFieldKeys.reduce((count, key) => {
@@ -194,50 +185,6 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     }
   }, [availableProviders, meterType, providerId, setValue])
 
-  const updatePhotoState = (files: FileList | null) => {
-    setValue('photo', files, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    })
-
-    if (files?.[0]) {
-      const file = files[0]
-      setUploadedFileName(file.name)
-      setPhotoPreview((previous) => {
-        if (previous) {
-          URL.revokeObjectURL(previous)
-        }
-        return URL.createObjectURL(file)
-      })
-    } else {
-      setUploadedFileName(null)
-      setPhotoPreview((previous) => {
-        if (previous) {
-          URL.revokeObjectURL(previous)
-        }
-        return null
-      })
-    }
-  }
-
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    photoOnChange(event)
-    const files = event.target.files
-    updatePhotoState(files?.length ? files : null)
-  }
-
-  const handleFilesSelected = (files: FileList | null) => {
-    updatePhotoState(files)
-  }
-
-  const handleClearPhoto = () => {
-    if (photoInputRef.current) {
-      photoInputRef.current.value = ''
-    }
-    updatePhotoState(null)
-  }
-
   const submitToApi = async (values: MeterFormValues, intent: SubmissionIntent) => {
     if (intent === 'draft') {
       console.log('Saving draft:', values)
@@ -245,29 +192,23 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     }
 
     const request: CreateMeterRequest = {
-      AddressId: Number(values.addressId),
-      UtilityTypeId: toUtilityTypeId(values.meterType as MeterType),
-      Name: values.meterType ? METER_TYPE_OPTIONS.find((o) => o.value === values.meterType)?.title ?? values.meterType : '',
-      SerialNumber: values.serialNumber,
-      InstallationDate: values.installationDate,
-      IsActive: true,
-      ModelName: values.manufacturer || undefined,
-      Location: values.installationLocation || undefined,
-      InitialReading: values.initialReading ? Number(values.initialReading) : undefined,
-      ServiceProviderId: Number(values.providerId),
-      Notes: values.notes || undefined,
+      addressId: Number(values.addressId),
+      utilityTypeId: toUtilityTypeId(values.meterType as MeterType),
+      name: values.meterType ? METER_TYPE_OPTIONS.find((o) => o.value === values.meterType)?.title ?? values.meterType : '',
+      serialNumber: values.serialNumber,
+      installationDate: values.installationDate,
+      isActive: true,
+      modelName: values.manufacturer || undefined,
+      location: values.installationLocation || undefined,
+      initialReading: values.initialReading ? Number(values.initialReading) : undefined,
+      serviceProviderId: Number(values.providerId),
+      notes: values.notes || undefined,
     }
 
-    const photoFile = values.photo?.[0] ?? undefined
-
-    await createMeter(request, photoFile)
+    await createMeter(request)
 
     setSubmitSuccess(true)
     reset(defaultValues)
-    updatePhotoState(null)
-    if (photoInputRef.current) {
-      photoInputRef.current.value = ''
-    }
 
     setTimeout(() => setSubmitSuccess(false), 3000)
   }
@@ -279,21 +220,9 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
 
   const handleResetForm = () => {
     reset(defaultValues)
-    updatePhotoState(null)
-    if (photoInputRef.current) {
-      photoInputRef.current.value = ''
-    }
   }
 
   const readingUnit = meterType && meterType in METER_TYPE_UNITS ? METER_TYPE_UNITS[meterType] : 'од.'
-
-  useEffect(() => {
-    return () => {
-      if (photoPreview) {
-        URL.revokeObjectURL(photoPreview)
-      }
-    }
-  }, [photoPreview])
 
   return (
     <form className="space-y-6" onSubmit={submitWithIntent('submit')}>
@@ -392,36 +321,6 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="photoUpload">Фото лічильника</Label>
-              <PhotoDropzone
-                id="photoUpload"
-                fileName={uploadedFileName}
-                previewUrl={photoPreview}
-                emptyIcon={<UploadCloud className="h-8 w-8 text-primary" />}
-                emptyTitle="Перетягніть фото сюди або натисніть для вибору"
-                emptyDescription="Підтримувані формати: JPG, PNG, HEIC. Макс. розмір: 5MB"
-                helperText="Перетягніть інше фото або натисніть, щоб замінити"
-                buttonLabel="Завантажити фото"
-                clearLabel="Видалити фото"
-                onFilesSelected={handleFilesSelected}
-                onClear={handleClearPhoto}
-                inputProps={{
-                  ...photoField,
-                  accept: 'image/png,image/jpeg,image/heic',
-                  onChange: handleFileChange,
-                  ref: (element) => {
-                    photoRef(element)
-                    photoInputRef.current = element
-                  },
-                }}
-              />
-              {!photoPreview && uploadedFileName ? (
-                <FormMessage className="text-sm text-gray-600 dark:text-slate-300">
-                  Вибрано: {uploadedFileName}
-                </FormMessage>
-              ) : null}
-            </div>
          </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
@@ -531,7 +430,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               <p className="font-semibold text-gray-800 dark:text-slate-100">Поради щодо заповнення</p>
               <ul className="list-disc space-y-2 pl-5">
                 <li>Перевірте серійний номер і дату встановлення у техпаспорті.</li>
-                <li>Завантажте фото з чітко видимими показниками лічильника.</li>
+                <li>Вкажіть точну модель лічильника для зручності обслуговування.</li>
                 <li>Оберіть провайдера послуги для прив'язки тарифу до лічильника.</li>
               </ul>
               <div className="space-y-1">

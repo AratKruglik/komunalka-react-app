@@ -1,4 +1,4 @@
-import { api, apiRequest } from '@shared/api/apiClient'
+import { api } from '@shared/api/apiClient'
 import { API_ENDPOINTS } from '@shared/constants'
 import type { Meter } from '@shared/types/entities'
 import type {
@@ -59,43 +59,8 @@ export const meterService = {
     return api.get<MeterResponse>(API_ENDPOINTS.METERS.GET(id))
   },
 
-  /**
-   * Create a new meter with optional photo
-   * @param data - Meter creation data
-   * @param photo - Optional photo file
-   * @returns Created meter
-   */
-  create: async (data: CreateMeterRequest, photo?: File): Promise<MeterResponse> => {
-    const formData = new FormData()
-
-    // Append all required fields
-    formData.append('AddressId', data.AddressId.toString())
-    formData.append('UtilityTypeId', data.UtilityTypeId.toString())
-    formData.append('Name', data.Name)
-    formData.append('SerialNumber', data.SerialNumber)
-    formData.append('InstallationDate', data.InstallationDate)
-    formData.append('IsActive', data.IsActive.toString())
-
-    // Append optional fields
-    if (data.ModelName) formData.append('ModelName', data.ModelName)
-    if (data.Location) formData.append('Location', data.Location)
-    if (data.InitialReading !== undefined) formData.append('InitialReading', data.InitialReading.toString())
-    if (data.ServiceProviderId) formData.append('ServiceProviderId', data.ServiceProviderId.toString())
-    if (data.Notes) formData.append('Notes', data.Notes)
-
-    // Append photo if provided
-    if (photo) {
-      formData.append('photo', photo)
-    }
-
-    return apiRequest<MeterResponse>({
-      method: 'POST',
-      url: API_ENDPOINTS.METERS.CREATE,
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+  create: async (data: CreateMeterRequest): Promise<MeterResponse> => {
+    return api.post<MeterResponse>(API_ENDPOINTS.METERS.CREATE, data)
   },
 
   /**

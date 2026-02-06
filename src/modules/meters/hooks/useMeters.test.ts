@@ -69,17 +69,18 @@ const mockMeterResponse: MeterResponse = {
 }
 
 const createMeterData: CreateMeterRequest = {
-  AddressId: 1,
-  UtilityTypeId: 1,
-  Name: 'New Meter',
-  SerialNumber: 'N-001',
-  InstallationDate: '2025-01-20',
-  IsActive: true,
+  addressId: 1,
+  utilityTypeId: 1,
+  name: 'New Meter',
+  serialNumber: 'N-001',
+  installationDate: '2025-01-20',
+  isActive: true,
+  serviceProviderId: 1,
 }
 
 const updateMeterData: UpdateMeterRequest = {
-  Name: 'Updated Meter',
-  Location: 'New Location',
+  name: 'Updated Meter',
+  location: 'New Location',
 }
 
 describe('useMetersByAddress', () => {
@@ -329,7 +330,7 @@ describe('useCreateMeter', () => {
     expect(result.current.createdMeter).toBeNull()
   })
 
-  it('creates meter successfully without photo', async () => {
+  it('creates meter successfully', async () => {
     vi.mocked(meterService.create).mockResolvedValueOnce(mockMeterResponse)
 
     const { result } = renderHook(() => useCreateMeter())
@@ -344,21 +345,7 @@ describe('useCreateMeter', () => {
     expect(result.current.createdMeter).toEqual(mockMeterResponse)
     expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBeNull()
-    expect(meterService.create).toHaveBeenCalledWith(createMeterData, undefined)
-  })
-
-  it('creates meter successfully with photo', async () => {
-    vi.mocked(meterService.create).mockResolvedValueOnce(mockMeterResponse)
-    const mockPhoto = new File([''], 'meter.jpg', { type: 'image/jpeg' })
-
-    const { result } = renderHook(() => useCreateMeter())
-
-    await act(async () => {
-      await result.current.createMeter(createMeterData, mockPhoto)
-    })
-
-    expect(meterService.create).toHaveBeenCalledWith(createMeterData, mockPhoto)
-    expect(result.current.createdMeter).toEqual(mockMeterResponse)
+    expect(meterService.create).toHaveBeenCalledWith(createMeterData)
   })
 
   it('sets loading state during creation', async () => {

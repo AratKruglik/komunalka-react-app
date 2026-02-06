@@ -30,29 +30,28 @@ export type MeterResponse = Meter
 
 /**
  * Request payload for creating a new meter
- * Uses PascalCase field names as expected by the API
- * Matches POST /api/v1/meter multipart/form-data fields
+ * Uses camelCase field names matching the JSON API format
  */
 export interface CreateMeterRequest {
-  AddressId: number
-  UtilityTypeId: number
-  Name: string
-  SerialNumber: string
-  Description?: string
-  ModelName?: string
-  Location?: string
-  InstallationDate: string
-  InitialReading?: number
-  ServiceProviderId: number
-  Notes?: string
-  IsActive: boolean
+  addressId: number
+  utilityTypeId: number
+  name: string
+  serialNumber: string
+  description?: string
+  modelName?: string
+  location?: string
+  installationDate: string
+  initialReading?: number
+  serviceProviderId: number
+  notes?: string
+  isActive: boolean
 }
 
 /**
  * Request payload for updating an existing meter
  * All fields are optional
  */
-export type UpdateMeterRequest = Partial<Omit<CreateMeterRequest, 'AddressId'>>
+export type UpdateMeterRequest = Partial<Omit<CreateMeterRequest, 'addressId'>>
 
 /**
  * Parameters for filtering and paginating meter list

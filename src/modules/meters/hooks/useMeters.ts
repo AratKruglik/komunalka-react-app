@@ -113,13 +113,13 @@ export function useCreateMeter() {
   const [error, setError] = useState<string | null>(null)
   const [createdMeter, setCreatedMeter] = useState<MeterResponse | null>(null)
 
-  const createMeter = useCallback(async (data: CreateMeterRequest, photo?: File) => {
+  const createMeter = useCallback(async (data: CreateMeterRequest) => {
     setIsLoading(true)
     setError(null)
     setCreatedMeter(null)
 
     try {
-      const result = await meterService.create(data, photo)
+      const result = await meterService.create(data)
       setCreatedMeter(result)
       return result
     } catch (err) {

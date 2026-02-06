@@ -482,13 +482,12 @@ describe('AddMeterForm', () => {
       await waitFor(() => {
         expect(mockCreateMeter).toHaveBeenCalledWith(
           expect.objectContaining({
-            AddressId: 1,
-            UtilityTypeId: 1,
-            SerialNumber: 'AE123456',
-            InstallationDate: '2024-01-15',
-            IsActive: true,
-          }),
-          undefined
+            addressId: 1,
+            utilityTypeId: 1,
+            serialNumber: 'AE123456',
+            installationDate: '2024-01-15',
+            isActive: true,
+          })
         )
       })
     })
@@ -536,11 +535,10 @@ describe('AddMeterForm', () => {
       await waitFor(() => {
         expect(mockCreateMeter).toHaveBeenCalledWith(
           expect.objectContaining({
-            Location: 'Коридор біля входу',
-            ModelName: 'Energomera CE102',
-            Notes: 'Тестова примітка',
-          }),
-          undefined
+            location: 'Коридор біля входу',
+            modelName: 'Energomera CE102',
+            notes: 'Тестова примітка',
+          })
         )
       })
     })
