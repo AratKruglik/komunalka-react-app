@@ -8,6 +8,7 @@ import {
   mockAddresses,
   mockMetersByAddress,
   mockReadingsByAddress,
+  mockUtilityTypes,
 } from '../../helpers/api-mocks'
 import { testProviders, testNewProvider, testAddresses } from '../../fixtures/test-data'
 
@@ -66,12 +67,6 @@ test.describe('Providers List', () => {
     await expect(providersPage.securityInfo).toBeVisible()
   })
 
-  test('should display providers templates section', async () => {
-    await providersPage.goto()
-
-    await expect(providersPage.templatesSection).toBeVisible()
-  })
-
   test('should display electricity provider YASNO', async () => {
     await providersPage.goto()
 
@@ -96,30 +91,32 @@ test.describe('Providers List', () => {
     await providersPage.expectProviderVisible('Київтеплоенерго')
   })
 
-  test('should display service categories', async () => {
+  test('should display provider tariffs with pricingModel for non-fixed tariffs', async () => {
     await providersPage.goto()
 
-    await providersPage.expectServiceCategoryVisible('Електроенергія')
-    await providersPage.expectServiceCategoryVisible('Газ')
-    await providersPage.expectServiceCategoryVisible('Холодна вода')
-    await providersPage.expectServiceCategoryVisible('Опалення')
+    const card = await providersPage.getProviderCard('YASNO')
+    await expect(card).toContainText('Денний')
+    await expect(card).toContainText('(day)')
+    await expect(card).toContainText('Нічний')
+    await expect(card).toContainText('(night)')
   })
 
-  test('should display provider tariffs', async () => {
+  test('should not display pricingModel label for fixed tariffs', async () => {
     await providersPage.goto()
 
-    await providersPage.expectProviderHasTariff('YASNO', 'Денний')
-    await providersPage.expectProviderHasTariff('YASNO', 'Нічний')
+    const card = await providersPage.getProviderCard('Київгаз')
+    await expect(card).toContainText('Побутовий')
+    await expect(card).not.toContainText('(fixed)')
   })
 
-  test('should display edit button for provider', async ({ page }) => {
+  test('should display edit button for provider', async () => {
     await providersPage.goto()
 
     const editButton = await providersPage.getEditButton('YASNO')
     await expect(editButton).toBeVisible()
   })
 
-  test('should display delete button for provider', async ({ page }) => {
+  test('should display delete button for provider', async () => {
     await providersPage.goto()
 
     const deleteButton = await providersPage.getDeleteButton('YASNO')
@@ -158,20 +155,16 @@ test.describe('Provider Card Actions', () => {
     await setupMocks(page)
   })
 
-  test('should click edit button on provider card', async ({ page }) => {
+  test('should click edit button on provider card', async () => {
     await providersPage.goto()
 
     await providersPage.clickEditProvider('YASNO')
-
-    // Edit action should be triggered
   })
 
-  test('should click delete button on provider card', async ({ page }) => {
+  test('should click delete button on provider card', async () => {
     await providersPage.goto()
 
     await providersPage.clickDeleteProvider('YASNO')
-
-    // Delete confirmation should appear
   })
 
   test('should display provider description', async () => {
@@ -181,7 +174,7 @@ test.describe('Provider Card Actions', () => {
     await expect(card).toContainText('Постачальник електроенергії')
   })
 
-  test('should display tariff prices', async ({ page }) => {
+  test('should display tariff prices', async () => {
     await providersPage.goto()
 
     const card = await providersPage.getProviderCard('YASNO')
@@ -189,11 +182,11 @@ test.describe('Provider Card Actions', () => {
     await expect(card).toContainText('2.64')
   })
 
-  test('should display tariff units', async ({ page }) => {
+  test('should display tariff currency and unit', async () => {
     await providersPage.goto()
 
     const card = await providersPage.getProviderCard('YASNO')
-    await expect(card).toContainText('кВт·год')
+    await expect(card).toContainText('₴/кВт·год')
   })
 })
 
@@ -207,6 +200,7 @@ test.describe('Add Provider', () => {
     await mockAddresses(page, [testAddresses.primary])
     await mockMetersByAddress(page, { 1: [] })
     await mockReadingsByAddress(page, { 1: [] })
+    await mockUtilityTypes(page)
   }
 
   test.beforeEach(async ({ page }) => {
@@ -215,30 +209,29 @@ test.describe('Add Provider', () => {
     await setupMocks(page)
   })
 
-  test('should display add provider form', async ({ page }) => {
+  test('should display add provider form', async () => {
     await addProviderPage.goto()
 
     await addProviderPage.expectFormVisible()
   })
 
-  test('should display breadcrumb navigation', async ({ page }) => {
+  test('should display breadcrumb navigation', async () => {
     await addProviderPage.goto()
 
     await addProviderPage.expectBreadcrumbVisible()
   })
 
-  test('should display provider name input', async ({ page }) => {
+  test('should display provider name input', async () => {
     await addProviderPage.goto()
 
     await expect(addProviderPage.nameInput).toBeVisible()
   })
 
-  test.skip('should fill provider form', async ({ page }) => {
+  test('should fill provider form', async () => {
     await addProviderPage.goto()
 
     await addProviderPage.fillProviderForm({
       name: testNewProvider.name,
-      serviceType: testNewProvider.serviceType,
       website: testNewProvider.website,
       description: testNewProvider.description,
     })
@@ -246,12 +239,29 @@ test.describe('Add Provider', () => {
     await expect(addProviderPage.nameInput).toHaveValue(testNewProvider.name)
   })
 
-  test.skip('should add tariff to provider', async ({ page }) => {
+  test('should fill tariff with pricingModel', async () => {
     await addProviderPage.goto()
 
-    await addProviderPage.addTariff('Базовий', '5.00')
+    const tariff = testNewProvider.tariffs[0]
+    await addProviderPage.fillTariff(0, {
+      name: tariff.name,
+      pricingModel: tariff.pricingModel,
+      baseRate: tariff.price,
+    })
 
-    // Verify tariff was added
+    await expect(addProviderPage.getTariffNameInput(0)).toHaveValue(tariff.name)
+    await expect(addProviderPage.getTariffPricingModelInput(0)).toHaveValue(tariff.pricingModel)
+    await expect(addProviderPage.getTariffBaseRateInput(0)).toHaveValue(tariff.price)
+  })
+
+  test('should add second tariff to provider', async () => {
+    await addProviderPage.goto()
+
+    await addProviderPage.addTariff('Нічний', 'night', '2.64')
+
+    await expect(addProviderPage.getTariffNameInput(1)).toHaveValue('Нічний')
+    await expect(addProviderPage.getTariffPricingModelInput(1)).toHaveValue('night')
+    await expect(addProviderPage.getTariffBaseRateInput(1)).toHaveValue('2.64')
   })
 
   test('should cancel form and return to providers list', async ({ page }) => {
@@ -262,13 +272,48 @@ test.describe('Add Provider', () => {
     await expect(page).toHaveURL(/\/providers$/)
   })
 
-  test.skip('should submit valid provider form', async ({ page }) => {
+  test('should submit valid provider form', async ({ page }) => {
     await addProviderPage.goto()
 
+    await addProviderPage.selectUtilityType('Електроенергія')
     await addProviderPage.fillProviderForm({
       name: testNewProvider.name,
-      serviceType: testNewProvider.serviceType,
     })
+    await addProviderPage.fillTariff(0, {
+      name: 'Базовий',
+      pricingModel: 'fixed',
+      baseRate: '5.00',
+    })
+    await addProviderPage.submit()
+
+    await expect(page).toHaveURL(/\/providers$/)
+  })
+
+  test('should create provider with day/night tariffs', async ({ page }) => {
+    await addProviderPage.goto()
+
+    await addProviderPage.selectUtilityType('Електроенергія')
+    await addProviderPage.fillProviderForm({
+      name: 'Тестовий провайдер',
+      website: 'https://test-provider.ua',
+    })
+
+    await addProviderPage.fillTariff(0, {
+      name: 'Денний',
+      pricingModel: 'day',
+      baseRate: '4.32',
+    })
+
+    await addProviderPage.addTariff('Нічний', 'night', '2.64')
+
+    await expect(addProviderPage.getTariffNameInput(0)).toHaveValue('Денний')
+    await expect(addProviderPage.getTariffPricingModelInput(0)).toHaveValue('day')
+    await expect(addProviderPage.getTariffBaseRateInput(0)).toHaveValue('4.32')
+
+    await expect(addProviderPage.getTariffNameInput(1)).toHaveValue('Нічний')
+    await expect(addProviderPage.getTariffPricingModelInput(1)).toHaveValue('night')
+    await expect(addProviderPage.getTariffBaseRateInput(1)).toHaveValue('2.64')
+
     await addProviderPage.submit()
 
     await expect(page).toHaveURL(/\/providers$/)
@@ -328,11 +373,11 @@ test.describe('Providers - Provider Details', () => {
     await setupMocks(page)
   })
 
-  test('should display provider count per category', async ({ page }) => {
+  test('should display provider count for address', async ({ page }) => {
     await providersPage.goto()
 
-    const electricityCategory = page.getByText(/1 провайдер/i).first()
-    await expect(electricityCategory).toBeVisible()
+    const providerCount = page.getByText(/4 провайдерів/i).first()
+    await expect(providerCount).toBeVisible()
   })
 
   test('should display all tariffs for multi-tariff provider', async () => {
@@ -349,5 +394,11 @@ test.describe('Providers - Provider Details', () => {
     const link = page.getByRole('link', { name: /yasno\.com\.ua/i })
     await expect(link).toBeVisible()
     await expect(link).toHaveAttribute('href', 'https://yasno.com.ua')
+  })
+
+  test('should display address for provider group', async ({ page }) => {
+    await providersPage.goto()
+
+    await expect(page.getByText('вул. Хрещатик')).toBeVisible()
   })
 })
