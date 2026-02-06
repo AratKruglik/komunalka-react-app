@@ -2,8 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { serviceProviderService } from '@/shared/api'
 import type {
   ApiServiceProvider,
+  ApiTariff,
   CreateServiceProviderRequest,
   UpdateServiceProviderRequest,
+  CreateTariffRequest,
+  UpdateTariffRequest,
 } from '@/shared/types/api'
 
 // =============================================================================
@@ -252,4 +255,102 @@ export function useDeleteServiceProvider() {
     deleteProvider,
     reset,
   }
+}
+
+// =============================================================================
+// Tariff Mutation Hooks
+// =============================================================================
+
+export function useCreateTariff() {
+  const [state, setState] = useState<MutationState>({
+    isLoading: false,
+    error: null,
+  })
+
+  const createTariff = useCallback(
+    async (providerId: number, data: CreateTariffRequest): Promise<ApiTariff | null> => {
+      setState({ isLoading: true, error: null })
+
+      try {
+        const result = await serviceProviderService.createTariff(providerId, data)
+        setState({ isLoading: false, error: null })
+        return result
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to create tariff'
+        setState({ isLoading: false, error: errorMessage })
+        return null
+      }
+    },
+    []
+  )
+
+  const reset = useCallback(() => {
+    setState({ isLoading: false, error: null })
+  }, [])
+
+  return { ...state, createTariff, reset }
+}
+
+export function useUpdateTariff() {
+  const [state, setState] = useState<MutationState>({
+    isLoading: false,
+    error: null,
+  })
+
+  const updateTariff = useCallback(
+    async (
+      providerId: number,
+      tariffId: number,
+      data: UpdateTariffRequest,
+    ): Promise<ApiTariff | null> => {
+      setState({ isLoading: true, error: null })
+
+      try {
+        const result = await serviceProviderService.updateTariff(providerId, tariffId, data)
+        setState({ isLoading: false, error: null })
+        return result
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to update tariff'
+        setState({ isLoading: false, error: errorMessage })
+        return null
+      }
+    },
+    []
+  )
+
+  const reset = useCallback(() => {
+    setState({ isLoading: false, error: null })
+  }, [])
+
+  return { ...state, updateTariff, reset }
+}
+
+export function useDeleteTariff() {
+  const [state, setState] = useState<MutationState>({
+    isLoading: false,
+    error: null,
+  })
+
+  const deleteTariff = useCallback(
+    async (providerId: number, tariffId: number): Promise<boolean> => {
+      setState({ isLoading: true, error: null })
+
+      try {
+        await serviceProviderService.deleteTariff(providerId, tariffId)
+        setState({ isLoading: false, error: null })
+        return true
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete tariff'
+        setState({ isLoading: false, error: errorMessage })
+        return false
+      }
+    },
+    []
+  )
+
+  const reset = useCallback(() => {
+    setState({ isLoading: false, error: null })
+  }, [])
+
+  return { ...state, deleteTariff, reset }
 }

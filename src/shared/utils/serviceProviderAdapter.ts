@@ -41,9 +41,10 @@ export function meterTypeToServiceLabel(meterType: MeterType): ServiceLabel {
 // =============================================================================
 
 export function adaptApiTariffToLegacy(tariff: ApiTariff): ProviderTariff {
+  const name = tariff.notes || tariff.utilityTypeName
   return {
     id: String(tariff.id),
-    name: tariff.utilityTypeName,
+    name: tariff.pricingModel !== 'fixed' ? `${name} (${tariff.pricingModel})` : name,
     price: tariff.baseRate,
   }
 }

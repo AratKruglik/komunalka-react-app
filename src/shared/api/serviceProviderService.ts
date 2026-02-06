@@ -2,10 +2,13 @@ import { api } from './apiClient'
 import { API_ENDPOINTS } from '../constants/endpoints'
 import type {
   ApiServiceProvider,
+  ApiTariff,
   ApiDataResponse,
   ApiListResponse,
   CreateServiceProviderRequest,
   UpdateServiceProviderRequest,
+  CreateTariffRequest,
+  UpdateTariffRequest,
 } from '../types/api'
 
 /**
@@ -70,5 +73,36 @@ export const serviceProviderService = {
    */
   delete: async (id: number): Promise<void> => {
     await api.delete(API_ENDPOINTS.SERVICE_PROVIDERS.DELETE(id))
+  },
+
+  getTariffs: async (providerId: number): Promise<ApiTariff[]> => {
+    const response = await api.get<ApiListResponse<ApiTariff>>(
+      API_ENDPOINTS.SERVICE_PROVIDERS.TARIFFS(providerId)
+    )
+    return response.data
+  },
+
+  createTariff: async (providerId: number, data: CreateTariffRequest): Promise<ApiTariff> => {
+    const response = await api.post<ApiDataResponse<ApiTariff>>(
+      API_ENDPOINTS.SERVICE_PROVIDERS.TARIFFS(providerId),
+      data
+    )
+    return response.data
+  },
+
+  updateTariff: async (
+    providerId: number,
+    tariffId: number,
+    data: UpdateTariffRequest,
+  ): Promise<ApiTariff> => {
+    const response = await api.put<ApiDataResponse<ApiTariff>>(
+      API_ENDPOINTS.SERVICE_PROVIDERS.TARIFF(providerId, tariffId),
+      data
+    )
+    return response.data
+  },
+
+  deleteTariff: async (providerId: number, tariffId: number): Promise<void> => {
+    await api.delete(API_ENDPOINTS.SERVICE_PROVIDERS.TARIFF(providerId, tariffId))
   },
 }

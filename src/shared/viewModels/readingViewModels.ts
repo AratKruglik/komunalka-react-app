@@ -85,12 +85,20 @@ function isApiProvider(provider: ProviderInput): provider is ApiServiceProvider 
 
 const mapTariffs = (provider: ProviderInput): TariffOptionViewModel[] => {
   if (isApiProvider(provider)) {
-    return provider.tariffs.map((tariff) => ({
-      id: String(tariff.id),
-      name: tariff.utilityTypeName,
-      price: tariff.baseRate,
-      label: `${tariff.utilityTypeName} · ${formatApiTariffLabel(tariff)}`,
-    }))
+    return provider.tariffs.map((tariff) => {
+      const displayName = tariff.notes || tariff.utilityTypeName
+      const nameWithModel =
+        tariff.pricingModel && tariff.pricingModel !== 'fixed'
+          ? `${displayName} (${tariff.pricingModel})`
+          : displayName
+
+      return {
+        id: String(tariff.id),
+        name: nameWithModel,
+        price: tariff.baseRate,
+        label: `${nameWithModel} · ${formatApiTariffLabel(tariff)}`,
+      }
+    })
   }
 
   return provider.tariffs.map((tariff) => ({

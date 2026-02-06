@@ -24,7 +24,7 @@ export interface ApiTariff {
   serviceProviderId: number
   utilityTypeId: number
   currencyId: number
-  pricingModel: 'fixed' | 'tiered'
+  pricingModel: string
   baseRate: number
   serviceFee: number
   effectiveFrom: string
@@ -60,13 +60,20 @@ export interface ApiServiceProvider {
 // =============================================================================
 
 export interface CreateTariffRequest {
-  utilityTypeId: number
-  currencyId: number
-  pricingModel: 'fixed' | 'tiered'
+  utilityTypeId?: number
+  currencyId?: number
+  pricingModel: string
   baseRate: number
   serviceFee?: number
-  effectiveFrom: string
+  effectiveFrom?: string
   effectiveTo?: string | null
+  notes?: string | null
+}
+
+export interface UpdateTariffRequest {
+  pricingModel?: string
+  baseRate?: number
+  serviceFee?: number
   notes?: string | null
 }
 
