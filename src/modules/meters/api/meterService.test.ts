@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { meterService } from './meterService'
-import { api, apiRequest } from '@shared/api/apiClient'
+import { api } from '@shared/api/apiClient'
 import { API_ENDPOINTS } from '@shared/constants'
 import type { Meter } from '@shared/types/entities'
 import type { MeterResponse, CreateMeterRequest, UpdateMeterRequest } from '../types'
@@ -12,7 +12,6 @@ vi.mock('@shared/api/apiClient', () => ({
     put: vi.fn(),
     delete: vi.fn(),
   },
-  apiRequest: vi.fn(),
 }))
 
 const mockMeter: Meter = {
@@ -43,7 +42,7 @@ describe('meterService', () => {
   describe('list', () => {
     it('returns list of meters without params', async () => {
       const mockMeters = [mockMeter]
-      vi.mocked(api.get).mockResolvedValueOnce(mockMeters)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeters })
 
       const result = await meterService.list()
 
@@ -52,7 +51,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with page param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ page: 2 })
 
@@ -60,7 +59,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with perPage param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ perPage: 20 })
 
@@ -68,7 +67,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with addressId param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ addressId: 5 })
 
@@ -76,7 +75,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with utilityTypeId param', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ utilityTypeId: 1 })
 
@@ -84,7 +83,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with isActive=true', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ isActive: true })
 
@@ -92,7 +91,7 @@ describe('meterService', () => {
     })
 
     it('builds query string with isActive=false', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({ isActive: false })
 
@@ -100,7 +99,7 @@ describe('meterService', () => {
     })
 
     it('combines multiple params in query string', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.list({
         page: 1,
@@ -131,7 +130,7 @@ describe('meterService', () => {
   describe('getByAddress', () => {
     it('returns meters for a specific address', async () => {
       const mockMeters = [mockMeter, { ...mockMeter, id: 2, type: 'gas' as const }]
-      vi.mocked(api.get).mockResolvedValueOnce(mockMeters)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeters })
 
       const result = await meterService.getByAddress(1)
 
@@ -140,7 +139,7 @@ describe('meterService', () => {
     })
 
     it('calls correct endpoint with different address ids', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       await meterService.getByAddress(42)
 
@@ -148,7 +147,7 @@ describe('meterService', () => {
     })
 
     it('returns empty array when no meters found', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       const result = await meterService.getByAddress(999)
 
@@ -171,7 +170,7 @@ describe('meterService', () => {
   describe('getActive', () => {
     it('returns all active meters', async () => {
       const activeMeters = [mockMeter]
-      vi.mocked(api.get).mockResolvedValueOnce(activeMeters)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: activeMeters })
 
       const result = await meterService.getActive()
 
@@ -180,7 +179,7 @@ describe('meterService', () => {
     })
 
     it('returns empty array when no active meters', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce([])
+      vi.mocked(api.get).mockResolvedValueOnce({ data: [] })
 
       const result = await meterService.getActive()
 
@@ -227,135 +226,53 @@ describe('meterService', () => {
 
   describe('create', () => {
     const createData: CreateMeterRequest = {
-      AddressId: 1,
-      UtilityTypeId: 1,
-      Name: 'Новий лічильник',
-      SerialNumber: 'SN-12345',
-      InstallationDate: '2025-01-20',
-      IsActive: true,
+      addressId: 1,
+      utilityTypeId: 1,
+      name: 'Новий лічильник',
+      serialNumber: 'SN-12345',
+      installationDate: '2025-01-20',
+      isActive: true,
+      serviceProviderId: 1,
     }
 
-    it('creates meter with required fields only', async () => {
-      vi.mocked(apiRequest).mockResolvedValueOnce(mockMeterResponse)
+    it('creates meter via api.post with JSON payload', async () => {
+      vi.mocked(api.post).mockResolvedValueOnce(mockMeterResponse)
 
       const result = await meterService.create(createData)
 
       expect(result).toEqual(mockMeterResponse)
-      expect(apiRequest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'POST',
-          url: API_ENDPOINTS.METERS.CREATE,
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
-      )
-    })
-
-    it('sends FormData with all required fields', async () => {
-      vi.mocked(apiRequest).mockResolvedValueOnce(mockMeterResponse)
-
-      await meterService.create(createData)
-
-      const callArg = vi.mocked(apiRequest).mock.calls[0][0]
-      const formData = callArg.data as FormData
-
-      expect(formData.get('AddressId')).toBe('1')
-      expect(formData.get('UtilityTypeId')).toBe('1')
-      expect(formData.get('Name')).toBe('Новий лічильник')
-      expect(formData.get('SerialNumber')).toBe('SN-12345')
-      expect(formData.get('InstallationDate')).toBe('2025-01-20')
-      expect(formData.get('IsActive')).toBe('true')
+      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.METERS.CREATE, createData)
     })
 
     it('includes optional fields when provided', async () => {
       const dataWithOptional: CreateMeterRequest = {
         ...createData,
-        ModelName: 'Model X',
-        Location: 'Коридор',
-        InitialReading: 1000.5,
-        ServiceProviderId: 5,
-        Notes: 'Test notes',
+        modelName: 'Model X',
+        location: 'Коридор',
+        initialReading: 1000.5,
+        notes: 'Test notes',
       }
-      vi.mocked(apiRequest).mockResolvedValueOnce(mockMeterResponse)
+      vi.mocked(api.post).mockResolvedValueOnce(mockMeterResponse)
 
       await meterService.create(dataWithOptional)
 
-      const callArg = vi.mocked(apiRequest).mock.calls[0][0]
-      const formData = callArg.data as FormData
-
-      expect(formData.get('ModelName')).toBe('Model X')
-      expect(formData.get('Location')).toBe('Коридор')
-      expect(formData.get('InitialReading')).toBe('1000.5')
-      expect(formData.get('ServiceProviderId')).toBe('5')
-      expect(formData.get('Notes')).toBe('Test notes')
-    })
-
-    it('does not include optional fields when not provided', async () => {
-      vi.mocked(apiRequest).mockResolvedValueOnce(mockMeterResponse)
-
-      await meterService.create(createData)
-
-      const callArg = vi.mocked(apiRequest).mock.calls[0][0]
-      const formData = callArg.data as FormData
-
-      expect(formData.get('ModelName')).toBeNull()
-      expect(formData.get('Location')).toBeNull()
-      expect(formData.get('InitialReading')).toBeNull()
-      expect(formData.get('ServiceProviderId')).toBeNull()
-      expect(formData.get('Notes')).toBeNull()
-    })
-
-    it('includes photo when provided', async () => {
-      const photo = new File(['photo content'], 'meter.jpg', { type: 'image/jpeg' })
-      vi.mocked(apiRequest).mockResolvedValueOnce(mockMeterResponse)
-
-      await meterService.create(createData, photo)
-
-      const callArg = vi.mocked(apiRequest).mock.calls[0][0]
-      const formData = callArg.data as FormData
-
-      expect(formData.get('photo')).toBe(photo)
-    })
-
-    it('does not include photo when not provided', async () => {
-      vi.mocked(apiRequest).mockResolvedValueOnce(mockMeterResponse)
-
-      await meterService.create(createData)
-
-      const callArg = vi.mocked(apiRequest).mock.calls[0][0]
-      const formData = callArg.data as FormData
-
-      expect(formData.get('photo')).toBeNull()
-    })
-
-    it('handles InitialReading of 0 correctly', async () => {
-      const dataWithZero: CreateMeterRequest = {
-        ...createData,
-        InitialReading: 0,
-      }
-      vi.mocked(apiRequest).mockResolvedValueOnce(mockMeterResponse)
-
-      await meterService.create(dataWithZero)
-
-      const callArg = vi.mocked(apiRequest).mock.calls[0][0]
-      const formData = callArg.data as FormData
-
-      expect(formData.get('InitialReading')).toBe('0')
+      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.METERS.CREATE, dataWithOptional)
     })
 
     it('throws error on validation failure', async () => {
-      vi.mocked(apiRequest).mockRejectedValueOnce(new Error('SerialNumber is required'))
+      vi.mocked(api.post).mockRejectedValueOnce(new Error('serialNumber is required'))
 
-      await expect(meterService.create(createData)).rejects.toThrow('SerialNumber is required')
+      await expect(meterService.create(createData)).rejects.toThrow('serialNumber is required')
     })
 
     it('propagates 400 bad request errors', async () => {
-      vi.mocked(apiRequest).mockRejectedValueOnce(new Error('Bad Request'))
+      vi.mocked(api.post).mockRejectedValueOnce(new Error('Bad Request'))
 
       await expect(meterService.create(createData)).rejects.toThrow('Bad Request')
     })
 
     it('propagates 500 server errors', async () => {
-      vi.mocked(apiRequest).mockRejectedValueOnce(new Error('Internal Server Error'))
+      vi.mocked(api.post).mockRejectedValueOnce(new Error('Internal Server Error'))
 
       await expect(meterService.create(createData)).rejects.toThrow('Internal Server Error')
     })
@@ -363,8 +280,8 @@ describe('meterService', () => {
 
   describe('update', () => {
     const updateData: UpdateMeterRequest = {
-      Name: 'Оновлений лічильник',
-      Location: 'Ванна кімната',
+      name: 'Оновлений лічильник',
+      location: 'Ванна кімната',
     }
 
     it('updates meter and returns updated data', async () => {
@@ -378,7 +295,7 @@ describe('meterService', () => {
     })
 
     it('handles partial updates', async () => {
-      const partialUpdate: UpdateMeterRequest = { IsActive: false }
+      const partialUpdate: UpdateMeterRequest = { isActive: false }
       const updatedMeter: MeterResponse = { ...mockMeterResponse, status: 'inactive' }
       vi.mocked(api.put).mockResolvedValueOnce(updatedMeter)
 

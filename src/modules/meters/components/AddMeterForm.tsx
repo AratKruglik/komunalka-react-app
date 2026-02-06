@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { PageSectionHeader } from '@shared/components/pages'
 import {
@@ -10,12 +9,11 @@ import {
   FormMessage,
   Input,
   Label,
-  PhotoDropzone,
   RadioCard,
   Select,
   Textarea,
 } from '@shared/components/ui'
-import { CalendarDays, UploadCloud } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 import {
   type MeterType,
   METER_TYPE_OPTIONS,
@@ -38,10 +36,8 @@ interface MeterFormValues {
   manufacturer: string
   installationDate: string
   initialReading: string
-  tariffValue: string
   providerId: string
   notes: string
-  photo: FileList | null
 }
 
 const defaultValues: MeterFormValues = {
@@ -52,34 +48,29 @@ const defaultValues: MeterFormValues = {
   manufacturer: '',
   installationDate: '',
   initialReading: '',
-  tariffValue: '',
   providerId: '',
   notes: '',
-  photo: null,
 }
 
-const requiredFieldKeys: Array<keyof Pick<MeterFormValues, 'addressId' | 'meterType' | 'serialNumber' | 'installationDate' | 'initialReading' | 'tariffValue'>> = [
+const requiredFieldKeys: Array<keyof Pick<MeterFormValues, 'addressId' | 'meterType' | 'serialNumber' | 'installationDate' | 'initialReading' | 'providerId'>> = [
   'addressId',
   'meterType',
   'serialNumber',
   'installationDate',
   'initialReading',
-  'tariffValue',
+  'providerId',
 ]
 
 export interface AddMeterFormProps {
   onCancel?: () => void
+  onSuccess?: () => void
 }
 
-export function AddMeterForm({ onCancel }: AddMeterFormProps) {
+export function AddMeterForm({ onCancel, onSuccess }: AddMeterFormProps) {
   const { addresses } = useAddresses()
   const { createMeter, isLoading: isCreating, error: createError } = useCreateMeter()
   const [currentAddressId, setCurrentAddressId] = useState<number | null>(null)
   const { providers: addressProviders, isLoading: providersLoading } = useServiceProvidersByAddress(currentAddressId)
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
-  const photoInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
     register,
@@ -97,10 +88,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
   const serialNumber = watch('serialNumber')
   const installationDate = watch('installationDate')
   const initialReading = watch('initialReading')
-  const tariffValue = watch('tariffValue')
   const providerId = watch('providerId')
-
-  const { ref: photoRef, onChange: photoOnChange, ...photoField } = register('photo')
 
   const progress = useMemo(() => {
     const completed = requiredFieldKeys.reduce((count, key) => {
@@ -116,8 +104,8 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
             return installationDate
           case 'initialReading':
             return initialReading
-          case 'tariffValue':
-            return tariffValue
+          case 'providerId':
+            return providerId
           default:
             return ''
         }
@@ -131,7 +119,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     }
 
     return Math.min(100, Math.round((completed / requiredFieldKeys.length) * 100))
-  }, [addressId, meterType, serialNumber, installationDate, initialReading, tariffValue])
+  }, [addressId, meterType, serialNumber, installationDate, initialReading, providerId])
 
   const addressOptions = useMemo(() => {
     return addresses.map((address) => {
@@ -175,9 +163,13 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     return availableProviders.find((provider) => provider.id === providerIdNum) ?? null
   }, [availableProviders, providerId])
 
-  const selectedTariff = useMemo(() => {
-    return selectedProvider ? getApiPrimaryTariff(selectedProvider) : null
-  }, [selectedProvider])
+  const providerTariffs = useMemo(() => {
+    if (!selectedProvider || !meterType) {
+      return []
+    }
+    const targetUtilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[meterType]
+    return selectedProvider.tariffs.filter((tariff) => tariff.utilityTypeId === targetUtilityTypeId)
+  }, [selectedProvider, meterType])
 
   useEffect(() => {
     if (!meterType && providerId) {
@@ -193,97 +185,29 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
     }
   }, [availableProviders, meterType, providerId, setValue])
 
-  useEffect(() => {
-    if (!selectedProvider || !selectedTariff) {
-      return
-    }
-
-    setValue('tariffValue', selectedTariff.baseRate.toString(), {
-      shouldDirty: true,
-      shouldValidate: true,
-    })
-  }, [selectedProvider, selectedTariff, setValue])
-
-  const updatePhotoState = (files: FileList | null) => {
-    setValue('photo', files, {
-      shouldValidate: true,
-      shouldDirty: true,
-      shouldTouch: true,
-    })
-
-    if (files?.[0]) {
-      const file = files[0]
-      setUploadedFileName(file.name)
-      setPhotoPreview((previous) => {
-        if (previous) {
-          URL.revokeObjectURL(previous)
-        }
-        return URL.createObjectURL(file)
-      })
-    } else {
-      setUploadedFileName(null)
-      setPhotoPreview((previous) => {
-        if (previous) {
-          URL.revokeObjectURL(previous)
-        }
-        return null
-      })
-    }
-  }
-
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    photoOnChange(event)
-    const files = event.target.files
-    updatePhotoState(files?.length ? files : null)
-  }
-
-  const handleFilesSelected = (files: FileList | null) => {
-    updatePhotoState(files)
-  }
-
-  const handleClearPhoto = () => {
-    if (photoInputRef.current) {
-      photoInputRef.current.value = ''
-    }
-    updatePhotoState(null)
-  }
-
   const submitToApi = async (values: MeterFormValues, intent: SubmissionIntent) => {
     if (intent === 'draft') {
-      // Draft mode - just log for now
       console.log('Saving draft:', values)
       return
     }
 
-    // Build API request
     const request: CreateMeterRequest = {
-      AddressId: Number(values.addressId),
-      UtilityTypeId: toUtilityTypeId(values.meterType as MeterType),
-      Name: values.meterType ? METER_TYPE_OPTIONS.find((o) => o.value === values.meterType)?.title ?? values.meterType : '',
-      SerialNumber: values.serialNumber,
-      InstallationDate: values.installationDate,
-      IsActive: true,
-      ModelName: values.manufacturer || undefined,
-      Location: values.installationLocation || undefined,
-      InitialReading: values.initialReading ? Number(values.initialReading) : undefined,
-      ServiceProviderId: values.providerId ? Number(values.providerId) : undefined,
-      Notes: values.notes || undefined,
+      addressId: Number(values.addressId),
+      utilityTypeId: toUtilityTypeId(values.meterType as MeterType),
+      name: values.meterType ? METER_TYPE_OPTIONS.find((o) => o.value === values.meterType)?.title ?? values.meterType : '',
+      serialNumber: values.serialNumber,
+      installationDate: values.installationDate,
+      isActive: true,
+      modelName: values.manufacturer || undefined,
+      location: values.installationLocation || undefined,
+      initialReading: values.initialReading ? Number(values.initialReading) : undefined,
+      serviceProviderId: Number(values.providerId),
+      notes: values.notes || undefined,
     }
 
-    // Get photo file if exists
-    const photoFile = values.photo?.[0] ?? undefined
+    await createMeter(request)
 
-    await createMeter(request, photoFile)
-
-    setSubmitSuccess(true)
-    reset(defaultValues)
-    updatePhotoState(null)
-    if (photoInputRef.current) {
-      photoInputRef.current.value = ''
-    }
-
-    // Clear success message after delay
-    setTimeout(() => setSubmitSuccess(false), 3000)
+    onSuccess?.()
   }
 
   const submitWithIntent = (intent: SubmissionIntent) =>
@@ -293,26 +217,9 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
 
   const handleResetForm = () => {
     reset(defaultValues)
-    updatePhotoState(null)
-    if (photoInputRef.current) {
-      photoInputRef.current.value = ''
-    }
   }
 
   const readingUnit = meterType && meterType in METER_TYPE_UNITS ? METER_TYPE_UNITS[meterType] : 'од.'
-  const tariffUnitLabel = selectedTariff
-    ? `${selectedTariff.currencySymbol}/${readingUnit}`
-    : meterType
-      ? `грн/${readingUnit}`
-      : 'грн'
-
-  useEffect(() => {
-    return () => {
-      if (photoPreview) {
-        URL.revokeObjectURL(photoPreview)
-      }
-    }
-  }, [photoPreview])
 
   return (
     <form className="space-y-6" onSubmit={submitWithIntent('submit')}>
@@ -411,36 +318,6 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="photoUpload">Фото лічильника</Label>
-              <PhotoDropzone
-                id="photoUpload"
-                fileName={uploadedFileName}
-                previewUrl={photoPreview}
-                emptyIcon={<UploadCloud className="h-8 w-8 text-primary" />}
-                emptyTitle="Перетягніть фото сюди або натисніть для вибору"
-                emptyDescription="Підтримувані формати: JPG, PNG, HEIC. Макс. розмір: 5MB"
-                helperText="Перетягніть інше фото або натисніть, щоб замінити"
-                buttonLabel="Завантажити фото"
-                clearLabel="Видалити фото"
-                onFilesSelected={handleFilesSelected}
-                onClear={handleClearPhoto}
-                inputProps={{
-                  ...photoField,
-                  accept: 'image/png,image/jpeg,image/heic',
-                  onChange: handleFileChange,
-                  ref: (element) => {
-                    photoRef(element)
-                    photoInputRef.current = element
-                  },
-                }}
-              />
-              {!photoPreview && uploadedFileName ? (
-                <FormMessage className="text-sm text-gray-600 dark:text-slate-300">
-                  Вибрано: {uploadedFileName}
-                </FormMessage>
-              ) : null}
-            </div>
          </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
@@ -458,85 +335,82 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               />
               <FormMessage variant="error">{errors.installationDate?.message}</FormMessage>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="initialReading">
-                  Початкові показання <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="initialReading"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  placeholder="0.00"
-                  {...register('initialReading', {
-                    required: 'Вкажіть початкові показання',
-                  })}
-                  isInvalid={Boolean(errors.initialReading)}
-                  endAdornment={<span className="text-sm text-gray-500">{readingUnit}</span>}
-                />
-                <FormMessage variant="error">{errors.initialReading?.message}</FormMessage>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="providerId">Провайдер послуги</Label>
-                <Select
-                  id="providerId"
-                  {...register('providerId')}
-                  disabled={!meterType || !addressId || providersLoading || availableProviders.length === 0}
-                >
-                  <option value="">
-                    {!addressId
-                      ? 'Спочатку оберіть адресу'
-                      : !meterType
-                        ? 'Спочатку оберіть тип лічильника'
-                        : providersLoading
-                          ? 'Завантаження...'
-                          : availableProviders.length
-                            ? 'Оберіть провайдера'
-                            : 'Немає провайдерів для цієї адреси'}
-                  </option>
-                  {availableProviders.map((provider) => {
-                    const tariff = getApiPrimaryTariff(provider)
-                    return (
-                      <option key={provider.id} value={provider.id}>
-                        {provider.name}
-                        {tariff ? ` · ${formatApiTariffLabel(tariff)}` : ''}
-                      </option>
-                    )
-                  })}
-                </Select>
-                <p className="text-sm text-gray-500 dark:text-slate-400">
-                  {selectedProvider
-                    ? 'Тариф автоматично оновлено згідно з обраним провайдером.'
-                    : 'Виберіть провайдера, щоб автоматично підставити тариф.'}
-                </p>
-              </div>
-            </div>
-
             <div className="space-y-2">
-              <Label htmlFor="tariffValue">
-                Поточний тариф (грн за одиницю) <span className="text-red-500">*</span>
+              <Label htmlFor="initialReading">
+                Початкові показання <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="tariffValue"
+                id="initialReading"
                 type="number"
                 min={0}
                 step="0.01"
                 placeholder="0.00"
-                {...register('tariffValue', {
-                  required: 'Вкажіть тариф',
+                {...register('initialReading', {
+                  required: 'Вкажіть початкові показання',
                 })}
-                isInvalid={Boolean(errors.tariffValue)}
-                endAdornment={<span className="text-sm text-gray-500">{tariffUnitLabel}</span>}
+                isInvalid={Boolean(errors.initialReading)}
+                endAdornment={<span className="text-sm text-gray-500">{readingUnit}</span>}
               />
-              {selectedProvider ? (
-                <p className="text-sm text-gray-500 dark:text-slate-400">
-                  Джерело тарифу: {selectedProvider.name}
-                </p>
-              ) : null}
-              <FormMessage variant="error">{errors.tariffValue?.message}</FormMessage>
+              <FormMessage variant="error">{errors.initialReading?.message}</FormMessage>
             </div>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="providerId">
+                Провайдер послуги <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                id="providerId"
+                {...register('providerId', { required: 'Оберіть провайдера послуги' })}
+                isInvalid={Boolean(errors.providerId)}
+                disabled={!meterType || !addressId || providersLoading || availableProviders.length === 0}
+              >
+                <option value="">
+                  {!addressId
+                    ? 'Спочатку оберіть адресу'
+                    : !meterType
+                      ? 'Спочатку оберіть тип лічильника'
+                      : providersLoading
+                        ? 'Завантаження...'
+                        : availableProviders.length
+                          ? 'Оберіть провайдера'
+                          : 'Немає провайдерів для цієї адреси'}
+                </option>
+                {availableProviders.map((provider) => {
+                  const tariff = getApiPrimaryTariff(provider)
+                  return (
+                    <option key={provider.id} value={provider.id}>
+                      {provider.name}
+                      {tariff ? ` · ${formatApiTariffLabel(tariff)}` : ''}
+                    </option>
+                  )
+                })}
+              </Select>
+              <p className="text-sm text-gray-500 dark:text-slate-400">
+                {selectedProvider
+                  ? 'Тариф автоматично оновлено згідно з обраним провайдером.'
+                  : 'Виберіть провайдера, щоб автоматично підставити тариф.'}
+              </p>
+              <FormMessage variant="error">{errors.providerId?.message}</FormMessage>
+            </div>
+
+            {selectedProvider && providerTariffs.length > 0 ? (
+              <div className="space-y-2 rounded-lg border border-blue-100 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  Тарифна інформація
+                </p>
+                {providerTariffs.map((tariff) => (
+                  <p key={tariff.id} className="text-sm text-blue-700 dark:text-blue-300">
+                    {tariff.name}: {formatApiTariffLabel(tariff)}
+                    {tariff.serviceFee > 0 && ` + абонплата ${tariff.serviceFee.toFixed(2)} ${tariff.currencySymbol}`}
+                  </p>
+                ))}
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  Джерело: {selectedProvider.name}
+                </p>
+              </div>
+            ) : null}
           </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
@@ -553,8 +427,8 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
               <p className="font-semibold text-gray-800 dark:text-slate-100">Поради щодо заповнення</p>
               <ul className="list-disc space-y-2 pl-5">
                 <li>Перевірте серійний номер і дату встановлення у техпаспорті.</li>
-                <li>Завантажте фото з чітко видимими показниками лічильника.</li>
-                <li>Уточніть тариф у договорі з постачальником послуги.</li>
+                <li>Вкажіть точну модель лічильника для зручності обслуговування.</li>
+                <li>Оберіть провайдера послуги для прив'язки тарифу до лічильника.</li>
               </ul>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-gray-800 dark:text-slate-100">Заповнення форми</p>
@@ -611,11 +485,6 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
         {createError && (
           <div className="px-6 pb-4">
             <FormMessage variant="error">{createError}</FormMessage>
-          </div>
-        )}
-        {submitSuccess && (
-          <div className="px-6 pb-4">
-            <FormMessage variant="success">Лічильник успішно створено!</FormMessage>
           </div>
         )}
       </Card>

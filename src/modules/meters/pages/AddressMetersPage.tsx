@@ -97,7 +97,7 @@ export default function AddressMetersPage() {
   }, [addressOptions, selectedAddressId])
 
   // Fetch meters and readings from API
-  const { meters, isLoading: isLoadingMeters } = useMetersByAddress(selectedAddressId)
+  const { meters, isLoading: isLoadingMeters, error: metersError } = useMetersByAddress(selectedAddressId)
   const { readings, isLoading: isLoadingReadings } = useReadingsByAddress(selectedAddressId)
   const { providers, isLoading: isLoadingProviders } = useServiceProvidersByAddress(selectedAddressId)
 
@@ -492,6 +492,10 @@ export default function AddressMetersPage() {
               </Select>
               {isLoading ? (
                 <FormMessage>Завантаження...</FormMessage>
+              ) : metersError && selectedAddressId !== null ? (
+                <FormMessage variant="error">
+                  {metersError}
+                </FormMessage>
               ) : addressSnapshot === null && selectedAddressId !== null ? (
                 <FormMessage variant="error">
                   Для цієї адреси поки що немає збережених лічильників.

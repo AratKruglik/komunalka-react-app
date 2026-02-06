@@ -16,12 +16,13 @@ import type {
  */
 export function useMetersByAddress(addressId: number | null) {
   const [meters, setMeters] = useState<Meter[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(addressId !== null)
   const [error, setError] = useState<string | null>(null)
 
   const fetchMeters = useCallback(async () => {
     if (addressId === null) {
       setMeters([])
+      setIsLoading(false)
       return
     }
 
@@ -32,7 +33,9 @@ export function useMetersByAddress(addressId: number | null) {
       const data = await meterService.getByAddress(addressId)
       setMeters(Array.isArray(data) ? data : [])
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Не вдалося завантажити лічильники'
+      const errorMessage = err instanceof Error
+        ? err.message
+        : (err as { message?: string })?.message ?? 'Не вдалося завантажити лічильники'
       setError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -113,13 +116,13 @@ export function useCreateMeter() {
   const [error, setError] = useState<string | null>(null)
   const [createdMeter, setCreatedMeter] = useState<MeterResponse | null>(null)
 
-  const createMeter = useCallback(async (data: CreateMeterRequest, photo?: File) => {
+  const createMeter = useCallback(async (data: CreateMeterRequest) => {
     setIsLoading(true)
     setError(null)
     setCreatedMeter(null)
 
     try {
-      const result = await meterService.create(data, photo)
+      const result = await meterService.create(data)
       setCreatedMeter(result)
       return result
     } catch (err) {
