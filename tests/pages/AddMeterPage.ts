@@ -12,7 +12,6 @@ export interface MeterFormData {
   installationDate?: string;
   initialReading?: string;
   providerId?: string;
-  tariffValue?: string;
   notes?: string;
 }
 
@@ -30,7 +29,7 @@ export class AddMeterPage extends BasePage {
   readonly installationDateInput: Locator
   readonly initialReadingInput: Locator
   readonly providerSelect: Locator
-  readonly tariffValueInput: Locator
+  readonly providerTariffInfo: Locator
   readonly notesInput: Locator
 
   readonly photoDropzone: Locator
@@ -64,7 +63,7 @@ export class AddMeterPage extends BasePage {
     this.installationDateInput = page.getByLabel(/дата встановлення/i)
     this.initialReadingInput = page.getByLabel(/початкові показання/i)
     this.providerSelect = page.locator('select#providerId')
-    this.tariffValueInput = page.getByLabel(/поточний тариф/i)
+    this.providerTariffInfo = page.getByText(/тарифна інформація/i)
     this.notesInput = page.getByLabel(/додаткові примітки/i)
 
     this.photoDropzone = page.locator('[class*="PhotoDropzone"]').or(
@@ -150,10 +149,6 @@ export class AddMeterPage extends BasePage {
 
     if (data.providerId) {
       await this.selectProvider(data.providerId)
-    }
-
-    if (data.tariffValue) {
-      await this.tariffValueInput.fill(data.tariffValue)
     }
 
     if (data.notes) {
@@ -277,7 +272,6 @@ export class AddMeterPage extends BasePage {
     await expect(this.installationDateInput).toBeVisible()
     await expect(this.initialReadingInput).toBeVisible()
     await expect(this.providerSelect).toBeVisible()
-    await expect(this.tariffValueInput).toBeVisible()
     await expect(this.notesInput).toBeVisible()
     await expect(this.cancelButton).toBeVisible()
     await expect(this.submitButton).toBeVisible()
@@ -287,8 +281,17 @@ export class AddMeterPage extends BasePage {
     await expect(this.initialReadingInput).toHaveAttribute('min', '0')
   }
 
-  async expectTariffAutoFilled(value: string): Promise<void> {
-    await expect(this.tariffValueInput).toHaveValue(value)
+  async expectProviderTariffInfoVisible(): Promise<void> {
+    await expect(this.providerTariffInfo).toBeVisible()
+  }
+
+  async expectProviderTariffInfoHidden(): Promise<void> {
+    await expect(this.providerTariffInfo).not.toBeVisible()
+  }
+
+  async expectProviderRequired(): Promise<void> {
+    const label = this.page.locator('label[for="providerId"]')
+    await expect(label).toContainText('*')
   }
 
   async expectAddressSelectHasOptions(): Promise<void> {

@@ -43,7 +43,7 @@ export interface CreateMeterRequest {
   Location?: string
   InstallationDate: string
   InitialReading?: number
-  ServiceProviderId?: number
+  ServiceProviderId: number
   Notes?: string
   IsActive: boolean
 }

@@ -4,6 +4,7 @@ import {
   mockAddresses,
   mockCreateMeter,
   mockCreateMeterError,
+  mockProviders,
   mockReferenceData,
   mockUserProfile,
   mockUtilityTypes,
@@ -12,7 +13,6 @@ import { authenticateUser } from '../../helpers/auth'
 import {
   testAddresses,
   testProviders,
-  testNewMeterInput,
 } from '../../fixtures/test-data'
 
 test.describe('Add Meter Page', () => {
@@ -27,6 +27,7 @@ test.describe('Add Meter Page', () => {
     await mockReferenceData(page)
     await mockAddresses(page, defaultAddresses)
     await mockUtilityTypes(page)
+    await mockProviders(page, [testProviders[0]])
     await mockCreateMeter(page)
   })
 
@@ -157,6 +158,36 @@ test.describe('Add Meter Page', () => {
     })
   })
 
+  test.describe('Provider and Tariff Info', () => {
+    test('should show required asterisk on provider field', async ({ page }) => {
+      await addMeterPage.goto()
+      await addMeterPage.waitForPageLoad()
+
+      await addMeterPage.expectProviderRequired()
+    })
+
+    test('should show tariff info when provider is selected', async ({ page }) => {
+      await addMeterPage.goto()
+      await addMeterPage.waitForPageLoad()
+
+      await addMeterPage.selectAddress('1')
+      await addMeterPage.selectMeterType('electricity')
+      await addMeterPage.selectProvider('1')
+
+      await addMeterPage.expectProviderTariffInfoVisible()
+    })
+
+    test('should hide tariff info when no provider is selected', async ({ page }) => {
+      await addMeterPage.goto()
+      await addMeterPage.waitForPageLoad()
+
+      await addMeterPage.selectAddress('1')
+      await addMeterPage.selectMeterType('electricity')
+
+      await addMeterPage.expectProviderTariffInfoHidden()
+    })
+  })
+
   test.describe('Form Validation', () => {
     test('should validate required address field', async ({ page }) => {
       await addMeterPage.goto()
@@ -166,7 +197,6 @@ test.describe('Add Meter Page', () => {
       await addMeterPage.serialNumberInput.fill('TEST-001')
       await addMeterPage.installationDateInput.fill('2025-01-15')
       await addMeterPage.initialReadingInput.fill('100')
-      await addMeterPage.tariffValueInput.fill('4.32')
 
       await addMeterPage.submit()
 
@@ -181,7 +211,6 @@ test.describe('Add Meter Page', () => {
       await addMeterPage.serialNumberInput.fill('TEST-001')
       await addMeterPage.installationDateInput.fill('2025-01-15')
       await addMeterPage.initialReadingInput.fill('100')
-      await addMeterPage.tariffValueInput.fill('4.32')
 
       await addMeterPage.submit()
 
@@ -196,7 +225,7 @@ test.describe('Add Meter Page', () => {
       await addMeterPage.selectMeterType('electricity')
       await addMeterPage.installationDateInput.fill('2025-01-15')
       await addMeterPage.initialReadingInput.fill('100')
-      await addMeterPage.tariffValueInput.fill('4.32')
+      await addMeterPage.selectProvider('1')
 
       await addMeterPage.submit()
 
@@ -212,7 +241,7 @@ test.describe('Add Meter Page', () => {
       await addMeterPage.serialNumberInput.fill('AB')
       await addMeterPage.installationDateInput.fill('2025-01-15')
       await addMeterPage.initialReadingInput.fill('100')
-      await addMeterPage.tariffValueInput.fill('4.32')
+      await addMeterPage.selectProvider('1')
 
       await addMeterPage.submit()
 
@@ -227,7 +256,7 @@ test.describe('Add Meter Page', () => {
       await addMeterPage.selectMeterType('electricity')
       await addMeterPage.serialNumberInput.fill('TEST-001-2025')
       await addMeterPage.initialReadingInput.fill('100')
-      await addMeterPage.tariffValueInput.fill('4.32')
+      await addMeterPage.selectProvider('1')
 
       await addMeterPage.submit()
 
@@ -242,14 +271,14 @@ test.describe('Add Meter Page', () => {
       await addMeterPage.selectMeterType('electricity')
       await addMeterPage.serialNumberInput.fill('TEST-001-2025')
       await addMeterPage.installationDateInput.fill('2025-01-15')
-      await addMeterPage.tariffValueInput.fill('4.32')
+      await addMeterPage.selectProvider('1')
 
       await addMeterPage.submit()
 
       await addMeterPage.expectValidationError(/початкові показання/i)
     })
 
-    test('should validate required tariff field', async ({ page }) => {
+    test('should validate required provider field', async ({ page }) => {
       await addMeterPage.goto()
       await addMeterPage.waitForPageLoad()
 
@@ -258,11 +287,10 @@ test.describe('Add Meter Page', () => {
       await addMeterPage.serialNumberInput.fill('TEST-001-2025')
       await addMeterPage.installationDateInput.fill('2025-01-15')
       await addMeterPage.initialReadingInput.fill('100')
-      await addMeterPage.tariffValueInput.clear()
 
       await addMeterPage.submit()
 
-      await addMeterPage.expectValidationError(/тариф/i)
+      await addMeterPage.expectValidationError(/оберіть провайдера/i)
     })
 
     test('should have min attribute of 0 for initial reading', async ({ page }) => {
@@ -305,7 +333,7 @@ test.describe('Add Meter Page', () => {
         serialNumber: 'TEST-001-2025',
         installationDate: '2025-01-15',
         initialReading: '100',
-        tariffValue: '4.32',
+        providerId: '1',
       })
 
       await addMeterPage.expectProgress(100)
@@ -325,7 +353,7 @@ test.describe('Add Meter Page', () => {
         serialNumber: 'TEST-001-2025',
         installationDate: '2025-01-15',
         initialReading: '100',
-        tariffValue: '4.32',
+        providerId: '1',
       })
 
       await addMeterPage.submit()
@@ -345,7 +373,7 @@ test.describe('Add Meter Page', () => {
         manufacturer: 'НІК',
         installationDate: '2025-01-15',
         initialReading: '100',
-        tariffValue: '4.32',
+        providerId: '1',
         notes: 'Тестовий лічильник',
       })
 
@@ -364,7 +392,7 @@ test.describe('Add Meter Page', () => {
         serialNumber: 'TEST-001-2025',
         installationDate: '2025-01-15',
         initialReading: '100',
-        tariffValue: '4.32',
+        providerId: '1',
       })
 
       await addMeterPage.submit()
@@ -388,7 +416,7 @@ test.describe('Add Meter Page', () => {
         serialNumber: 'DUPLICATE-001',
         installationDate: '2025-01-15',
         initialReading: '100',
-        tariffValue: '4.32',
+        providerId: '1',
       })
 
       await addMeterPage.submit()
@@ -409,7 +437,7 @@ test.describe('Add Meter Page', () => {
         serialNumber: 'TEST-001-2025',
         installationDate: '2025-01-15',
         initialReading: '100',
-        tariffValue: '4.32',
+        providerId: '1',
       })
 
       await addMeterPage.submit()
@@ -550,7 +578,7 @@ test.describe('Add Meter Page', () => {
       await expect(page.getByLabel(/модель.*виробник/i)).toBeVisible()
       await expect(page.getByLabel(/дата встановлення/i)).toBeVisible()
       await expect(page.getByLabel(/початкові показання/i)).toBeVisible()
-      await expect(page.getByLabel(/поточний тариф/i)).toBeVisible()
+      await expect(page.locator('label[for="providerId"]')).toBeVisible()
       await expect(page.getByLabel(/додаткові примітки/i)).toBeVisible()
     })
 
