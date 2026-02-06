@@ -63,14 +63,14 @@ const requiredFieldKeys: Array<keyof Pick<MeterFormValues, 'addressId' | 'meterT
 
 export interface AddMeterFormProps {
   onCancel?: () => void
+  onSuccess?: () => void
 }
 
-export function AddMeterForm({ onCancel }: AddMeterFormProps) {
+export function AddMeterForm({ onCancel, onSuccess }: AddMeterFormProps) {
   const { addresses } = useAddresses()
   const { createMeter, isLoading: isCreating, error: createError } = useCreateMeter()
   const [currentAddressId, setCurrentAddressId] = useState<number | null>(null)
   const { providers: addressProviders, isLoading: providersLoading } = useServiceProvidersByAddress(currentAddressId)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   const {
     register,
@@ -207,10 +207,7 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
 
     await createMeter(request)
 
-    setSubmitSuccess(true)
-    reset(defaultValues)
-
-    setTimeout(() => setSubmitSuccess(false), 3000)
+    onSuccess?.()
   }
 
   const submitWithIntent = (intent: SubmissionIntent) =>
@@ -488,11 +485,6 @@ export function AddMeterForm({ onCancel }: AddMeterFormProps) {
         {createError && (
           <div className="px-6 pb-4">
             <FormMessage variant="error">{createError}</FormMessage>
-          </div>
-        )}
-        {submitSuccess && (
-          <div className="px-6 pb-4">
-            <FormMessage variant="success">Лічильник успішно створено!</FormMessage>
           </div>
         )}
       </Card>

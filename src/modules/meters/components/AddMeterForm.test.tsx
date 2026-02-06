@@ -476,7 +476,7 @@ describe('AddMeterForm', () => {
       await user.type(getSerialNumberInput(), 'AE123456')
       await user.type(getInstallationDateInput(), '2024-01-15')
       await user.type(getInitialReadingInput(), '100')
-      await user.type(getTariffInput(), '4.32')
+      await user.selectOptions(getProviderSelect(), '1')
       await user.click(getSubmitButton())
 
       await waitFor(() => {
@@ -492,10 +492,11 @@ describe('AddMeterForm', () => {
       })
     })
 
-    it('shows success message after successful submission', async () => {
+    it('calls onSuccess callback after successful submission', async () => {
       const user = userEvent.setup()
+      const mockOnSuccess = vi.fn()
       mockCreateMeter.mockResolvedValue({ id: 1 })
-      renderWithProviders(<AddMeterForm />)
+      renderWithProviders(<AddMeterForm onSuccess={mockOnSuccess} />)
 
       await user.selectOptions(getAddressSelect(), '1')
 
@@ -505,11 +506,11 @@ describe('AddMeterForm', () => {
       await user.type(getSerialNumberInput(), 'AE123456')
       await user.type(getInstallationDateInput(), '2024-01-15')
       await user.type(getInitialReadingInput(), '100')
-      await user.type(getTariffInput(), '4.32')
+      await user.selectOptions(getProviderSelect(), '1')
       await user.click(getSubmitButton())
 
       await waitFor(() => {
-        expect(screen.getByText(/лічильник успішно створено/i)).toBeInTheDocument()
+        expect(mockOnSuccess).toHaveBeenCalledOnce()
       })
     })
 
@@ -528,7 +529,7 @@ describe('AddMeterForm', () => {
       await user.type(getManufacturerInput(), 'Energomera CE102')
       await user.type(getInstallationDateInput(), '2024-01-15')
       await user.type(getInitialReadingInput(), '100')
-      await user.type(getTariffInput(), '4.32')
+      await user.selectOptions(getProviderSelect(), '1')
       await user.type(getNotesTextarea(), 'Тестова примітка')
       await user.click(getSubmitButton())
 

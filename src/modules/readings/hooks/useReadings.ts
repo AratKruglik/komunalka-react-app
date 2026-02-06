@@ -16,12 +16,13 @@ export function useReadingsByAddress(
   params?: ReadingsByAddressParams
 ) {
   const [readings, setReadings] = useState<Reading[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(addressId !== null)
   const [error, setError] = useState<string | null>(null)
 
   const fetchReadings = useCallback(async () => {
     if (addressId === null) {
       setReadings([])
+      setIsLoading(false)
       return
     }
 
@@ -32,7 +33,9 @@ export function useReadingsByAddress(
       const data = await readingService.getByAddress(addressId, params)
       setReadings(Array.isArray(data) ? data : [])
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Не вдалося завантажити показання'
+      const errorMessage = err instanceof Error
+        ? err.message
+        : (err as { message?: string })?.message ?? 'Не вдалося завантажити показання'
       setError(errorMessage)
     } finally {
       setIsLoading(false)

@@ -57,12 +57,13 @@ export function useServiceProviders() {
  */
 export function useServiceProvidersByAddress(addressId: number | null) {
   const [providers, setProviders] = useState<ApiServiceProvider[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(addressId !== null)
   const [error, setError] = useState<string | null>(null)
 
   const fetchProviders = useCallback(async () => {
     if (!addressId) {
       setProviders([])
+      setIsLoading(false)
       return
     }
 
@@ -73,7 +74,9 @@ export function useServiceProvidersByAddress(addressId: number | null) {
       const data = await serviceProviderService.getByAddress(addressId)
       setProviders(data)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch providers'
+      const errorMessage = err instanceof Error
+        ? err.message
+        : (err as { message?: string })?.message ?? 'Failed to fetch providers'
       setError(errorMessage)
     } finally {
       setIsLoading(false)

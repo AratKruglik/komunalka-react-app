@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react'
 import { Link, useNavigate } from 'react-router'
 import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
+import { ROUTES } from '@shared/constants/routes'
 import { AddMeterForm } from '../components/AddMeterForm'
 
 const breadcrumbs = [
@@ -45,7 +46,10 @@ export default function AddMeterPage() {
           })}
         </nav>
 
-        <AddMeterForm onCancel={() => navigate('/addresses')} />
+        <AddMeterForm
+          onCancel={() => navigate(ROUTES.METERS)}
+          onSuccess={() => navigate(ROUTES.METERS)}
+        />
       </div>
     </AuthenticatedLayout>
   )
