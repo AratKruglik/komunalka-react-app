@@ -11,21 +11,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  ConfirmDialog,
   FormMessage,
   Input,
   Label,
   Select,
 } from '@shared/components/ui'
 import { useAddresses } from '@modules/addresses/hooks'
-import { useMetersByAddress } from '@modules/meters/hooks'
+import { useMetersByAddress, useDeleteMeter } from '@modules/meters/hooks'
 import { useReadingsByAddress } from '@modules/readings/hooks'
 import { useServiceProvidersByAddress } from '@modules/providers/hooks'
 import { METER_TYPE_OPTIONS, type MeterType } from '@shared/constants/meterTypes'
 import {
   toAddressMetersSnapshotViewModel,
   type MeterTypeGroupViewModel,
+  type MeterDeviceViewModel,
 } from '@shared/viewModels'
 import { MeterTypeTabs } from '../components/MeterTypeTabs'
+import { MeterCard } from '../components/MeterCard'
 
 type QuickFormState = Record<
   MeterType,
@@ -97,9 +100,12 @@ export default function AddressMetersPage() {
   }, [addressOptions, selectedAddressId])
 
   // Fetch meters and readings from API
-  const { meters, isLoading: isLoadingMeters, error: metersError } = useMetersByAddress(selectedAddressId)
+  const { meters, isLoading: isLoadingMeters, error: metersError, refetch } = useMetersByAddress(selectedAddressId)
   const { readings, isLoading: isLoadingReadings } = useReadingsByAddress(selectedAddressId)
   const { providers, isLoading: isLoadingProviders } = useServiceProvidersByAddress(selectedAddressId)
+
+  const { deleteMeter, isLoading: isDeleting } = useDeleteMeter()
+  const [deleteConfirm, setDeleteConfirm] = useState<MeterDeviceViewModel | null>(null)
 
   const [activeMeterType, setActiveMeterType] = useState<MeterType>('electricity')
   const [quickForms, setQuickForms] = useState<QuickFormState>({} as QuickFormState)
@@ -225,6 +231,15 @@ export default function AddressMetersPage() {
     }))
   }
 
+  const handleDeleteMeter = async () => {
+    if (!deleteConfirm) return
+    const success = await deleteMeter(deleteConfirm.id)
+    if (success) {
+      setDeleteConfirm(null)
+      refetch()
+    }
+  }
+
   const renderMetersList = () => {
     if (!currentGroup) {
       return null
@@ -235,50 +250,12 @@ export default function AddressMetersPage() {
         {currentGroup.meters.map((meter) => {
           const statusStyle = meterStatusStyles[meter.status] ?? meterStatusStyles.active
           return (
-            <div
+            <MeterCard
               key={meter.id}
-              className="flex flex-col gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-base font-semibold text-gray-900 dark:text-slate-100">{meter.name}</p>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyle.badge}`}>
-                    {statusStyle.text}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-slate-300">
-                  Серійний №: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.meterNumber}</span>
-                </p>
-                <p className="text-sm text-gray-600 dark:text-slate-300">
-                  Локація: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.location}</span>
-                </p>
-                <p className="text-sm text-gray-600 dark:text-slate-300">
-                  Провайдер: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.providerName}</span>
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-slate-400 sm:text-right">
-                <p>
-                  Останні показання:{' '}
-                  <span className="font-semibold text-gray-900 dark:text-slate-100">{meter.lastSubmission}</span>
-                </p>
-                {meter.nextCheckDate ? (
-                  <p>
-                    Перевірка до:{' '}
-                    <span className="font-semibold text-gray-900 dark:text-slate-100">{meter.nextCheckDate}</span>
-                  </p>
-                ) : null}
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  tone="neutral"
-                  className="mt-2 sm:ml-auto"
-                >
-                  Оновити дані
-                </Button>
-              </div>
-            </div>
+              meter={meter}
+              statusStyle={statusStyle}
+              onDelete={setDeleteConfirm}
+            />
           )
         })}
       </div>
@@ -560,6 +537,26 @@ export default function AddressMetersPage() {
           </CardContent>
         </Card>
       </div>
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={handleDeleteMeter}
+        title="Видалити лічильник?"
+        description={
+          <>
+            Ви впевнені, що хочете видалити лічильник{' '}
+            <strong>{deleteConfirm?.name}</strong>
+            {deleteConfirm?.meterNumber && (
+              <> (серійний №: {deleteConfirm.meterNumber})</>
+            )}
+            ? Усі пов'язані показання також будуть видалені. Цю дію неможливо скасувати.
+          </>
+        }
+        confirmLabel="Видалити"
+        cancelLabel="Скасувати"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </AuthenticatedLayout>
   )
 }
