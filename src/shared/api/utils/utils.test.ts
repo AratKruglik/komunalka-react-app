@@ -105,6 +105,43 @@ describe('formatApiError', () => {
 
       expect(result.message).toBe('timeout of 10000ms exceeded')
     })
+
+    it('extracts message from response data detail field (ASP.NET Problem Details)', () => {
+      const error = createAxiosError(401, 'Unauthorized', {
+        type: 'https://tools.ietf.org/html/rfc9110#section-15.5.2',
+        title: 'Unauthorized',
+        status: 401,
+        detail: 'Invalid email or password',
+      })
+
+      const result = formatApiError(error) as ApiError
+
+      expect(result.message).toBe('Invalid email or password')
+      expect(result.status).toBe(401)
+    })
+
+    it('prefers detail over message field', () => {
+      const error = createAxiosError(401, 'Unauthorized', {
+        message: 'Generic message',
+        detail: 'Specific detail message',
+      })
+
+      const result = formatApiError(error) as ApiError
+
+      expect(result.message).toBe('Specific detail message')
+    })
+
+    it('falls back to title when neither detail nor message exists', () => {
+      const error = createAxiosError(400, 'Bad Request', {
+        title: 'One or more validation errors occurred.',
+        status: 400,
+        errors: { Email: ['Email is required'] },
+      })
+
+      const result = formatApiError(error) as ApiError
+
+      expect(result.message).toBe('One or more validation errors occurred.')
+    })
   })
 
   describe('with non-Axios errors', () => {

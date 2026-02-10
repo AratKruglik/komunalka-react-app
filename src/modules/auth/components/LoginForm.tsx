@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { tv } from 'tailwind-variants'
-import { GithubIcon, GoogleIcon } from '@shared/components/ui'
+import { Alert, AlertDescription, GithubIcon, GoogleIcon } from '@shared/components/ui'
+import { getLocalizedErrorMessage } from '@shared/api/utils'
+import type { ApiError } from '@shared/api/utils'
 import { ROUTES } from '@shared/constants'
 import { useAuth } from '@shared/hooks'
 import type { OAuthProvider } from '@shared/types/auth'
@@ -69,14 +71,11 @@ export function LoginForm() {
       // Перенаправлення на головну сторінку
       navigate(ROUTES.HOME)
     } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'message' in error) {
-        setErrors({
-          general: (error as { message: string }).message || 'Помилка входу. Перевірте дані та спробуйте ще раз.'
-        })
+      const apiError = error as ApiError
+      if (apiError && typeof apiError === 'object' && 'status' in apiError) {
+        setErrors({ general: getLocalizedErrorMessage(apiError) })
       } else {
-        setErrors({
-          general: 'Помилка входу. Перевірте дані та спробуйте ще раз.'
-        })
+        setErrors({ general: 'Помилка входу. Перевірте дані та спробуйте ще раз.' })
       }
     }
   }
@@ -102,11 +101,12 @@ export function LoginForm() {
       window.location.href = url.toString()
     } catch (error) {
       setOauthLoading(null)
-      const message =
-        error && typeof error === 'object' && 'message' in error
-          ? (error as { message: string }).message
-          : `Помилка авторизації через ${provider}`
-      setErrors({ general: message })
+      const apiError = error as ApiError
+      if (apiError && typeof apiError === 'object' && 'status' in apiError) {
+        setErrors({ general: getLocalizedErrorMessage(apiError) })
+      } else {
+        setErrors({ general: `Помилка авторизації через ${provider}` })
+      }
     }
   }
 
@@ -115,9 +115,9 @@ export function LoginForm() {
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         {/* General Error Message */}
         {errors.general && (
-          <div className="rounded-md bg-red-50 p-3 dark:bg-red-900/20">
-            <p className="text-sm text-red-800 dark:text-red-300">{errors.general}</p>
-          </div>
+          <Alert variant="danger">
+            <AlertDescription>{errors.general}</AlertDescription>
+          </Alert>
         )}
 
         {/* Email Field */}
