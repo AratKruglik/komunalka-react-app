@@ -1,3 +1,4 @@
+import { CalendarDays } from 'lucide-react'
 import { Input } from '@shared/components/ui/form/Input'
 import { Label } from '@shared/components/ui/form/Label'
 
@@ -21,6 +22,7 @@ export function DateRangeFilter({ fromDate, toDate, onFromChange, onToChange }: 
           value={fromDate}
           onChange={(e) => onFromChange(e.target.value)}
           className="py-1.5 text-sm"
+          endAdornment={<CalendarDays className="h-4 w-4 text-gray-400" />}
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -33,6 +35,7 @@ export function DateRangeFilter({ fromDate, toDate, onFromChange, onToChange }: 
           value={toDate}
           onChange={(e) => onToChange(e.target.value)}
           className="py-1.5 text-sm"
+          endAdornment={<CalendarDays className="h-4 w-4 text-gray-400" />}
         />
       </div>
     </div>
