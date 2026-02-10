@@ -16,6 +16,7 @@ export const ROUTES = {
   PROVIDERS: '/providers',
   PROVIDERS_NEW: '/providers/new',
   PROFILE: '/profile',
+  SETTINGS: '/settings',
   FORGOT_PASSWORD: '/forgot-password',
   TERMS: '/terms',
   PRIVACY: '/privacy',

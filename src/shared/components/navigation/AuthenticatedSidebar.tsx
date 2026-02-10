@@ -225,7 +225,7 @@ function MobileUserSection({
   onNavigate?: () => void
 }) {
   const userMenuItems = [
-    { icon: User, label: 'Мій профіль', to: '/profile' },
+    { icon: User, label: 'Мій профіль', to: '/settings?tab=profile' },
     { icon: Settings, label: 'Налаштування', to: '/settings' },
     { icon: LogOut, label: 'Вийти', to: '/logout', tone: 'danger' as const },
   ]

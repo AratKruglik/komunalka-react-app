@@ -9,6 +9,7 @@ import {
   type TopbarUser,
 } from '../navigation/AuthenticatedTopbar'
 import { useUser } from '@shared/hooks'
+import { userService } from '@shared/api'
 
 interface AuthenticatedLayoutProps {
   children: ReactNode
@@ -40,7 +41,7 @@ export function AuthenticatedLayout({
       return {
         name: fullName,
         email: authUser.email,
-        avatarUrl: authUser.avatarThumbnailUrl || authUser.avatarUrl,
+        avatarUrl: authUser.avatarUrl ? userService.getAvatarUrl(authUser.id, 'thumbnail') : undefined,
       }
     }
     return {

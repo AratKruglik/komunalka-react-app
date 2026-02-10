@@ -87,10 +87,6 @@ export const userService = {
   updateWithAvatar: async (id: number, data: UpdateProfilePayload): Promise<User> => {
     const { avatar, ...profileData } = data
 
-    if (!avatar) {
-      return api.put<User>(API_ENDPOINTS.USERS.UPDATE(id), profileData)
-    }
-
     const formData = new FormData()
 
     if (profileData.username) formData.append('username', profileData.username)
@@ -102,15 +98,14 @@ export const userService = {
     if (profileData.newPassword) formData.append('newPassword', profileData.newPassword)
     if (profileData.confirmNewPassword) formData.append('confirmNewPassword', profileData.confirmNewPassword)
 
-    formData.append('avatar', avatar)
+    if (avatar) {
+      formData.append('avatar', avatar)
+    }
 
     return apiRequest<User>({
       method: 'PUT',
       url: API_ENDPOINTS.USERS.UPDATE(id),
       data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     })
   },
 
