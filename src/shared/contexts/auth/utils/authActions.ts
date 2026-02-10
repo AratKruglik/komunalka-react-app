@@ -1,5 +1,6 @@
 import { AuthActionType } from '../actionTypes'
 import { authService, userService } from '@shared/api'
+import { formatApiError } from '@shared/api/utils'
 import type { AuthDispatch, ScheduleTokenRefreshFn } from './types'
 import type { User } from '@shared/types/auth/user.types'
 import type { OAuthProvider } from '@shared/types/auth/oauth.types'
@@ -72,12 +73,13 @@ export async function loginAction(
       // Profile loading failed - minimal user data already set
     }
   } catch (error) {
+    const apiError = formatApiError(error)
     const errorMessage =
-      error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : 'Login failed'
+      apiError && typeof apiError === 'object' && 'message' in apiError
+        ? (apiError as { message: string }).message
+        : 'Помилка входу'
     dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage })
-    throw error
+    throw apiError
   }
 }
 
@@ -126,12 +128,13 @@ export async function registerAction(
       // Profile loading failed - minimal user data already set
     }
   } catch (error) {
+    const apiError = formatApiError(error)
     const errorMessage =
-      error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
-        : 'Registration failed'
+      apiError && typeof apiError === 'object' && 'message' in apiError
+        ? (apiError as { message: string }).message
+        : 'Помилка реєстрації'
     dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage })
-    throw error
+    throw apiError
   }
 }
 
@@ -178,11 +181,12 @@ export async function oauthCallbackAction(
       // Profile loading failed - minimal user data already set
     }
   } catch (error) {
+    const apiError = formatApiError(error)
     const errorMessage =
-      error && typeof error === 'object' && 'message' in error
-        ? (error as { message: string }).message
+      apiError && typeof apiError === 'object' && 'message' in apiError
+        ? (apiError as { message: string }).message
         : 'Помилка авторизації через OAuth'
     dispatch({ type: AuthActionType.AUTH_ERROR, payload: errorMessage })
-    throw error
+    throw apiError
   }
 }

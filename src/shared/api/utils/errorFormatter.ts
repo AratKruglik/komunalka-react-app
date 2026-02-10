@@ -18,8 +18,13 @@ export interface ApiError {
  */
 export function formatApiError(error: unknown): ApiError | unknown {
   if (axios.isAxiosError(error)) {
+    const responseData = error.response?.data
     return {
-      message: error.response?.data?.message || error.message,
+      message:
+        responseData?.detail ||
+        responseData?.message ||
+        responseData?.title ||
+        error.message,
       status: error.response?.status,
       data: error.response?.data,
     }
