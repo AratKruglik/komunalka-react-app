@@ -106,6 +106,9 @@ export const userService = {
       method: 'PUT',
       url: API_ENDPOINTS.USERS.UPDATE(id),
       data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     })
   },
 
