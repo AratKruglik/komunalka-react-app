@@ -198,20 +198,18 @@ export function useUpdateMeter() {
 export function useDeleteMeter() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [isDeleted, setIsDeleted] = useState(false)
 
-  const deleteMeter = useCallback(async (id: number) => {
+  const deleteMeter = useCallback(async (id: number): Promise<boolean> => {
     setIsLoading(true)
     setError(null)
-    setIsDeleted(false)
 
     try {
       await meterService.delete(id)
-      setIsDeleted(true)
+      return true
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Не вдалося видалити лічильник'
       setError(errorMessage)
-      throw err
+      return false
     } finally {
       setIsLoading(false)
     }
@@ -219,14 +217,12 @@ export function useDeleteMeter() {
 
   const reset = useCallback(() => {
     setError(null)
-    setIsDeleted(false)
   }, [])
 
   return {
     deleteMeter,
     isLoading,
     error,
-    isDeleted,
     reset,
   }
 }

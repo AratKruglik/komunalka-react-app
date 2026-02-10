@@ -75,6 +75,9 @@ export const API_ENDPOINTS = {
     AVATAR: (id: number) => `/users/${id}/avatar`,
     AVATAR_THUMBNAIL: (id: number) => `/users/${id}/avatar/thumbnail`,
   },
+  EXPORT: {
+    METER_READINGS: '/export/meter-readings',
+  },
 } as const
 
 export type ApiEndpoint = typeof API_ENDPOINTS;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus } from 'lucide-react'
+import { Plus, Download, Loader2 } from 'lucide-react'
 import { AuthenticatedLayout } from '@shared/components/layout/AuthenticatedLayout'
 import { PageSectionHeader } from '@shared/components/pages'
 import {
@@ -11,30 +11,26 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  ConfirmDialog,
   FormMessage,
-  Input,
   Label,
   Select,
 } from '@shared/components/ui'
 import { useAddresses } from '@modules/addresses/hooks'
-import { useMetersByAddress } from '@modules/meters/hooks'
+import { useMetersByAddress, useDeleteMeter } from '@modules/meters/hooks'
 import { useReadingsByAddress } from '@modules/readings/hooks'
 import { useServiceProvidersByAddress } from '@modules/providers/hooks'
 import { METER_TYPE_OPTIONS, type MeterType } from '@shared/constants/meterTypes'
 import {
   toAddressMetersSnapshotViewModel,
   type MeterTypeGroupViewModel,
+  type MeterDeviceViewModel,
 } from '@shared/viewModels'
 import { MeterTypeTabs } from '../components/MeterTypeTabs'
-
-type QuickFormState = Record<
-  MeterType,
-  {
-    meterId: number
-    value: string
-    periodLabel: string
-  }
->
+import { MeterCard } from '../components/MeterCard'
+import { DateRangeFilter } from '../components/DateRangeFilter'
+import { exportService } from '../api/exportService'
+import { downloadBlob } from '@shared/utils/downloadBlob'
 
 const meterTypeOrder: MeterType[] = ['electricity', 'gas', 'coldWater', 'hotWater', 'heat']
 
@@ -97,13 +93,17 @@ export default function AddressMetersPage() {
   }, [addressOptions, selectedAddressId])
 
   // Fetch meters and readings from API
-  const { meters, isLoading: isLoadingMeters, error: metersError } = useMetersByAddress(selectedAddressId)
+  const { meters, isLoading: isLoadingMeters, error: metersError, refetch } = useMetersByAddress(selectedAddressId)
   const { readings, isLoading: isLoadingReadings } = useReadingsByAddress(selectedAddressId)
   const { providers, isLoading: isLoadingProviders } = useServiceProvidersByAddress(selectedAddressId)
 
+  const { deleteMeter, isLoading: isDeleting } = useDeleteMeter()
+  const [deleteConfirm, setDeleteConfirm] = useState<MeterDeviceViewModel | null>(null)
+
   const [activeMeterType, setActiveMeterType] = useState<MeterType>('electricity')
-  const [quickForms, setQuickForms] = useState<QuickFormState>({} as QuickFormState)
-  const [submissionState, setSubmissionState] = useState<{ type: MeterType; message: string } | null>(null)
+  const [exportFromDate, setExportFromDate] = useState('')
+  const [exportToDate, setExportToDate] = useState('')
+  const [isExporting, setIsExporting] = useState(false)
 
   // Build snapshot from API data
   const addressSnapshot = useMemo(() => {
@@ -141,15 +141,6 @@ export default function AddressMetersPage() {
     }
   }, [availableGroups, activeMeterType])
 
-  useEffect(() => {
-    if (!submissionState) {
-      return
-    }
-
-    const timeout = window.setTimeout(() => setSubmissionState(null), 3500)
-    return () => window.clearTimeout(timeout)
-  }, [submissionState])
-
   const currentGroup = availableGroups.find((group) => group.type === activeMeterType) ?? null
 
   const meterTypeMeta = Object.fromEntries(
@@ -166,63 +157,33 @@ export default function AddressMetersPage() {
     }
   })
 
-  const quickFormState = currentGroup
-    ? quickForms[currentGroup.type] ?? {
-        meterId: currentGroup.quickDraft.meterId,
-        value: '',
-        periodLabel: currentGroup.quickDraft.monthLabel,
-      }
-    : null
-
-  const resolveBaseQuickForm = (type: MeterType) => {
-    const existing = quickForms[type]
-    if (existing) {
-      return existing
-    }
-    const group = availableGroups.find((entry) => entry.type === type)
-    if (!group) {
-      return { meterId: 0, value: '', periodLabel: '' }
-    }
-    return {
-      meterId: group.quickDraft.meterId,
-      value: '',
-      periodLabel: group.quickDraft.monthLabel,
+  const handleDeleteMeter = async () => {
+    if (!deleteConfirm) return
+    const success = await deleteMeter(deleteConfirm.id)
+    if (success) {
+      setDeleteConfirm(null)
+      refetch()
     }
   }
 
-  const handleQuickFormChange = (
-    type: MeterType,
-    partial: Partial<QuickFormState[MeterType]>,
-  ) => {
-    setQuickForms((previous) => ({
-      ...previous,
-      [type]: {
-        ...resolveBaseQuickForm(type),
-        ...(previous[type] ?? {}),
-        ...partial,
-      },
-    }))
-  }
+  const handleExportPdf = async () => {
+    if (selectedAddressId === null) return
 
-  const handleQuickSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!currentGroup || !quickFormState?.value) {
-      return
+    setIsExporting(true)
+    try {
+      const blob = await exportService.exportMeterReadings({
+        addressIds: [selectedAddressId],
+        fromDate: exportFromDate ? `${exportFromDate}T00:00:00Z` : undefined,
+        toDate: exportToDate ? `${exportToDate}T23:59:59Z` : undefined,
+        format: 'pdf',
+      })
+      downloadBlob(blob, `meter_readings_${selectedAddressId}.pdf`)
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert('Не вдалося завантажити PDF. Спробуйте пізніше.')
+    } finally {
+      setIsExporting(false)
     }
-
-    setSubmissionState({
-      type: currentGroup.type,
-      message: `Показання ${quickFormState.value} ${currentGroup.quickDraft.unit} збережено як чернетку`,
-    })
-
-    setQuickForms((previous) => ({
-      ...previous,
-      [currentGroup.type]: {
-        meterId: quickFormState.meterId,
-        value: '',
-        periodLabel: quickFormState.periodLabel,
-      },
-    }))
   }
 
   const renderMetersList = () => {
@@ -235,156 +196,15 @@ export default function AddressMetersPage() {
         {currentGroup.meters.map((meter) => {
           const statusStyle = meterStatusStyles[meter.status] ?? meterStatusStyles.active
           return (
-            <div
+            <MeterCard
               key={meter.id}
-              className="flex flex-col gap-4 rounded-xl border border-gray-100 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <p className="text-base font-semibold text-gray-900 dark:text-slate-100">{meter.name}</p>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyle.badge}`}>
-                    {statusStyle.text}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 dark:text-slate-300">
-                  Серійний №: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.meterNumber}</span>
-                </p>
-                <p className="text-sm text-gray-600 dark:text-slate-300">
-                  Локація: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.location}</span>
-                </p>
-                <p className="text-sm text-gray-600 dark:text-slate-300">
-                  Провайдер: <span className="font-medium text-gray-800 dark:text-slate-100">{meter.providerName}</span>
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 text-sm text-gray-500 dark:text-slate-400 sm:text-right">
-                <p>
-                  Останні показання:{' '}
-                  <span className="font-semibold text-gray-900 dark:text-slate-100">{meter.lastSubmission}</span>
-                </p>
-                {meter.nextCheckDate ? (
-                  <p>
-                    Перевірка до:{' '}
-                    <span className="font-semibold text-gray-900 dark:text-slate-100">{meter.nextCheckDate}</span>
-                  </p>
-                ) : null}
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  tone="neutral"
-                  className="mt-2 sm:ml-auto"
-                >
-                  Оновити дані
-                </Button>
-              </div>
-            </div>
+              meter={meter}
+              statusStyle={statusStyle}
+              onDelete={setDeleteConfirm}
+            />
           )
         })}
       </div>
-    )
-  }
-
-  const renderQuickForm = () => {
-    if (!currentGroup || !quickFormState) {
-      return null
-    }
-
-    const meterOptions = currentGroup.meters
-    const periodOptions = Array.from(
-      new Set([
-        currentGroup.quickDraft.monthLabel,
-        ...currentGroup.latestReadings.map((reading) => reading.monthLabel),
-      ]),
-    )
-
-    return (
-      <form
-        className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800 md:flex md:flex-wrap md:items-end md:gap-4 md:space-y-0"
-        onSubmit={handleQuickSubmit}
-      >
-        <div className="w-full md:flex-1">
-          <Label htmlFor="quick-meter" className="text-sm text-gray-600 dark:text-slate-100">
-            Лічильник
-          </Label>
-          <Select
-            id="quick-meter"
-            value={String(quickFormState.meterId)}
-            onChange={(event) =>
-              handleQuickFormChange(currentGroup.type, { meterId: Number(event.target.value) })
-            }
-            className="mt-1"
-          >
-            {meterOptions.map((meter) => (
-              <option key={meter.id} value={meter.id}>
-                {meter.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <div className="w-full md:flex-1">
-          <Label htmlFor="quick-period" className="text-sm text-gray-600 dark:text-slate-100">
-            Місяць
-          </Label>
-          <Select
-            id="quick-period"
-            value={quickFormState.periodLabel}
-            onChange={(event) =>
-              handleQuickFormChange(currentGroup.type, { periodLabel: event.target.value })
-            }
-            className="mt-1"
-          >
-            {periodOptions.map((period) => (
-              <option key={period} value={period}>
-                {period}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        <div className="w-full md:flex-1">
-          <Label htmlFor="quick-value" className="text-sm text-gray-600 dark:text-slate-100">
-            Нові показання
-          </Label>
-          <Input
-            id="quick-value"
-            type="number"
-            inputMode="decimal"
-            placeholder={`Напр., ${currentGroup.quickDraft.previousValue + 12}`}
-            value={quickFormState.value}
-            onChange={(event) =>
-              handleQuickFormChange(currentGroup.type, { value: event.target.value })
-            }
-            className="mt-1"
-            endAdornment={<span className="text-sm text-gray-500">{currentGroup.quickDraft.unit}</span>}
-            required
-            min="0"
-          />
-        </div>
-
-        <div className="w-full md:w-auto">
-          <Button
-            type="submit"
-            tone="primary"
-            className="w-full min-w-[180px] md:min-w-[200px]"
-            disabled={!quickFormState.value}
-          >
-            Зберегти показання
-          </Button>
-        </div>
-
-        {submissionState && submissionState.type === currentGroup.type ? (
-          <FormMessage variant="success" className="w-full">
-            {submissionState.message}
-          </FormMessage>
-        ) : (
-          <FormMessage className="w-full text-gray-500">
-            Останнє значення: {currentGroup.quickDraft.previousValue}{' '}
-            {currentGroup.quickDraft.unit}
-          </FormMessage>
-        )}
-      </form>
     )
   }
 
@@ -538,15 +358,28 @@ export default function AddressMetersPage() {
                 </section>
 
                 <section className="space-y-3">
-                  <h4 className="text-base font-semibold text-gray-900 dark:text-slate-50">Швидке внесення показань</h4>
-                  {renderQuickForm()}
-                </section>
-
-                <section className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-base font-semibold text-gray-900 dark:text-slate-50">Історія показань</h4>
-                    <Button type="button" size="sm" variant="ghost" tone="primary">
-                      Завантажити PDF
+                  <h4 className="text-base font-semibold text-gray-900 dark:text-slate-50">Історія показань</h4>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <DateRangeFilter
+                      fromDate={exportFromDate}
+                      toDate={exportToDate}
+                      onFromChange={setExportFromDate}
+                      onToChange={setExportToDate}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      tone="primary"
+                      disabled={isExporting}
+                      onClick={handleExportPdf}
+                    >
+                      {isExporting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                      {isExporting ? 'Завантаження...' : 'Завантажити PDF'}
                     </Button>
                   </div>
                   {renderHistory()}
@@ -560,6 +393,26 @@ export default function AddressMetersPage() {
           </CardContent>
         </Card>
       </div>
+      <ConfirmDialog
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={handleDeleteMeter}
+        title="Видалити лічильник?"
+        description={
+          <>
+            Ви впевнені, що хочете видалити лічильник{' '}
+            <strong>{deleteConfirm?.name}</strong>
+            {deleteConfirm?.meterNumber && (
+              <> (серійний №: {deleteConfirm.meterNumber})</>
+            )}
+            ? Усі пов'язані показання також будуть видалені. Цю дію неможливо скасувати.
+          </>
+        }
+        confirmLabel="Видалити"
+        cancelLabel="Скасувати"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </AuthenticatedLayout>
   )
 }
