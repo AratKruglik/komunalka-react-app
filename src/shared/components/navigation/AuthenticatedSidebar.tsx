@@ -14,7 +14,7 @@ import {
   User,
   X,
 } from 'lucide-react'
-import { Logo, iconContainer } from '../ui'
+import { Logo, UserAvatar } from '../ui'
 import type { LucideIcon } from 'lucide-react'
 
 export interface SidebarItem {
@@ -235,17 +235,7 @@ function MobileUserSection({
       {/* User Info Section */}
       <div className="flex items-center gap-3 border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4 dark:border-slate-800 dark:bg-slate-900">
         {/* Avatar or initials */}
-        <div className={`${iconContainer({ size: 'md' })} overflow-hidden bg-gray-200 text-sm font-semibold text-gray-900 dark:bg-slate-700 dark:text-slate-50`}>
-          {user.avatarUrl ? (
-            <img
-              src={user.avatarUrl}
-              alt={user.name}
-              className="h-10 w-10 rounded-full object-cover sm:h-11 sm:w-11"
-            />
-          ) : (
-            getInitials(user.name)
-          )}
-        </div>
+        <UserAvatar src={user.avatarUrl} name={user.name} size="md" />
 
         {/* User details */}
         <div className="min-w-0 flex-1">
@@ -293,13 +283,4 @@ function MobileUserSection({
       </nav>
     </div>
   )
-}
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
 }

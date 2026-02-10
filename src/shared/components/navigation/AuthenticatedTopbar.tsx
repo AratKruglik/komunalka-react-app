@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Bell, ChevronDown, Menu } from 'lucide-react'
-import { iconContainer } from '../ui'
+import { iconContainer, UserAvatar } from '../ui'
 import { ThemeToggle } from './ThemeToggle'
 
 export interface TopbarUser {
@@ -148,21 +148,7 @@ function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
             : 'inline-flex items-center gap-3 rounded-full bg-white px-3 py-1.5 text-left shadow-sm transition-colors hover:shadow-md dark:bg-slate-900 dark:text-slate-100'
         } focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary`}
       >
-        <span
-          className={`${iconContainer({ size: 'sm' })} overflow-hidden bg-gray-200 text-xs font-semibold text-gray-900 dark:bg-slate-700 dark:text-slate-50 ${
-            isCompact ? 'h-9 w-9' : ''
-          }`}
-        >
-          {user.avatarUrl ? (
-            <img
-              src={user.avatarUrl}
-              alt={user.name}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : (
-            getInitials(user.name)
-          )}
-        </span>
+        <UserAvatar src={user.avatarUrl} name={user.name} className={isCompact ? 'h-9 w-9' : ''} />
         {!isCompact ? (
           <>
             <span className="flex min-w-0 flex-col">
@@ -210,13 +196,4 @@ function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
       ) : null}
     </div>
   )
-}
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('')
 }
