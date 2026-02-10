@@ -12,6 +12,7 @@ export const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: true, // Start as true to check for existing session
   error: null,
+  linkedProviders: [],
 }
 
 /**

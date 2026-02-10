@@ -122,7 +122,8 @@ function UserMenu({ user, variant = 'default', className }: UserMenuProps) {
   }, [open])
 
   const menuItems: Array<{ id: string; label: string; tone?: 'danger'; path?: string }> = [
-    { id: 'profile', label: 'Мій профіль', path: '/profile' },
+    { id: 'profile', label: 'Мій профіль', path: '/settings?tab=profile' },
+    { id: 'settings', label: 'Налаштування', path: '/settings' },
     { id: 'logout', label: 'Вийти', tone: 'danger', path: '/logout' },
   ]
 

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router'
 import { ProtectedRoute } from '@shared/components/ProtectedRoute'
 import { PublicRoute } from '@shared/components/PublicRoute'
 import { ROUTES } from '@shared/constants'
@@ -14,7 +14,7 @@ import AddressMetersPage from '@modules/meters/pages/AddressMetersPage'
 import ProvidersPage from '@modules/providers/pages/ProvidersPage'
 import AddProviderPage from '@modules/providers/pages/AddProviderPage'
 import AddReadingsPage from '@modules/readings/pages/AddReadingsPage'
-import ProfilePage from '@modules/profile/pages/ProfilePage'
+import SettingsPage from '@modules/settings/pages/SettingsPage'
 
 function RootLayout() {
   return <Outlet />
@@ -42,7 +42,8 @@ export function App() {
             <Route path={ROUTES.READINGS_NEW} element={<AddReadingsPage />} />
             <Route path={ROUTES.PROVIDERS} element={<ProvidersPage />} />
             <Route path={ROUTES.PROVIDERS_NEW} element={<AddProviderPage />} />
-            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+            <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
+            <Route path={ROUTES.PROFILE} element={<Navigate to="/settings?tab=profile" replace />} />
             <Route path={ROUTES.LOGOUT} element={<LogoutPage />} />
           </Route>
         </Route>
