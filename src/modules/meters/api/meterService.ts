@@ -1,7 +1,7 @@
 import { api } from '@shared/api/apiClient'
 import { API_ENDPOINTS } from '@shared/constants'
 import type { Meter } from '@shared/types/entities'
-import type { ApiListResponse } from '@shared/types/api'
+import type { ApiListResponse, ApiDataResponse } from '@shared/types/api'
 import type {
   MeterResponse,
   CreateMeterRequest,
@@ -37,15 +37,18 @@ export const meterService = {
   },
 
   getById: async (id: number): Promise<MeterResponse> => {
-    return api.get<MeterResponse>(API_ENDPOINTS.METERS.GET(id))
+    const response = await api.get<ApiDataResponse<MeterResponse>>(API_ENDPOINTS.METERS.GET(id))
+    return response.data
   },
 
   create: async (data: CreateMeterRequest): Promise<MeterResponse> => {
-    return api.post<MeterResponse>(API_ENDPOINTS.METERS.CREATE, data)
+    const response = await api.post<ApiDataResponse<MeterResponse>>(API_ENDPOINTS.METERS.CREATE, data)
+    return response.data
   },
 
   update: async (id: number, data: UpdateMeterRequest): Promise<MeterResponse> => {
-    return api.put<MeterResponse>(API_ENDPOINTS.METERS.UPDATE(id), data)
+    const response = await api.put<ApiDataResponse<MeterResponse>>(API_ENDPOINTS.METERS.UPDATE(id), data)
+    return response.data
   },
 
   delete: async (id: number): Promise<void> => {

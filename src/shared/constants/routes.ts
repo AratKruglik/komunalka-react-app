@@ -12,6 +12,7 @@ export const ROUTES = {
   ADDRESSES_NEW: '/addresses/new',
   METERS: '/meters',
   METERS_NEW: '/meters/new',
+  METERS_EDIT: '/meters/:id/edit',
   READINGS_NEW: '/readings/new',
   PROVIDERS: '/providers',
   PROVIDERS_NEW: '/providers/new',
@@ -24,3 +25,5 @@ export const ROUTES = {
 
 export type RouteKey = keyof typeof ROUTES;
 export type RouteValue = typeof ROUTES[RouteKey];
+
+export const metersEditPath = (id: number) => `/meters/${id}/edit`
