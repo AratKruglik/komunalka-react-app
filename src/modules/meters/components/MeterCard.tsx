@@ -1,6 +1,8 @@
-import { MoreVertical, Trash2 } from 'lucide-react'
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import { Button, DropdownMenu, type DropdownMenuItem } from '@shared/components/ui'
 import type { MeterDeviceViewModel } from '@shared/viewModels'
+import { metersEditPath } from '@shared/constants/routes'
 
 interface MeterCardProps {
   meter: MeterDeviceViewModel
@@ -10,6 +12,11 @@ interface MeterCardProps {
 
 const METER_ACTIONS: DropdownMenuItem[] = [
   {
+    id: 'edit',
+    label: 'Редагувати',
+    icon: <Pencil className="h-4 w-4" />,
+  },
+  {
     id: 'delete',
     label: 'Видалити',
     icon: <Trash2 className="h-4 w-4" />,
@@ -18,8 +25,12 @@ const METER_ACTIONS: DropdownMenuItem[] = [
 ]
 
 export function MeterCard({ meter, statusStyle, onDelete }: MeterCardProps) {
+  const navigate = useNavigate()
+
   const handleMenuSelect = (item: DropdownMenuItem) => {
-    if (item.id === 'delete') {
+    if (item.id === 'edit') {
+      navigate(metersEditPath(meter.id))
+    } else if (item.id === 'delete') {
       onDelete(meter)
     }
   }
@@ -74,15 +85,6 @@ export function MeterCard({ meter, statusStyle, onDelete }: MeterCardProps) {
             <span className="font-semibold text-gray-900 dark:text-slate-100">{meter.nextCheckDate}</span>
           </p>
         ) : null}
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          tone="neutral"
-          className="mt-2 sm:ml-auto"
-        >
-          Оновити дані
-        </Button>
       </div>
     </div>
   )

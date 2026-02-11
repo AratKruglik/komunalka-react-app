@@ -10,6 +10,7 @@ import LogoutPage from '@modules/auth/pages/LogoutPage'
 import OAuthCallbackPage from '@modules/auth/pages/OAuthCallbackPage'
 import DashboardPage from '@modules/dashboard/pages/DashboardPage'
 import AddMeterPage from '@modules/meters/pages/AddMeterPage'
+import EditMeterPage from '@modules/meters/pages/EditMeterPage'
 import AddressMetersPage from '@modules/meters/pages/AddressMetersPage'
 import ProvidersPage from '@modules/providers/pages/ProvidersPage'
 import AddProviderPage from '@modules/providers/pages/AddProviderPage'
@@ -39,6 +40,7 @@ export function App() {
             <Route path={ROUTES.ADDRESSES_NEW} element={<AddAddressPage />} />
             <Route path={ROUTES.METERS} element={<AddressMetersPage />} />
             <Route path={ROUTES.METERS_NEW} element={<AddMeterPage />} />
+            <Route path={ROUTES.METERS_EDIT} element={<EditMeterPage />} />
             <Route path={ROUTES.READINGS_NEW} element={<AddReadingsPage />} />
             <Route path={ROUTES.PROVIDERS} element={<ProvidersPage />} />
             <Route path={ROUTES.PROVIDERS_NEW} element={<AddProviderPage />} />
