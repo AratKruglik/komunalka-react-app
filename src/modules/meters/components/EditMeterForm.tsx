@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { PageSectionHeader } from '@shared/components/pages'
 import {
@@ -13,7 +13,7 @@ import {
   Textarea,
 } from '@shared/components/ui'
 import { CalendarDays } from 'lucide-react'
-import { METER_TYPE_OPTIONS } from '@shared/constants/meterTypes'
+import { METER_TYPE_OPTIONS, METER_TYPE_UNITS } from '@shared/constants/meterTypes'
 import { useUpdateMeter } from '@modules/meters/hooks'
 import { useServiceProvidersByAddress } from '@modules/providers/hooks'
 import { fromUtilityTypeId, type Meter, type UpdateMeterRequest } from '@modules/meters/types'
@@ -26,6 +26,7 @@ interface EditMeterFormValues {
   manufacturer: string
   installationDate: string
   providerId: string
+  initialReading: string
   notes: string
   isActive: boolean
 }
@@ -36,6 +37,7 @@ function getDefaultValues(meter: Meter): EditMeterFormValues {
     installationLocation: meter.location ?? '',
     manufacturer: meter.modelName ?? '',
     installationDate: meter.installationDate.split('T')[0],
+    initialReading: meter.initialReading != null ? String(meter.initialReading) : '',
     providerId: meter.serviceProviderId ? String(meter.serviceProviderId) : '',
     notes: meter.notes ?? '',
     isActive: meter.isActive,
@@ -48,6 +50,7 @@ function toUpdateRequest(values: EditMeterFormValues, meter: Meter): UpdateMeter
     location: values.installationLocation || undefined,
     modelName: values.manufacturer || undefined,
     installationDate: values.installationDate,
+    initialReading: values.initialReading ? Number(values.initialReading) : undefined,
     serviceProviderId: values.providerId ? Number(values.providerId) : undefined,
     notes: values.notes || undefined,
     isActive: values.isActive,
@@ -68,11 +71,13 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
 
   const meterType = fromUtilityTypeId(meter.utilityTypeId)
   const meterTypeLabel = METER_TYPE_OPTIONS.find((o) => o.value === meterType)?.title ?? meterType
+  const readingUnit = meterType in METER_TYPE_UNITS ? METER_TYPE_UNITS[meterType] : 'од.'
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<EditMeterFormValues>({
     defaultValues: getDefaultValues(meter),
@@ -87,6 +92,14 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
       provider.tariffs.some((tariff) => tariff.utilityTypeId === targetUtilityTypeId),
     )
   }, [meterType, addressProviders])
+
+  useEffect(() => {
+    if (providersLoading || !meter.serviceProviderId) return
+    const exists = availableProviders.some((p) => p.id === meter.serviceProviderId)
+    if (exists) {
+      setValue('providerId', String(meter.serviceProviderId))
+    }
+  }, [providersLoading, availableProviders, meter.serviceProviderId, setValue])
 
   const selectedProvider = useMemo(() => {
     if (!providerId) return null
@@ -170,6 +183,19 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
               />
               <FormMessage variant="error">{errors.installationDate?.message}</FormMessage>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="initialReading">Початкові показання</Label>
+              <Input
+                id="initialReading"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="0.00"
+                {...register('initialReading')}
+                endAdornment={<span className="text-sm text-gray-500">{readingUnit}</span>}
+              />
+            </div>
           </section>
 
           <section className="grid gap-6 lg:grid-cols-2">
@@ -190,7 +216,7 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
                 {availableProviders.map((provider) => {
                   const tariff = getApiPrimaryTariff(provider)
                   return (
-                    <option key={provider.id} value={provider.id}>
+                    <option key={provider.id} value={String(provider.id)}>
                       {provider.name}
                       {tariff ? ` · ${formatApiTariffLabel(tariff)}` : ''}
                     </option>
@@ -198,6 +224,11 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
                 })}
               </Select>
               <FormMessage variant="error">{errors.providerId?.message}</FormMessage>
+              {!providersLoading && meter.serviceProviderName && !availableProviders.some((p) => p.id === meter.serviceProviderId) && (
+                <FormMessage variant="default">
+                  Поточний провайдер «{meter.serviceProviderName}» більше не доступний для цієї адреси. Оберіть нового.
+                </FormMessage>
+              )}
             </div>
 
             {selectedProvider && providerTariffs.length > 0 ? (
