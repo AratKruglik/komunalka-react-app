@@ -363,3 +363,9 @@ The application should implement:
 5. Statistics: consumption comparisons, averages, forecasting
 6. Multi-address overview dashboard
 7. Mobile-responsive design
+
+## UI or Playwright Test User
+For testing real user interactions and UI flows, use Playwright tests. Ensure that all UI elements and interactions are thoroughly tested to guarantee a smooth user experience.
+CRITICAL: Always use Test user credentials:
+Login: test+2@example.com
+Password: @MystrongPassword123
