@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import {
   EllipsisVertical,
   Gauge,
@@ -11,8 +11,8 @@ import {
   getServiceIcon,
   getServiceTagClasses,
 } from '@shared/constants/services'
-import { Button } from '@shared/components/ui'
-import { tv } from 'tailwind-variants'
+import { Button, DropdownMenu, type DropdownMenuItem } from '@shared/components/ui'
+import { addressesEditPath } from '@shared/constants/routes'
 
 export type AddressBadgeVariant = 'primary' | 'muted' | 'outline'
 
@@ -29,7 +29,6 @@ interface AddressCardProps {
   badges: readonly AddressBadge[]
   services: readonly AddressServiceTag[]
   isPrimary?: boolean
-  onEdit?: (id: number) => void
   onDelete?: (id: number) => void
   onSetPrimary?: (id: number) => void
 }
@@ -40,39 +39,6 @@ export interface AddressServiceTag {
   icon?: LucideIcon
 }
 
-const dropdownStyles = tv({
-  slots: {
-    menu: [
-      'absolute z-50 min-w-[180px] rounded-xl border border-gray-100 bg-white py-1.5 shadow-lg',
-      'dark:border-slate-800 dark:bg-slate-900',
-      'right-0 top-full mt-1.5',
-    ],
-    item: [
-      'flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm font-medium',
-      'transition-colors focus-visible:outline-none',
-    ],
-  },
-  variants: {
-    itemTone: {
-      default: {
-        item: [
-          'text-gray-700 hover:bg-gray-100 focus-visible:bg-gray-100',
-          'dark:text-slate-100 dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800',
-        ],
-      },
-      danger: {
-        item: [
-          'text-red-600 hover:bg-red-50 focus-visible:bg-red-50',
-          'dark:text-red-400 dark:hover:bg-red-950/40 dark:focus-visible:bg-red-950/40',
-        ],
-      },
-    },
-  },
-  defaultVariants: {
-    itemTone: 'default',
-  },
-})
-
 export function AddressCard({
   id,
   title,
@@ -80,46 +46,23 @@ export function AddressCard({
   badges,
   services,
   isPrimary = false,
-  onEdit,
   onDelete,
   onSetPrimary,
 }: AddressCardProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const styles = dropdownStyles()
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    if (!isMenuOpen) return
+  const actions: DropdownMenuItem[] = [
+    { id: 'edit', label: 'Редагувати', icon: <Pencil className="h-4 w-4" /> },
+    ...(!isPrimary
+      ? [{ id: 'setPrimary', label: 'Зробити основною', icon: <Star className="h-4 w-4" /> }]
+      : []),
+    { id: 'delete', label: 'Видалити адресу', icon: <Trash2 className="h-4 w-4" />, tone: 'danger' as const },
+  ]
 
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setIsMenuOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isMenuOpen])
-
-  const handleSetPrimary = () => {
-    setIsMenuOpen(false)
-    onSetPrimary?.(id)
-  }
-
-  const handleDelete = () => {
-    setIsMenuOpen(false)
-    onDelete?.(id)
+  const handleMenuSelect = (item: DropdownMenuItem) => {
+    if (item.id === 'edit') navigate(addressesEditPath(id))
+    else if (item.id === 'setPrimary') onSetPrimary?.(id)
+    else if (item.id === 'delete') onDelete?.(id)
   }
 
   const surfaceClasses = isPrimary
@@ -130,72 +73,30 @@ export function AddressCard({
     <article
       className={`relative flex h-full flex-col gap-4 rounded-lg ${surfaceClasses} p-4 transition-shadow hover:shadow-md sm:gap-5 sm:p-5 lg:p-6`}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3 pr-20 sm:pr-24">
+      <div className="flex flex-wrap items-start justify-between gap-3 pr-12 sm:pr-14">
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {badges.map((badge) => (
             <Badge key={badge.label} badge={badge} isPrimary={isPrimary} />
           ))}
         </div>
 
-        <div className="absolute right-4 top-4 flex items-center gap-1.5 sm:right-5 sm:top-5 lg:right-6">
-          <Button
-            type="button"
-            aria-label="Редагувати адресу"
-            variant="outline"
-            tone="neutral"
-            size="icon"
-            className="h-8 w-8 text-gray-600 dark:text-slate-200 sm:h-9 sm:w-9"
-            onClick={() => onEdit?.(id)}
-          >
-            <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          </Button>
-
-          <div className="relative" ref={menuRef}>
-            <Button
-              type="button"
-              aria-label="Інші дії"
-              aria-haspopup="menu"
-              aria-expanded={isMenuOpen}
-              variant="outline"
-              tone="neutral"
-              size="icon"
-              className="h-8 w-8 text-gray-600 dark:text-slate-200 sm:h-9 sm:w-9"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-            >
-              <EllipsisVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </Button>
-
-            {isMenuOpen && (
-              <div role="menu" aria-label="Меню дій" className={styles.menu()}>
-                <ul className="flex flex-col">
-                  {!isPrimary && (
-                    <li>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        className={styles.item()}
-                        onClick={handleSetPrimary}
-                      >
-                        <Star className="h-4 w-4" />
-                        Зробити основною
-                      </button>
-                    </li>
-                  )}
-                  <li>
-                    <button
-                      type="button"
-                      role="menuitem"
-                      className={dropdownStyles({ itemTone: 'danger' }).item()}
-                      onClick={handleDelete}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Видалити адресу
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
+        <div className="absolute right-4 top-4 sm:right-5 sm:top-5 lg:right-6">
+          <DropdownMenu
+            trigger={
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                tone="neutral"
+                className="h-8 w-8 text-gray-600 dark:text-slate-200 sm:h-9 sm:w-9"
+                aria-label={`Дії для ${title}`}
+              >
+                <EllipsisVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </Button>
+            }
+            items={actions}
+            onSelect={handleMenuSelect}
+          />
         </div>
       </div>
 

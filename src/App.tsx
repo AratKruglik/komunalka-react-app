@@ -4,6 +4,7 @@ import { PublicRoute } from '@shared/components/PublicRoute'
 import { ROUTES } from '@shared/constants'
 import AddressesPage from '@modules/addresses/pages/AddressesPage'
 import AddAddressPage from '@modules/addresses/pages/AddAddressPage'
+import EditAddressPage from '@modules/addresses/pages/EditAddressPage'
 import LoginPage from '@modules/auth/pages/LoginPage'
 import RegisterPage from '@modules/auth/pages/RegisterPage'
 import LogoutPage from '@modules/auth/pages/LogoutPage'
@@ -38,6 +39,7 @@ export function App() {
             <Route index element={<DashboardPage />} />
             <Route path={ROUTES.ADDRESSES} element={<AddressesPage />} />
             <Route path={ROUTES.ADDRESSES_NEW} element={<AddAddressPage />} />
+            <Route path={ROUTES.ADDRESSES_EDIT} element={<EditAddressPage />} />
             <Route path={ROUTES.METERS} element={<AddressMetersPage />} />
             <Route path={ROUTES.METERS_NEW} element={<AddMeterPage />} />
             <Route path={ROUTES.METERS_EDIT} element={<EditMeterPage />} />

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
-import { useNavigate } from 'react-router'
 import { AddressCard } from './AddressCard'
 import { Button, ConfirmDialog } from '@shared/components/ui'
 import { useAddressContext } from '@shared/contexts'
@@ -8,7 +7,6 @@ import {
   toAddressCardViewModel,
   type AddressCardViewModel,
 } from '@shared/viewModels'
-import { ROUTES } from '@shared/constants'
 
 interface AddressesListSectionProps {
   addresses?: AddressCardViewModel[]
@@ -25,7 +23,6 @@ export function AddressesListSection({
   addresses: propAddresses,
   onAddAddress,
 }: AddressesListSectionProps) {
-  const navigate = useNavigate()
   const {
     addresses: contextAddresses,
     isLoading,
@@ -42,10 +39,6 @@ export function AddressesListSection({
     addressId: null,
     addressTitle: '',
   })
-
-  const handleEditAddress = (addressId: number) => {
-    navigate(`${ROUTES.METERS}?addressId=${addressId}`)
-  }
 
   const handleDeleteClick = (addressId: number) => {
     const address = addressViewModels.find((a) => a.id === addressId)
@@ -133,7 +126,6 @@ export function AddressesListSection({
             <AddressCard
               key={address.id}
               {...address}
-              onEdit={handleEditAddress}
               onDelete={handleDeleteClick}
               onSetPrimary={handleSetPrimary}
             />

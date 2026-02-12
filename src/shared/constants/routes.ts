@@ -10,6 +10,7 @@ export const ROUTES = {
   AUTH_CALLBACK: '/auth/callback',
   ADDRESSES: '/addresses',
   ADDRESSES_NEW: '/addresses/new',
+  ADDRESSES_EDIT: '/addresses/:id/edit',
   METERS: '/meters',
   METERS_NEW: '/meters/new',
   METERS_EDIT: '/meters/:id/edit',
@@ -26,4 +27,5 @@ export const ROUTES = {
 export type RouteKey = keyof typeof ROUTES;
 export type RouteValue = typeof ROUTES[RouteKey];
 
+export const addressesEditPath = (id: number) => `/addresses/${id}/edit`
 export const metersEditPath = (id: number) => `/meters/${id}/edit`
