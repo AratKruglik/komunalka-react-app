@@ -75,7 +75,7 @@ export function EditAddressForm({ address, onCancel, onSuccess }: EditAddressFor
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<EditAddressFormValues>({
-    values: getDefaultValues(address),
+    defaultValues: getDefaultValues(address),
   })
 
   const onSubmit = handleSubmit(async (values) => {
@@ -83,6 +83,22 @@ export function EditAddressForm({ address, onCancel, onSuccess }: EditAddressFor
     await updateAddress(address.id, request)
     onSuccess?.()
   })
+
+  if (isLoadingReferences) {
+    return (
+      <Card className="border border-gray-200 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <PageSectionHeader
+          title="Редагування адреси"
+          description="Змініть дані адреси та натисніть «Зберегти»"
+        />
+        <CardContent>
+          <p className="text-sm text-gray-500 dark:text-slate-400">
+            Завантаження довідкових даних...
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <form className="space-y-6" onSubmit={onSubmit}>
@@ -106,10 +122,9 @@ export function EditAddressForm({ address, onCancel, onSuccess }: EditAddressFor
                   required: 'Оберіть тип нерухомості',
                 })}
                 isInvalid={Boolean(errors.addressTypeId)}
-                disabled={isLoadingAddressTypes}
               >
                 <option value="" disabled>
-                  {isLoadingAddressTypes ? 'Завантаження...' : 'Оберіть тип нерухомості'}
+                  Оберіть тип нерухомості
                 </option>
                 {addressTypes.map((type) => (
                   <option key={type.id} value={type.id}>
@@ -131,10 +146,9 @@ export function EditAddressForm({ address, onCancel, onSuccess }: EditAddressFor
                   required: 'Оберіть область',
                 })}
                 isInvalid={Boolean(errors.regionId)}
-                disabled={isLoadingRegions}
               >
                 <option value="" disabled>
-                  {isLoadingRegions ? 'Завантаження...' : 'Оберіть область'}
+                  Оберіть область
                 </option>
                 {regions.map((region) => (
                   <option key={region.id} value={region.id}>
@@ -261,11 +275,6 @@ export function EditAddressForm({ address, onCancel, onSuccess }: EditAddressFor
             </Label>
           </div>
 
-          {isLoadingReferences && (
-            <p className="text-sm text-gray-500 dark:text-slate-400">
-              Завантаження довідкових даних...
-            </p>
-          )}
         </CardContent>
 
         <CardFooter className="flex flex-col gap-4 border-t border-gray-200 px-6 py-5 dark:border-slate-800 sm:flex-row sm:justify-between">

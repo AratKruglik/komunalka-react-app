@@ -80,18 +80,18 @@ export function AddressCard({
           ))}
         </div>
 
-        <div className="absolute right-4 top-4 sm:right-5 sm:top-5 lg:right-6">
+        <div className="absolute right-3 top-3">
           <DropdownMenu
             trigger={
               <Button
                 type="button"
                 size="icon"
-                variant="outline"
+                variant="ghost"
                 tone="neutral"
-                className="h-8 w-8 text-gray-600 dark:text-slate-200 sm:h-9 sm:w-9"
+                className="h-8 w-8"
                 aria-label={`Дії для ${title}`}
               >
-                <EllipsisVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <EllipsisVertical className="h-4 w-4" />
               </Button>
             }
             items={actions}
