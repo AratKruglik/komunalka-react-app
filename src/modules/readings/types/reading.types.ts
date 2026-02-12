@@ -11,40 +11,18 @@ import type {
  */
 export type ReadingResponse = Reading
 
-/**
- * Single reading item for batch creation
- * Uses PascalCase field names as expected by the API
- * Matches the JSON structure in ReadingsJson FormData field
- */
 export interface BatchReadingItem {
-  MeterId: number
-  ReadingValue: number
-  ReadingDate: string
-  Notes?: string
-  IsEstimated?: boolean
+  meterId: number
+  readingValue: number
+  readingDate: string
+  notes?: string
+  isEstimated?: boolean
+  tariffId?: number
 }
 
-/**
- * Inner structure for the ReadingsJson field
- */
 export interface BatchReadingsJsonPayload {
   addressId: number
-  readings: Array<{
-    meterId: number
-    readingValue: number
-    readingDate: string
-    notes?: string
-    isEstimated?: boolean
-  }>
-}
-
-/**
- * Request payload for batch creating readings
- * Sent as FormData with ReadingsJson field containing JSON string
- */
-export interface CreateBatchReadingsRequest {
-  AddressId: number
-  ReadingsJson: string
+  readings: BatchReadingItem[]
 }
 
 /**

@@ -210,11 +210,11 @@ export default function AddReadingsPage() {
     const batchItems: BatchReadingItem[] = meterDrafts.map((draft) => {
       const formState = forms[draft.id]
       return {
-        MeterId: draft.id,
-        ReadingValue: Number(formState?.currentValue ?? draft.currentValue),
-        ReadingDate: formState?.readingDate ?? draft.readingDate,
-        Notes: undefined,
-        IsEstimated: false,
+        meterId: draft.id,
+        readingValue: Number(formState?.currentValue ?? draft.currentValue),
+        readingDate: formState?.readingDate ?? draft.readingDate,
+        notes: undefined,
+        isEstimated: false,
       }
     })
 

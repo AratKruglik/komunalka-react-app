@@ -6,6 +6,7 @@ import type { ApiListResponse } from '@shared/types/api'
 import type {
   ReadingResponse,
   BatchReadingItem,
+  BatchReadingsJsonPayload,
   ReadingsByAddressParams,
   ReadingPhotoType,
 } from '../types'
@@ -42,9 +43,8 @@ export const readingService = {
     // Add address ID
     formData.append('AddressId', addressId.toString())
 
-    // Add readings as JSON string
-    const readingsJson = JSON.stringify(readings)
-    formData.append('ReadingsJson', readingsJson)
+    const payload: BatchReadingsJsonPayload = { addressId, readings }
+    formData.append('ReadingsJson', JSON.stringify(payload))
 
     // Add photos if provided
     // Photos are named as photo_<meterId>.jpg for the backend to match

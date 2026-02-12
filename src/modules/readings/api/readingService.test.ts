@@ -170,8 +170,8 @@ describe('readingService', () => {
 
   describe('createBatch', () => {
     const batchReadings: BatchReadingItem[] = [
-      { MeterId: 1, Value: 1234.5, ReadingDate: '2025-01-20', Notes: 'Test note' },
-      { MeterId: 2, Value: 567.8, ReadingDate: '2025-01-20' },
+      { meterId: 1, readingValue: 1234.5, readingDate: '2025-01-20', notes: 'Test note' },
+      { meterId: 2, readingValue: 567.8, readingDate: '2025-01-20' },
     ]
 
     it('creates batch readings and returns created data', async () => {
@@ -210,7 +210,7 @@ describe('readingService', () => {
       const formData = callArg.data as FormData
       const readingsJson = formData.get('ReadingsJson')
 
-      expect(readingsJson).toBe(JSON.stringify(batchReadings))
+      expect(readingsJson).toBe(JSON.stringify({ addressId: 1, readings: batchReadings }))
     })
 
     it('includes photos when provided', async () => {
@@ -264,7 +264,7 @@ describe('readingService', () => {
       const callArg = vi.mocked(apiRequest).mock.calls[0][0]
       const formData = callArg.data as FormData
 
-      expect(formData.get('ReadingsJson')).toBe('[]')
+      expect(formData.get('ReadingsJson')).toBe('{"addressId":1,"readings":[]}')
     })
 
     it('throws error on validation failure', async () => {
