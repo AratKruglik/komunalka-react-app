@@ -56,7 +56,7 @@ export function AddressCard({
     ...(!isPrimary
       ? [{ id: 'setPrimary', label: 'Зробити основною', icon: <Star className="h-4 w-4" /> }]
       : []),
-    { id: 'delete', label: 'Видалити адресу', icon: <Trash2 className="h-4 w-4" />, tone: 'danger' as const },
+    { id: 'delete', label: 'Видалити', icon: <Trash2 className="h-4 w-4" />, tone: 'danger' as const },
   ]
 
   const handleMenuSelect = (item: DropdownMenuItem) => {
