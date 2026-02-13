@@ -1,8 +1,8 @@
 import { api, apiRequest } from '@shared/api/apiClient'
 import { API_CONFIG } from '@shared/api/config'
 import { API_ENDPOINTS } from '@shared/constants'
-import type { Reading } from '@shared/types/entities'
-import type { ApiListResponse } from '@shared/types/api'
+import type { Reading, BatchReadingsResponse } from '@shared/types/entities'
+import type { ApiListResponse, ApiDataResponse } from '@shared/types/api'
 import type {
   ReadingResponse,
   BatchReadingItem,
@@ -37,24 +37,21 @@ export const readingService = {
     addressId: number,
     readings: BatchReadingItem[],
     photos?: Map<number, File>
-  ): Promise<Reading[]> => {
+  ): Promise<BatchReadingsResponse> => {
     const formData = new FormData()
 
-    // Add address ID
     formData.append('AddressId', addressId.toString())
 
     const payload: BatchReadingsJsonPayload = { addressId, readings }
     formData.append('ReadingsJson', JSON.stringify(payload))
 
-    // Add photos if provided
-    // Photos are named as photo_<meterId>.jpg for the backend to match
     if (photos && photos.size > 0) {
       photos.forEach((file, meterId) => {
         formData.append('Photos', file, `photo_${meterId}.jpg`)
       })
     }
 
-    return apiRequest<Reading[]>({
+    const response = await apiRequest<ApiDataResponse<BatchReadingsResponse>>({
       method: 'POST',
       url: API_ENDPOINTS.READINGS.BATCH_CREATE,
       data: formData,
@@ -62,6 +59,7 @@ export const readingService = {
         'Content-Type': 'multipart/form-data',
       },
     })
+    return response.data
   },
 
   delete: async (id: number): Promise<void> => {

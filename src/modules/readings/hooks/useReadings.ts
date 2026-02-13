@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { readingService } from '../api'
-import type { Reading } from '@shared/types/entities'
+import type { Reading, BatchReadingsResponse } from '@shared/types/entities'
 import type { BatchReadingItem, ReadingsByAddressParams } from '../types'
 
 /**
@@ -67,7 +67,7 @@ export function useReadingsByAddress(
 export function useCreateBatchReadings() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [createdReadings, setCreatedReadings] = useState<Reading[] | null>(null)
+  const [createdReadings, setCreatedReadings] = useState<BatchReadingsResponse | null>(null)
 
   const createBatchReadings = useCallback(async (
     addressId: number,

@@ -209,12 +209,14 @@ export default function AddReadingsPage() {
 
     const batchItems: BatchReadingItem[] = meterDrafts.map((draft) => {
       const formState = forms[draft.id]
+      const activeTariff = getActiveTariff(draft, formState)
       return {
         meterId: draft.id,
         readingValue: Number(formState?.currentValue ?? draft.currentValue),
         readingDate: formState?.readingDate ?? draft.readingDate,
         notes: undefined,
         isEstimated: false,
+        tariffId: activeTariff?.id ? Number(activeTariff.id) : undefined,
       }
     })
 
