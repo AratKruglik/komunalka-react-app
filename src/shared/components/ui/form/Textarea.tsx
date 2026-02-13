@@ -22,7 +22,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
       className={[
         baseClasses,
         isInvalid ? invalidClasses : '',
-        'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-slate-800 dark:disabled:text-slate-500',
+        'disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 disabled:focus:ring-0 disabled:focus:border-gray-300 read-only:focus:ring-0 read-only:focus:border-gray-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500 dark:disabled:focus:border-slate-700 dark:read-only:focus:border-slate-700',
         'resize-none',
         className,
       ]
