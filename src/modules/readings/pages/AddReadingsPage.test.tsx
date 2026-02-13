@@ -35,66 +35,68 @@ vi.mock('@modules/providers/hooks', () => ({
   useServiceProvidersByAddress: vi.fn(),
 }))
 
+const baseTariffFields = {
+  serviceFee: 0,
+  effectiveFrom: '2024-01-01T00:00:00Z',
+  effectiveTo: null,
+  notes: null,
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+  currencyId: 1,
+  currencyCode: 'UAH',
+  currencySymbol: '₴',
+}
+
+const baseProviderFields = {
+  addressId: 1,
+  description: null,
+  phone: null,
+  email: null,
+  website: null,
+  isActive: true,
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+}
+
 const mockApiProviders: ApiServiceProvider[] = [
   {
     id: 1,
-    addressId: 1,
     name: 'YASNO',
-    description: null,
-    phone: null,
-    email: null,
-    website: null,
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    ...baseProviderFields,
     tariffs: [
       {
-        id: 1,
+        id: 7,
         serviceProviderId: 1,
         utilityTypeId: 1,
-        currencyId: 1,
-        name: 'Електроенергія',
-        baseRate: 4.32,
-        serviceFee: 0,
-        effectiveFrom: '2024-01-01T00:00:00Z',
-        effectiveTo: null,
-        notes: null,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
+        name: 'День',
+        baseRate: 2.64,
+        ...baseTariffFields,
         utilityTypeName: 'Електроенергія',
-        currencyCode: 'UAH',
-        currencySymbol: '₴',
+      },
+      {
+        id: 8,
+        serviceProviderId: 1,
+        utilityTypeId: 1,
+        name: 'Ніч',
+        baseRate: 1.32,
+        ...baseTariffFields,
+        utilityTypeName: 'Електроенергія',
       },
     ],
   },
   {
     id: 2,
-    addressId: 1,
     name: 'Київгаз',
-    description: null,
-    phone: null,
-    email: null,
-    website: null,
-    isActive: true,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
+    ...baseProviderFields,
     tariffs: [
       {
         id: 2,
         serviceProviderId: 2,
         utilityTypeId: 2,
-        currencyId: 1,
         name: 'Газ',
         baseRate: 7.96,
-        serviceFee: 0,
-        effectiveFrom: '2024-01-01T00:00:00Z',
-        effectiveTo: null,
-        notes: null,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z',
+        ...baseTariffFields,
         utilityTypeName: 'Газ',
-        currencyCode: 'UAH',
-        currencySymbol: '₴',
       },
     ],
   },
@@ -157,6 +159,17 @@ const mockReadings: Reading[] = [
     readingValue: 1500,
     consumption: 150,
     readingDate: '2025-01-15',
+    tariffId: 7,
+    tariffName: 'День',
+  }),
+  createMockReading({
+    id: 3,
+    meterId: 100,
+    readingValue: 800,
+    consumption: 80,
+    readingDate: '2025-01-15',
+    tariffId: 8,
+    tariffName: 'Ніч',
   }),
   createMockReading({
     id: 2,
@@ -164,6 +177,8 @@ const mockReadings: Reading[] = [
     readingValue: 350,
     consumption: 25,
     readingDate: '2025-01-15',
+    tariffId: 2,
+    tariffName: 'Газ',
   }),
 ]
 
@@ -530,6 +545,35 @@ describe('AddReadingsPage', () => {
       })
     })
 
+    it('submits multiple batch items for multi-tariff meters', async () => {
+      const user = userEvent.setup()
+      const { mockCreateBatchReadings } = setupDefaultMocks()
+
+      renderWithProviders(<AddReadingsPage />, {
+        authContext: { state: createAuthenticatedState() },
+      })
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Електроенергія').length).toBeGreaterThan(0)
+      })
+
+      const submitButton = screen.getByRole('button', { name: /^зберегти$/i })
+      await user.click(submitButton)
+
+      await waitFor(() => {
+        expect(mockCreateBatchReadings).toHaveBeenCalled()
+        const batchItems = mockCreateBatchReadings.mock.calls[0][1]
+        const electricityItems = batchItems.filter((item: { meterId: number }) => item.meterId === 100)
+        expect(electricityItems.length).toBe(2)
+        expect(electricityItems[0].tariffId).toBe(7)
+        expect(electricityItems[1].tariffId).toBe(8)
+      })
+    })
+
+    it('filters out readings with zero value from batch', async () => {
+      // TODO(human): Implement zero-value filtering test
+    })
+
     it('displays error message on submit failure', async () => {
       setupDefaultMocks({ submitError: 'Не вдалося зберегти показання' })
 
@@ -559,8 +603,8 @@ describe('AddReadingsPage', () => {
     })
   })
 
-  describe('tariff selection', () => {
-    it('renders tariff selector for each meter card', async () => {
+  describe('multi-tariff rendering', () => {
+    it('renders separate inputs for each tariff zone of a multi-tariff meter', async () => {
       setupDefaultMocks()
 
       renderWithProviders(<AddReadingsPage />, {
@@ -568,8 +612,35 @@ describe('AddReadingsPage', () => {
       })
 
       await waitFor(() => {
-        const tariffSelects = screen.getAllByLabelText(/тариф для розрахунку/i)
-        expect(tariffSelects.length).toBe(2)
+        expect(screen.getByText('День')).toBeInTheDocument()
+        expect(screen.getByText('Ніч')).toBeInTheDocument()
+      })
+    })
+
+    it('does not render tariff labels for single-tariff meters', async () => {
+      setupDefaultMocks()
+
+      renderWithProviders(<AddReadingsPage />, {
+        authContext: { state: createAuthenticatedState() },
+      })
+
+      await waitFor(() => {
+        expect(screen.getAllByText('Газ').length).toBeGreaterThan(0)
+      })
+
+      expect(screen.queryByLabelText(/тариф для розрахунку/i)).not.toBeInTheDocument()
+    })
+
+    it('displays per-tariff previous values for multi-tariff meters', async () => {
+      setupDefaultMocks()
+
+      renderWithProviders(<AddReadingsPage />, {
+        authContext: { state: createAuthenticatedState() },
+      })
+
+      await waitFor(() => {
+        expect(screen.getAllByDisplayValue('1500').length).toBeGreaterThan(0)
+        expect(screen.getAllByDisplayValue('800').length).toBeGreaterThan(0)
       })
     })
   })

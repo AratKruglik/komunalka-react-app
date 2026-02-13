@@ -44,14 +44,14 @@ const mockReadings: Reading[] = [
 
 const batchReadingItems: BatchReadingItem[] = [
   {
-    MeterId: 1,
-    Value: 1550,
-    ReadingDate: '2025-01-20',
+    meterId: 1,
+    readingValue: 1550,
+    readingDate: '2025-01-20',
   },
   {
-    MeterId: 2,
-    Value: 375,
-    ReadingDate: '2025-01-20',
+    meterId: 2,
+    readingValue: 375,
+    readingDate: '2025-01-20',
   },
 ]
 

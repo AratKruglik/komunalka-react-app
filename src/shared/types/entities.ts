@@ -174,6 +174,8 @@ export interface Reading {
   utilityTypeName: string
   unit: string
   photos: ReadingPhoto[]
+  tariffId?: number | null
+  tariffName?: string | null
 }
 
 /**

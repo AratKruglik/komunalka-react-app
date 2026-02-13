@@ -37,6 +37,7 @@ export interface MeterReadingDraftViewModel {
   readonly tariff: number
   readonly tariffLabel: string
   readonly tariffs: readonly TariffOptionViewModel[]
+  readonly tariffEntries: readonly TariffEntryViewModel[]
   readonly photo?: {
     fileName: string | null
     previewUrl: string | null
@@ -48,6 +49,15 @@ export interface TariffOptionViewModel {
   readonly name: string
   readonly price: number
   readonly label: string
+}
+
+export interface TariffEntryViewModel {
+  readonly tariffId: string
+  readonly tariffName: string
+  readonly tariffPrice: number
+  readonly tariffLabel: string
+  readonly previousValue: number
+  readonly previousDate: string
 }
 
 export interface MeterReadingSummaryRowViewModel {
@@ -133,20 +143,52 @@ const resolveTariff = (provider: ProviderInput, tariffId?: string) => {
 // Mapper Functions
 // =============================================================================
 
+function buildTariffEntries(
+  provider: ProviderInput,
+  meterReadings: readonly Reading[],
+): TariffEntryViewModel[] {
+  const tariffs = mapTariffs(provider)
+  const today = new Date().toISOString().split('T')[0]
+
+  return tariffs.map((tariff) => {
+    const tariffNumericId = Number(tariff.id)
+    const latestForTariff = meterReadings.find((r) => r.tariffId === tariffNumericId)
+
+    return {
+      tariffId: tariff.id,
+      tariffName: tariff.name,
+      tariffPrice: tariff.price,
+      tariffLabel: tariff.label,
+      previousValue: latestForTariff?.readingValue ?? 0,
+      previousDate: latestForTariff?.readingDate ?? today,
+    }
+  })
+}
+
 /**
- * Mapper: Meter + Reading + Provider -> MeterReadingDraftViewModel
+ * Mapper: Meter + Readings + Provider -> MeterReadingDraftViewModel
  */
 export function toMeterReadingDraftViewModel(
   meter: Meter,
-  latestReading: Reading | undefined,
-  _previousReading: Reading | undefined,
+  meterReadings: readonly Reading[],
   provider: ProviderInput | undefined,
 ): MeterReadingDraftViewModel {
   const meterType = getMeterType(meter)
   const serviceName = METER_TYPE_TO_SERVICE_LABEL[meterType]
   const defaultUnit = METER_TYPE_UNITS[meterType] ?? 'од'
+  const today = new Date().toISOString().split('T')[0]
+  const latestReading = meterReadings[0]
 
   if (!provider) {
+    const fallbackEntry: TariffEntryViewModel = {
+      tariffId: '',
+      tariffName: '',
+      tariffPrice: 0,
+      tariffLabel: `0 грн/${defaultUnit}`,
+      previousValue: latestReading?.readingValue ?? 0,
+      previousDate: latestReading?.readingDate ?? today,
+    }
+
     return {
       id: meter.id,
       type: meterType,
@@ -154,14 +196,15 @@ export function toMeterReadingDraftViewModel(
       meterLabel: meter.name,
       meterNumber: meter.serialNumber,
       unit: defaultUnit,
-      previousValue: latestReading?.readingValue || 0,
-      previousDate: latestReading?.readingDate || new Date().toISOString().split('T')[0],
-      currentValue: latestReading?.readingValue || 0,
-      readingDate: new Date().toISOString().split('T')[0],
+      previousValue: fallbackEntry.previousValue,
+      previousDate: fallbackEntry.previousDate,
+      currentValue: fallbackEntry.previousValue,
+      readingDate: today,
       tariffId: '',
       tariff: 0,
       tariffLabel: `0 грн/${defaultUnit}`,
       tariffs: [],
+      tariffEntries: [fallbackEntry],
       photo: {
         fileName: null,
         previewUrl: null,
@@ -169,8 +212,10 @@ export function toMeterReadingDraftViewModel(
     }
   }
 
+  const tariffEntries = buildTariffEntries(provider, meterReadings)
   const { tariffs, selected } = resolveTariff(provider)
   const unit = getProviderUnit(provider)
+  const firstEntry = tariffEntries[0]
 
   return {
     id: meter.id,
@@ -179,14 +224,15 @@ export function toMeterReadingDraftViewModel(
     meterLabel: meter.name,
     meterNumber: meter.serialNumber,
     unit,
-    previousValue: latestReading?.readingValue || 0,
-    previousDate: latestReading?.readingDate || new Date().toISOString().split('T')[0],
-    currentValue: latestReading?.readingValue || 0,
-    readingDate: new Date().toISOString().split('T')[0],
+    previousValue: firstEntry?.previousValue ?? latestReading?.readingValue ?? 0,
+    previousDate: firstEntry?.previousDate ?? latestReading?.readingDate ?? today,
+    currentValue: firstEntry?.previousValue ?? latestReading?.readingValue ?? 0,
+    readingDate: today,
     tariffId: selected?.id ?? '',
     tariff: selected?.price ?? 0,
     tariffLabel: selected?.label ?? `0 грн/${unit}`,
     tariffs,
+    tariffEntries,
     photo: {
       fileName: null,
       previewUrl: null,
@@ -301,7 +347,7 @@ export function toAddressReadingsSnapshotViewModel(
           new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime(),
       )
 
-    return toMeterReadingDraftViewModel(meter, meterReadings[0], meterReadings[1], provider)
+    return toMeterReadingDraftViewModel(meter, meterReadings, provider)
   })
 
   const summaryRows: MeterReadingSummaryRowViewModel[] = meterDrafts.map((draft) => {
