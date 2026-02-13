@@ -8,23 +8,20 @@ import {
   Input,
   Label,
   PhotoDropzone,
-  Select,
 } from '@shared/components/ui'
 import { SERVICE_CONFIG } from '@shared/constants/services'
-import type { MeterReadingDraftViewModel } from '@shared/viewModels'
+import type { MeterReadingDraftViewModel, TariffEntryViewModel } from '@shared/viewModels'
 
 interface ReadingCardProps {
   draft: MeterReadingDraftViewModel
-  currentValue: string
+  tariffValues: Record<string, string>
   readingDate: string
-  selectedTariffId: string
   photo?: {
     fileName: string | null
     previewUrl: string | null
   }
-  onCurrentValueChange: (value: string) => void
+  onTariffValueChange: (tariffId: string, value: string) => void
   onReadingDateChange: (value: string) => void
-  onTariffChange: (tariffId: string) => void
   onPhotoSelected: (file: File | null) => void
   onPhotoClear: () => void
 }
@@ -39,15 +36,31 @@ const currencyFormatter = new Intl.NumberFormat('uk-UA', {
   maximumFractionDigits: 2,
 })
 
+const dateFormatter = new Intl.DateTimeFormat('uk-UA', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+})
+
+function formatReadingDate(raw: string): string {
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) return raw
+  return dateFormatter.format(date)
+}
+
+function getTariffConsumption(entry: TariffEntryViewModel, currentRaw: string) {
+  const parsed = Number(currentRaw)
+  if (Number.isNaN(parsed)) return 0
+  return Math.max(0, parsed - entry.previousValue)
+}
+
 export function ReadingCard({
   draft,
-  currentValue,
+  tariffValues,
   readingDate,
-  selectedTariffId,
   photo,
-  onCurrentValueChange,
+  onTariffValueChange,
   onReadingDateChange,
-  onTariffChange,
   onPhotoClear,
   onPhotoSelected,
 }: ReadingCardProps) {
@@ -55,12 +68,16 @@ export function ReadingCard({
   const ServiceIcon = serviceConfig?.icon
   const serviceIconBg = serviceConfig?.iconBg ?? 'bg-gray-100'
   const serviceIconColor = serviceConfig?.iconColor ?? 'text-gray-600'
-  const parsedCurrent = Number(currentValue)
-  const isValidCurrent = !Number.isNaN(parsedCurrent)
-  const consumption = isValidCurrent ? Math.max(0, parsedCurrent - draft.previousValue) : 0
-  const activeTariff =
-    draft.tariffs.find((tariff) => tariff.id === selectedTariffId) ?? draft.tariffs[0]
-  const estimatedCost = consumption * (activeTariff?.price ?? draft.tariff)
+  const isMultiTariff = draft.tariffEntries.length > 1
+
+  const tariffBreakdown = draft.tariffEntries.map((entry) => {
+    const raw = tariffValues[entry.tariffId] ?? String(entry.previousValue)
+    const consumption = getTariffConsumption(entry, raw)
+    const cost = consumption * entry.tariffPrice
+    return { entry, consumption, cost }
+  })
+
+  const totalCost = tariffBreakdown.reduce((sum, b) => sum + b.cost, 0)
 
   const handleDropzoneSelection = (files: FileList | null) => {
     if (!files?.length) {
@@ -68,6 +85,140 @@ export function ReadingCard({
       return
     }
     onPhotoSelected(files[0])
+  }
+
+  const renderSingleTariff = () => {
+    const entry = draft.tariffEntries[0]
+    if (!entry) return null
+    const currentVal = tariffValues[entry.tariffId] ?? String(entry.previousValue)
+
+    return (
+      <>
+        <div className="space-y-2">
+          <Label htmlFor={`${draft.id}-current`} className="text-sm font-medium text-gray-700">
+            Поточні показання
+          </Label>
+          <Input
+            id={`${draft.id}-current`}
+            type="number"
+            inputMode="decimal"
+            value={currentVal}
+            onChange={(event) => onTariffValueChange(entry.tariffId, event.target.value)}
+            endAdornment={<span className="text-sm text-gray-500">{draft.unit}</span>}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <Label htmlFor={`${draft.id}-previous`} className="font-medium text-gray-700">
+              Попередні показання
+            </Label>
+            <span className="text-xs text-gray-500">{formatReadingDate(entry.previousDate)}</span>
+          </div>
+          <Input
+            id={`${draft.id}-previous`}
+            value={entry.previousValue}
+            readOnly
+            className="bg-gray-50 text-gray-700"
+            endAdornment={<span className="text-sm text-gray-500">{draft.unit}</span>}
+          />
+        </div>
+      </>
+    )
+  }
+
+  const renderMultiTariff = () => (
+    <div className="space-y-5">
+      {draft.tariffEntries.map((entry) => {
+        const currentVal = tariffValues[entry.tariffId] ?? String(entry.previousValue)
+        return (
+          <div key={entry.tariffId} className="rounded-lg border border-gray-100 bg-gray-50/50 p-4 space-y-3 dark:border-slate-700 dark:bg-slate-800/50">
+            <p className="text-sm font-semibold text-gray-800 dark:text-slate-100">
+              {entry.tariffName}
+              <span className="ml-2 font-normal text-gray-500 dark:text-slate-400">({entry.tariffLabel})</span>
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor={`${draft.id}-${entry.tariffId}-current`} className="text-xs font-medium text-gray-600 dark:text-slate-300">
+                  Поточні показання
+                </Label>
+                <Input
+                  id={`${draft.id}-${entry.tariffId}-current`}
+                  type="number"
+                  inputMode="decimal"
+                  value={currentVal}
+                  onChange={(event) => onTariffValueChange(entry.tariffId, event.target.value)}
+                  endAdornment={<span className="text-xs text-gray-500 dark:text-slate-400">{draft.unit}</span>}
+                />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor={`${draft.id}-${entry.tariffId}-previous`} className="text-xs font-medium text-gray-600 dark:text-slate-300">
+                    Попередні
+                  </Label>
+                  <span className="text-[10px] text-gray-400 dark:text-slate-500">{formatReadingDate(entry.previousDate)}</span>
+                </div>
+                <Input
+                  id={`${draft.id}-${entry.tariffId}-previous`}
+                  value={entry.previousValue}
+                  readOnly
+                  className="bg-gray-50 text-gray-700 dark:bg-slate-900/50 dark:text-slate-300"
+                  endAdornment={<span className="text-xs text-gray-500 dark:text-slate-400">{draft.unit}</span>}
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
+  const renderCalculation = () => {
+    if (!isMultiTariff) {
+      const b = tariffBreakdown[0]
+      if (!b) return null
+      return (
+        <dl className="mt-4 space-y-3 text-sm text-gray-600 dark:text-slate-300">
+          <div className="flex items-center justify-between">
+            <dt>Споживання:</dt>
+            <dd className="font-semibold text-gray-900 dark:text-slate-100">
+              {numberFormatter.format(b.consumption)} {draft.unit}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between">
+            <dt>Тариф:</dt>
+            <dd className="font-semibold text-gray-900 dark:text-slate-100">
+              {b.entry.tariffLabel}
+            </dd>
+          </div>
+          <div className="flex items-center justify-between border-t border-primary/20 pt-3 text-base dark:border-amber-300/30">
+            <dt className="font-semibold text-gray-900 dark:text-slate-100">Вартість:</dt>
+            <dd className="font-semibold text-gray-900 dark:text-slate-100">
+              {currencyFormatter.format(b.cost)}
+            </dd>
+          </div>
+        </dl>
+      )
+    }
+
+    return (
+      <dl className="mt-4 space-y-3 text-sm text-gray-600 dark:text-slate-300">
+        {tariffBreakdown.map((b) => (
+          <div key={b.entry.tariffId} className="flex items-center justify-between">
+            <dt>{b.entry.tariffName}:</dt>
+            <dd className="font-semibold text-gray-900 dark:text-slate-100">
+              {numberFormatter.format(b.consumption)} x {numberFormatter.format(b.entry.tariffPrice)} = {currencyFormatter.format(b.cost)}
+            </dd>
+          </div>
+        ))}
+        <div className="flex items-center justify-between border-t border-primary/20 pt-3 text-base dark:border-amber-300/30">
+          <dt className="font-semibold text-gray-900 dark:text-slate-100">Загалом:</dt>
+          <dd className="font-semibold text-gray-900 dark:text-slate-100">
+            {currencyFormatter.format(totalCost)}
+          </dd>
+        </div>
+      </dl>
+    )
   }
 
   return (
@@ -102,35 +253,7 @@ export function ReadingCard({
 
       <CardContent className="grid gap-8 lg:grid-cols-2">
         <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor={`${draft.id}-current`} className="text-sm font-medium text-gray-700">
-              Поточні показання
-            </Label>
-            <Input
-              id={`${draft.id}-current`}
-              type="number"
-              inputMode="decimal"
-              value={currentValue}
-              onChange={(event) => onCurrentValueChange(event.target.value)}
-              endAdornment={<span className="text-sm text-gray-500">{draft.unit}</span>}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <Label htmlFor={`${draft.id}-previous`} className="font-medium text-gray-700">
-                Попередні показання
-              </Label>
-              <span className="text-xs text-gray-500">{draft.previousDate}</span>
-            </div>
-            <Input
-              id={`${draft.id}-previous`}
-              value={draft.previousValue}
-              readOnly
-              className="bg-gray-50 text-gray-700"
-              endAdornment={<span className="text-sm text-gray-500">{draft.unit}</span>}
-            />
-          </div>
+          {isMultiTariff ? renderMultiTariff() : renderSingleTariff()}
 
           <div className="space-y-2">
             <Label htmlFor={`${draft.id}-date`} className="text-sm font-medium text-gray-700">
@@ -147,26 +270,6 @@ export function ReadingCard({
         </div>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor={`${draft.id}-tariff`} className="text-sm font-medium text-gray-700">
-              Тариф для розрахунку
-            </Label>
-            <Select
-              id={`${draft.id}-tariff`}
-              value={activeTariff?.id ?? draft.tariffId}
-              onChange={(event) => onTariffChange(event.target.value)}
-            >
-              {draft.tariffs.map((tariff) => (
-                <option key={tariff.id} value={tariff.id}>
-                  {tariff.label}
-                </option>
-              ))}
-            </Select>
-            <p className="text-xs text-gray-500">
-              Перемикайте між денним, нічним або іншими тарифами цього провайдера.
-            </p>
-          </div>
-
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700 dark:text-slate-100">Фото лічильника</Label>
             <PhotoDropzone
@@ -187,26 +290,7 @@ export function ReadingCard({
 
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 dark:border-amber-300/30 dark:bg-amber-200/10">
             <p className="text-base font-semibold text-gray-900 dark:text-slate-100">Розрахунок</p>
-            <dl className="mt-4 space-y-3 text-sm text-gray-600 dark:text-slate-300">
-              <div className="flex items-center justify-between">
-                <dt>Споживання:</dt>
-                <dd className="font-semibold text-gray-900 dark:text-slate-100">
-                  {numberFormatter.format(consumption)} {draft.unit}
-                </dd>
-              </div>
-              <div className="flex items-center justify-between">
-                <dt>Тариф:</dt>
-                <dd className="font-semibold text-gray-900 dark:text-slate-100">
-                  {activeTariff?.label ?? draft.tariffLabel}
-                </dd>
-              </div>
-              <div className="flex items-center justify-between border-t border-primary/20 pt-3 text-base dark:border-amber-300/30">
-                <dt className="font-semibold text-gray-900 dark:text-slate-100">Вартість:</dt>
-                <dd className="font-semibold text-gray-900 dark:text-slate-100">
-                  {currencyFormatter.format(estimatedCost || 0)}
-                </dd>
-              </div>
-            </dl>
+            {renderCalculation()}
           </div>
         </div>
       </CardContent>

@@ -18,6 +18,7 @@ export interface MeterReadingDraft {
   tariff: number
   tariffLabel: string
   tariffs: TariffOption[]
+  tariffEntries: TariffEntry[]
   photo?: {
     fileName: string | null
     previewUrl: string | null
@@ -29,6 +30,15 @@ export interface TariffOption {
   name: string
   price: number
   label: string
+}
+
+export interface TariffEntry {
+  tariffId: string
+  tariffName: string
+  tariffPrice: number
+  tariffLabel: string
+  previousValue: number
+  previousDate: string
 }
 
 export interface MeterReadingSummaryRow {

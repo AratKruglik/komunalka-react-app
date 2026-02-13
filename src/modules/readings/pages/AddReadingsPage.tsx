@@ -21,9 +21,8 @@ import { ReadingSummaryTable } from '../components/ReadingSummaryTable'
 type MeterFormState = Record<
   number,
   {
-    currentValue: string
+    tariffValues: Record<string, string>
     readingDate: string
-    tariffId: string
     photo: {
       file: File | null
       fileName: string | null
@@ -34,10 +33,14 @@ type MeterFormState = Record<
 
 const buildFormState = (drafts: readonly MeterReadingDraftViewModel[]): MeterFormState => {
   return drafts.reduce<MeterFormState>((acc, draft) => {
+    const tariffValues: Record<string, string> = {}
+    for (const entry of draft.tariffEntries) {
+      tariffValues[entry.tariffId] = String(entry.previousValue)
+    }
+
     acc[draft.id] = {
-      currentValue: String(draft.currentValue),
+      tariffValues,
       readingDate: draft.readingDate,
-      tariffId: draft.tariffId,
       photo: {
         file: null,
         fileName: draft.photo?.fileName ?? null,
@@ -91,14 +94,6 @@ export default function AddReadingsPage() {
   const [forms, setForms] = useState<MeterFormState>(() => buildFormState(snapshot?.meterDrafts ?? []))
   const generatedPreviews = useRef<Record<string, string>>({})
 
-  const getActiveTariff = (
-    draft: MeterReadingDraftViewModel,
-    formState?: MeterFormState[number],
-  ) => {
-    const selectedTariffId = formState?.tariffId ?? draft.tariffId
-    return draft.tariffs.find((tariff) => tariff.id === selectedTariffId) ?? draft.tariffs[0]
-  }
-
   useEffect(() => {
     setForms(buildFormState(snapshot?.meterDrafts ?? []))
     Object.values(generatedPreviews.current).forEach((url) => URL.revokeObjectURL(url))
@@ -115,12 +110,15 @@ export default function AddReadingsPage() {
     setSelectedAddressId(Number(event.target.value))
   }
 
-  const handleCurrentValueChange = (meterId: number, value: string) => {
+  const handleTariffValueChange = (meterId: number, tariffId: string, value: string) => {
     setForms((previous) => ({
       ...previous,
       [meterId]: {
         ...previous[meterId],
-        currentValue: value,
+        tariffValues: {
+          ...previous[meterId]?.tariffValues,
+          [tariffId]: value,
+        },
       },
     }))
   }
@@ -131,16 +129,6 @@ export default function AddReadingsPage() {
       [meterId]: {
         ...previous[meterId],
         readingDate: date,
-      },
-    }))
-  }
-
-  const handleTariffChange = (meterId: number, tariffId: string) => {
-    setForms((previous) => ({
-      ...previous,
-      [meterId]: {
-        ...previous[meterId],
-        tariffId,
       },
     }))
   }
@@ -207,17 +195,16 @@ export default function AddReadingsPage() {
 
     if (selectedAddressId === null) return
 
-    const batchItems: BatchReadingItem[] = meterDrafts.map((draft) => {
+    const batchItems: BatchReadingItem[] = meterDrafts.flatMap((draft) => {
       const formState = forms[draft.id]
-      const activeTariff = getActiveTariff(draft, formState)
-      return {
-        meterId: draft.id,
-        readingValue: Number(formState?.currentValue ?? draft.currentValue),
-        readingDate: formState?.readingDate ?? draft.readingDate,
-        notes: undefined,
-        isEstimated: false,
-        tariffId: activeTariff?.id ? Number(activeTariff.id) : undefined,
-      }
+      return draft.tariffEntries
+        .map((entry) => ({
+          meterId: draft.id,
+          readingValue: Number(formState?.tariffValues[entry.tariffId] ?? entry.previousValue),
+          readingDate: formState?.readingDate ?? draft.readingDate,
+          tariffId: entry.tariffId ? Number(entry.tariffId) : undefined,
+        }))
+        .filter((item) => item.readingValue > 0)
     })
 
     const photos = new Map<number, File>()
@@ -242,21 +229,23 @@ export default function AddReadingsPage() {
 
   const meterDrafts = snapshot?.meterDrafts ?? []
 
-  const summaryRows = meterDrafts.map((draft) => {
+  const summaryRows = meterDrafts.flatMap((draft) => {
     const formState = forms[draft.id]
-    const currentValue = Number(formState?.currentValue ?? draft.currentValue)
-    const activeTariff = getActiveTariff(draft, formState)
-    return {
-      id: `${draft.id}-summary`,
-      type: draft.type,
-      serviceName: draft.serviceName,
-      previousValue: draft.previousValue,
-      currentValue: Number.isNaN(currentValue) ? null : currentValue,
-      unit: draft.unit,
-      tariffId: activeTariff?.id ?? draft.tariffId,
-      tariff: activeTariff?.price ?? draft.tariff,
-      tariffLabel: activeTariff?.label ?? draft.tariffLabel,
-    }
+    return draft.tariffEntries.map((entry) => {
+      const currentValue = Number(formState?.tariffValues[entry.tariffId] ?? entry.previousValue)
+      const showTariffSuffix = draft.tariffEntries.length > 1
+      return {
+        id: `${draft.id}-${entry.tariffId}-summary`,
+        type: draft.type,
+        serviceName: showTariffSuffix ? `${draft.serviceName} (${entry.tariffName})` : draft.serviceName,
+        previousValue: entry.previousValue,
+        currentValue: Number.isNaN(currentValue) ? null : currentValue,
+        unit: draft.unit,
+        tariffId: entry.tariffId,
+        tariff: entry.tariffPrice,
+        tariffLabel: entry.tariffLabel,
+      }
+    })
   })
 
   return (
@@ -302,13 +291,11 @@ export default function AddReadingsPage() {
               <ReadingCard
                 key={draft.id}
                 draft={draft}
-                currentValue={forms[draft.id]?.currentValue ?? String(draft.currentValue)}
+                tariffValues={forms[draft.id]?.tariffValues ?? {}}
                 readingDate={forms[draft.id]?.readingDate ?? draft.readingDate}
-                selectedTariffId={forms[draft.id]?.tariffId ?? draft.tariffId}
                 photo={forms[draft.id]?.photo}
-                onCurrentValueChange={(value) => handleCurrentValueChange(draft.id, value)}
+                onTariffValueChange={(tariffId, value) => handleTariffValueChange(draft.id, tariffId, value)}
                 onReadingDateChange={(value) => handleReadingDateChange(draft.id, value)}
-                onTariffChange={(value) => handleTariffChange(draft.id, value)}
                 onPhotoSelected={(file) => handlePhotoSelected(draft.id, file)}
                 onPhotoClear={() => handlePhotoClear(draft.id)}
               />
