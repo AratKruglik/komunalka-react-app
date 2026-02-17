@@ -1,45 +1,206 @@
-# Project Overview
+# GEMINI.md
 
-This is a web application for managing utility services, built with React, TypeScript, and Vite. The name "komunalka" suggests its purpose is to track and manage utility bills and readings.
+This file defines how AI coding agents should work in this repository.
 
-The application features include:
-- A dashboard to display an overview of utility data.
-- Management of addresses, service providers, and meters.
-- A system for inputting and tracking utility readings.
-- User authentication with login and registration.
+## 1. Project Overview
 
-The project is structured in a modular way, with distinct directories for each feature (addresses, auth, dashboard, meters, providers, readings). It uses modern tools like Tailwind CSS and `tailwind-variants` for styling, `react-hook-form` for forms, `recharts` for data visualization, and `react-router` for navigation.
+React/TypeScript web application for tracking utility meter readings (komunalka = utilities in Ukrainian).
 
-# Building and Running
+Features: manage addresses, track meters (electricity, gas, hot/cold water, heating), record readings, view usage statistics and analytics.
 
-## Development
-To run the application in development mode:
-```bash
-pnpm dev
+Data model hierarchy:
+- **User** -> has multiple **Addresses**
+- **Address** -> has multiple **Meters**
+- **Meter** -> has historical **Readings**
+
+API documentation: `Komunalka.API.http` is the **authoritative source of truth** for all API interactions (endpoints, request/response formats, auth, validation). Always verify against this file before implementing API calls.
+
+## 2. Repository Map and Tech Stack
+
+### Tech Stack
+
+| Category | Technology | Version |
+|----------|-----------|---------|
+| Framework | React | 19.1.1 |
+| Language | TypeScript | 5.9.3 |
+| Build | Vite | 7.1.7 |
+| Styling | Tailwind CSS | 4.1.14 |
+| Styling utils | tailwind-variants | 3.2.2 |
+| Forms | react-hook-form | 7.53.1 |
+| HTTP | Axios | 1.13.2 |
+| Charts | Recharts | 3.3.0 |
+| Icons | Lucide React | latest |
+| Routing | React Router | 7.x |
+| Unit tests | Vitest | 4.0.18 |
+| E2E tests | Playwright | 1.56.1 |
+| Linting | ESLint | 9.36.0 |
+| Package manager | pnpm | - |
+
+### Directory Structure
+
+```
+src/
+  modules/          # Feature modules by domain
+    addresses/      # Address management
+    auth/           # Authentication
+    dashboard/      # Overview dashboard
+    meters/         # Meter management
+    profile/        # User profile
+    providers/      # Service providers
+    readings/       # Meter readings
+    settings/       # App settings
+  shared/           # Cross-module shared code
+    components/     # Reusable UI components (layouts, nav)
+    ui/             # Design system primitives (buttons, inputs, cards)
+    hooks/          # Shared custom hooks
+    utils/          # Common utilities
+    types/          # Shared TypeScript types
+    constants/      # App-wide constants
+tests/
+  auth.setup.ts     # Auth setup for E2E
+  e2e/              # E2E test specs by feature
+  pages/            # Page Object Model classes
+  fixtures/         # Test data
+  helpers/          # API mocks and utilities
 ```
 
-## Production Build
-To build the application for production:
+Each module follows the structure: `api/`, `components/`, `hooks/`, `pages/`, `types/`.
+
+### Path Aliases
+
+| Alias | Maps to |
+|-------|---------|
+| `@/*` | `src/*` |
+| `@shared/*` | `src/shared/*` |
+| `@modules/*` | `src/modules/*` |
+| `@types/*` | `src/shared/types/*` |
+
+### Key Files
+
+- `src/App.tsx` — React Router configuration and route definitions
+- `src/main.tsx` — Entry point with React 19 createRoot
+- `Komunalka.API.http` — API documentation (2600+ lines)
+- `vite.config.ts` — Vite + Tailwind CSS plugin config
+- `vitest.config.ts` — Unit test configuration
+- `playwright.config.ts` — E2E test configuration
+
+## 3. Setup and Environment
+
+Prerequisites: Node.js, pnpm.
+
 ```bash
-pnpm build
+pnpm install
 ```
 
-## Linting
-To lint the codebase:
-```bash
-pnpm lint
-```
+Copy `.env.example` to `.env` and configure:
 
-## Testing
-The project is set up with Playwright for end-to-end testing. To run the tests:
-```bash
-pnpm test
-```
-*Note: The `test` script is not explicitly in `package.json` but is a standard command for Playwright.*
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:8080` |
+| `VITE_API_VERSION` | API version prefix | `v1` |
+| `VITE_API_TIMEOUT` | Request timeout (ms) | `10000` |
+| `VITE_ENV` | Environment name | `development` |
+| `TEST_USER_EMAIL` | E2E test user email | - |
+| `TEST_USER_PASSWORD` | E2E test user password | - |
 
-# Development Conventions
+## 4. Build, Run and Tasks
 
-- **Styling:** The project uses Tailwind CSS for styling. For reusable UI components in `src/shared/ui`, `tailwind-variants` is used to manage component states and styles. **Never use hardcoded HEX colors.** Always use theme-based utilities (e.g., `bg-primary`, `text-neutral-500`).
-- **Components:** Components are organized by feature in the `src/modules` directory.
-- **State Management:** While a global state management library is not explicitly listed, it's likely that component state is managed with React Hooks. For more complex state, a library like Zustand or Redux could be added.
-- **Linting:** The project uses ESLint to enforce code quality. It's recommended to run the linter before committing changes.
+| Command | Description |
+|---------|-------------|
+| `pnpm run dev` | Start dev server with HMR |
+| `pnpm run build` | TypeScript compilation + Vite production build |
+| `pnpm run lint` | ESLint check |
+| `pnpm run preview` | Preview production build |
+| `pnpm test` | Run Vitest in watch mode |
+| `pnpm run test:run` | Run Vitest once |
+| `pnpm run test:coverage` | Vitest with V8 coverage |
+| `pnpm run test:e2e` | Run Playwright E2E tests |
+| `pnpm run test:e2e:ui` | Playwright with UI mode |
+| `pnpm run test:e2e:debug` | Playwright in debug mode |
+| `pnpm run test:e2e:report` | Show Playwright HTML report |
+
+After making changes, ensure `pnpm run lint` and `pnpm run test:run` pass before considering work complete.
+
+## 5. Code Style, Linting and Formatting
+
+### ESLint
+
+- No semicolons: `semi: ['error', 'never']`
+- TypeScript strict recommended rules
+- React Hooks + React Refresh plugins
+- Run: `pnpm run lint`
+
+### TypeScript
+
+- `strict: true`
+- `noUnusedLocals: true`, `noUnusedParameters: true`
+- `verbatimModuleSyntax: true` — use `import type` for type-only imports
+- `erasableSyntaxOnly: true`
+- Target: ES2022, JSX: react-jsx
+
+### Naming Conventions
+
+- Components: `PascalCase` (files and exports)
+- Props interfaces: `<ComponentName>Props`
+- Hooks: `use<Name>` in files named `use<Name>.ts(x)`
+- Types/Interfaces: `PascalCase`
+- Constants: `UPPER_SNAKE_CASE`
+
+### Import Order
+
+1. React imports
+2. Third-party libraries
+3. `@shared/*` imports
+4. Relative imports
+5. Type imports separated with `import type`
+
+## 6. Domain and Business Constraints
+
+### API Documentation
+
+`Komunalka.API.http` is the authoritative source (2600+ lines). Rules:
+1. Before implementing any API call — read the corresponding section in `Komunalka.API.http`
+2. TypeScript types MUST match the response/request structures documented in the file
+3. Do NOT assume API behavior — verify against the documentation
+4. When in doubt — the `.http` file is always correct, not the code
+
+### Authentication
+
+- JWT access + refresh tokens
+- OAuth providers: Google, GitHub
+- Token refresh handled automatically
+
+### Feature Scope
+
+1. Address management (CRUD)
+2. Meter management per address (CRUD)
+3. Reading input with automatic consumption calculation
+4. Historical data visualization (charts/graphs)
+5. Statistics: consumption comparisons, averages, forecasting
+6. Multi-address overview dashboard
+7. Mobile-responsive design
+
+## 7. Security and Privacy
+
+- Never commit `.env` files; use `.env.example` for documentation
+- JWT tokens: secure storage, automatic refresh
+- Test credentials (`test+2@example.com`) are for E2E testing only
+- No PII in logs or console output
+- Do not hardcode secrets or tokens; use environment variables
+
+## 8. Git and PR Workflow
+
+- **Never** create commits or push without explicit user command
+- **Never** mention AI assistance in commits or PRs (no "Generated with...", "Co-Authored-By: AI", etc.)
+- Write commit messages as if written by a human developer
+- Focus on what was changed and why
+- Main branch: `develop`
+
+## 9. Non-Goals and Do Not Touch
+
+- Do NOT modify `Komunalka.API.http`
+- Do NOT add global state management libraries (Redux, Zustand, etc.)
+- Do NOT convert to Next.js, Remix, or any SSR framework
+- Do NOT change package manager from pnpm
+- Do NOT add CSS-in-JS libraries (styled-components, emotion, etc.)
+- Do NOT introduce new external dependencies without explicit instruction
