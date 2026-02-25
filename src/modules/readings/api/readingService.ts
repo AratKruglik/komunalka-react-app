@@ -42,7 +42,7 @@ export const readingService = {
 
     formData.append('AddressId', addressId.toString())
 
-    const payload: BatchReadingsJsonPayload = { addressId, readings }
+    const payload: BatchReadingsJsonPayload = { readings }
     formData.append('ReadingsJson', JSON.stringify(payload))
 
     if (photos && photos.size > 0) {

@@ -43,20 +43,12 @@ import {
   generateReadingId,
 } from '../utils/mockIdGenerator'
 
-const UTILITY_TYPE_NAMES: Record<number, string> = {
-  1: 'Електроенергія',
-  2: 'Газ',
-  3: 'Холодна вода',
-  4: 'Гаряча вода',
-  5: 'Опалення',
-}
-
-const UTILITY_UNITS: Record<number, string> = {
-  1: 'кВт·год',
-  2: 'м³',
-  3: 'м³',
-  4: 'м³',
-  5: 'Гкал',
+const UTILITY_TYPE_INFO: Record<number, { slug: string; displayName: string; unit: string }> = {
+  1: { slug: 'gas', displayName: 'Газ', unit: 'м³' },
+  2: { slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' },
+  3: { slug: 'cold-water', displayName: 'Холодна вода', unit: 'м³' },
+  4: { slug: 'hot-water', displayName: 'Гаряча вода', unit: 'м³' },
+  5: { slug: 'heat', displayName: 'Опалення', unit: 'Гкал' },
 }
 
 const PROVIDER_NAMES: Record<number, string> = {
@@ -81,26 +73,32 @@ interface LegacyMeterInput {
 
 function transformLegacyMeter(legacy: LegacyMeterInput): Meter {
   const utilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[legacy.type]
+  const typeInfo = UTILITY_TYPE_INFO[utilityTypeId]
   const now = new Date().toISOString()
   return {
     id: legacy.id,
     addressId: legacy.addressId,
-    utilityTypeId,
     serialNumber: legacy.meterNumber,
     name: legacy.name,
     description: null,
     modelName: null,
     location: legacy.location,
-    photoPath: null,
     installationDate: legacy.installedAt,
     initialReading: null,
-    serviceProviderId: legacy.providerId,
     notes: null,
     isActive: legacy.status === 'active',
+    utilityType: {
+      id: utilityTypeId,
+      slug: typeInfo.slug,
+      displayName: typeInfo.displayName,
+      unit: typeInfo.unit,
+    },
+    serviceProvider: PROVIDER_NAMES[legacy.providerId]
+      ? { id: legacy.providerId, name: PROVIDER_NAMES[legacy.providerId] }
+      : null,
+    photoUrl: null,
     createdAt: now,
     updatedAt: now,
-    utilityTypeName: UTILITY_TYPE_NAMES[utilityTypeId],
-    serviceProviderName: PROVIDER_NAMES[legacy.providerId] ?? null,
   }
 }
 
@@ -117,24 +115,24 @@ interface LegacyReadingInput {
 
 function transformLegacyReading(
   legacy: LegacyReadingInput,
-  meterName: string,
-  utilityTypeId: number,
+  meterSerialNumber: string,
 ): Reading {
   return {
     id: legacy.id,
-    meterId: legacy.meterId,
     readingValue: legacy.value,
     readingDate: legacy.date,
     previousReadingValue: null,
     consumption: legacy.consumption ?? null,
     notes: legacy.note ?? null,
     isEstimated: false,
+    meter: {
+      id: legacy.meterId,
+      serialNumber: meterSerialNumber,
+    },
+    tariff: null,
+    photos: [],
     createdAt: legacy.submittedAt,
     updatedAt: legacy.submittedAt,
-    meterName,
-    utilityTypeName: UTILITY_TYPE_NAMES[utilityTypeId],
-    unit: UTILITY_UNITS[utilityTypeId],
-    photos: [],
   }
 }
 
@@ -143,32 +141,32 @@ function transformLegacyReading(
 // =============================================================================
 
 export const MOCK_REGIONS: Region[] = [
-  { id: 1, name: 'Вінницька область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 2, name: 'Волинська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 3, name: 'Дніпропетровська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 4, name: 'Донецька область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 5, name: 'Житомирська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 6, name: 'Закарпатська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 7, name: 'Запорізька область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 8, name: 'Івано-Франківська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 9, name: 'Київська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 10, name: 'Кіровоградська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 11, name: 'Луганська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 12, name: 'Львівська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 13, name: 'Миколаївська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 14, name: 'Одеська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 15, name: 'Полтавська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 16, name: 'Рівненська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 17, name: 'Сумська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 18, name: 'Тернопільська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 19, name: 'Харківська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 20, name: 'Херсонська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 21, name: 'Хмельницька область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 22, name: 'Черкаська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 23, name: 'Чернівецька область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 24, name: 'Чернігівська область', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 25, name: 'м. Київ', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 26, name: 'Автономна Республіка Крим', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+  { id: 1, name: 'Вінницька область' },
+  { id: 2, name: 'Волинська область' },
+  { id: 3, name: 'Дніпропетровська область' },
+  { id: 4, name: 'Донецька область' },
+  { id: 5, name: 'Житомирська область' },
+  { id: 6, name: 'Закарпатська область' },
+  { id: 7, name: 'Запорізька область' },
+  { id: 8, name: 'Івано-Франківська область' },
+  { id: 9, name: 'Київська область' },
+  { id: 10, name: 'Кіровоградська область' },
+  { id: 11, name: 'Луганська область' },
+  { id: 12, name: 'Львівська область' },
+  { id: 13, name: 'Миколаївська область' },
+  { id: 14, name: 'Одеська область' },
+  { id: 15, name: 'Полтавська область' },
+  { id: 16, name: 'Рівненська область' },
+  { id: 17, name: 'Сумська область' },
+  { id: 18, name: 'Тернопільська область' },
+  { id: 19, name: 'Харківська область' },
+  { id: 20, name: 'Херсонська область' },
+  { id: 21, name: 'Хмельницька область' },
+  { id: 22, name: 'Черкаська область' },
+  { id: 23, name: 'Чернівецька область' },
+  { id: 24, name: 'Чернігівська область' },
+  { id: 25, name: 'м. Київ' },
+  { id: 26, name: 'Автономна Республіка Крим' },
 ]
 
 // =============================================================================
@@ -176,9 +174,9 @@ export const MOCK_REGIONS: Region[] = [
 // =============================================================================
 
 export const MOCK_ADDRESS_TYPES: AddressType[] = [
-  { id: 1, name: 'Квартира', description: 'Багатоквартирний будинок у місті', icon: 'apartment', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 2, name: 'Приватний будинок', description: 'Окрема садиба або дача', icon: 'house', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 3, name: 'Офіс', description: 'Комерційне або офісне приміщення', icon: 'office', createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+  { id: 1, name: 'Квартира', description: 'Багатоквартирний будинок у місті', icon: 'apartment' },
+  { id: 2, name: 'Приватний будинок', description: 'Окрема садиба або дача', icon: 'house' },
+  { id: 3, name: 'Офіс', description: 'Комерційне або офісне приміщення', icon: 'office' },
 ]
 
 const getRegion = (id: number): Region => MOCK_REGIONS.find(r => r.id === id) || MOCK_REGIONS[24]
@@ -266,8 +264,6 @@ export const MOCK_PROVIDERS: Provider[] = [
 export const MOCK_ADDRESSES: Address[] = [
   {
     id: generateAddressId(), // 1
-    userId: 1,
-    regionId: 25,
     city: 'Київ',
     street: 'вул. Хрещатик',
     buildingNumber: '22',
@@ -275,7 +271,6 @@ export const MOCK_ADDRESSES: Address[] = [
     zipCode: '01001',
     notes: 'Центр міста',
     isPrimary: true,
-    addressTypeId: 1,
     region: getRegion(25),
     addressType: getAddressType(1),
     createdAt: '2023-01-15T10:00:00Z',
@@ -283,16 +278,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 2
-    userId: 1,
-    regionId: 25,
     city: 'Київ',
     street: 'вул. Дарницька',
     buildingNumber: '5',
     apartmentNumber: '42',
     zipCode: '02091',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(25),
     addressType: getAddressType(1),
     createdAt: '2023-02-20T14:30:00Z',
@@ -300,16 +292,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 3
-    userId: 1,
-    regionId: 12,
     city: 'Львів',
     street: 'вул. Незалежності',
     buildingNumber: '10',
     apartmentNumber: '7',
     zipCode: '79000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(12),
     addressType: getAddressType(1),
     createdAt: '2023-03-15T09:15:00Z',
@@ -317,16 +306,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 4
-    userId: 1,
-    regionId: 25,
     city: 'Київ',
     street: 'вул. Прорізна',
     buildingNumber: '18',
     apartmentNumber: '101',
     zipCode: '01001',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(25),
     addressType: getAddressType(1),
     createdAt: '2023-04-10T11:45:00Z',
@@ -334,16 +320,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 5
-    userId: 1,
-    regionId: 19,
     city: 'Харків',
     street: 'вул. Сумська',
     buildingNumber: '64',
     apartmentNumber: '23',
     zipCode: '61000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(19),
     addressType: getAddressType(1),
     createdAt: '2023-05-05T16:20:00Z',
@@ -351,16 +334,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 6
-    userId: 1,
-    regionId: 14,
     city: 'Одеса',
     street: 'вул. Дерибасівська',
     buildingNumber: '12',
     apartmentNumber: '5',
     zipCode: '65000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(14),
     addressType: getAddressType(1),
     createdAt: '2023-06-01T08:30:00Z',
@@ -368,16 +348,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 7
-    userId: 1,
-    regionId: 3,
     city: 'Дніпро',
     street: 'вул. Шевченка',
     buildingNumber: '45',
     apartmentNumber: '88',
     zipCode: '49000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(3),
     addressType: getAddressType(1),
     createdAt: '2023-07-12T13:00:00Z',
@@ -385,16 +362,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 8
-    userId: 1,
-    regionId: 12,
     city: 'Львів',
     street: 'вул. Січових Стрільців',
     buildingNumber: '33',
     apartmentNumber: '12',
     zipCode: '79000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(12),
     addressType: getAddressType(1),
     createdAt: '2023-08-20T10:15:00Z',
@@ -402,16 +376,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 9
-    userId: 1,
-    regionId: 25,
     city: 'Київ',
     street: 'просп. Бандери',
     buildingNumber: '28',
     apartmentNumber: '56',
     zipCode: '04073',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(25),
     addressType: getAddressType(1),
     createdAt: '2023-09-05T15:45:00Z',
@@ -419,16 +390,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 10
-    userId: 1,
-    regionId: 1,
     city: 'Вінниця',
     street: 'вул. Соборна',
     buildingNumber: '7',
     apartmentNumber: '34',
     zipCode: '21000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(1),
     addressType: getAddressType(1),
     createdAt: '2023-10-10T12:20:00Z',
@@ -436,16 +404,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 11
-    userId: 1,
-    regionId: 15,
     city: 'Полтава',
     street: 'вул. Героїв Крут',
     buildingNumber: '51',
     apartmentNumber: '19',
     zipCode: '36000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(15),
     addressType: getAddressType(1),
     createdAt: '2023-11-15T09:30:00Z',
@@ -453,16 +418,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 12
-    userId: 1,
-    regionId: 24,
     city: 'Чернігів',
     street: 'вул. Мазепи',
     buildingNumber: '15',
     apartmentNumber: '3',
     zipCode: '14000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(24),
     addressType: getAddressType(1),
     createdAt: '2023-12-01T14:00:00Z',
@@ -470,16 +432,13 @@ export const MOCK_ADDRESSES: Address[] = [
   },
   {
     id: generateAddressId(), // 13
-    userId: 1,
-    regionId: 19,
     city: 'Харків',
     street: 'вул. Науки',
     buildingNumber: '45',
     apartmentNumber: '88',
     zipCode: '61000',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: getRegion(19),
     addressType: getAddressType(1),
     createdAt: '2024-01-10T11:00:00Z',
@@ -1046,12 +1005,9 @@ function createLegacyReadingsForMeter(
   return readings
 }
 
-function getMeterInfo(meterId: number): { name: string; utilityTypeId: number } {
+function getMeterSerialNumber(meterId: number): string {
   const meter = MOCK_METERS.find((m) => m.id === meterId)
-  return {
-    name: meter?.name ?? 'Unknown',
-    utilityTypeId: meter?.utilityTypeId ?? 1,
-  }
+  return meter?.serialNumber ?? 'UNKNOWN'
 }
 
 const LEGACY_READINGS: LegacyReadingInput[] = [
@@ -1180,8 +1136,8 @@ const LEGACY_READINGS: LegacyReadingInput[] = [
 ]
 
 export const MOCK_READINGS: Reading[] = LEGACY_READINGS.map((legacy) => {
-  const { name, utilityTypeId } = getMeterInfo(legacy.meterId)
-  return transformLegacyReading(legacy, name, utilityTypeId)
+  const serialNumber = getMeterSerialNumber(legacy.meterId)
+  return transformLegacyReading(legacy, serialNumber)
 })
 
 // =============================================================================
@@ -1193,7 +1149,7 @@ export function getMetersByAddressId(addressId: number): Meter[] {
 }
 
 export function getReadingsByMeterId(meterId: number): Reading[] {
-  return MOCK_READINGS.filter((reading) => reading.meterId === meterId).sort(
+  return MOCK_READINGS.filter((reading) => reading.meter.id === meterId).sort(
     (a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime(),
   )
 }
@@ -1225,7 +1181,7 @@ export function getReadingsByAddressId(addressId: number): Reading[] {
   const meters = getMetersByAddressId(addressId)
   const meterIds = meters.map((m) => m.id)
 
-  return MOCK_READINGS.filter((reading) => meterIds.includes(reading.meterId)).sort(
+  return MOCK_READINGS.filter((reading) => meterIds.includes(reading.meter.id)).sort(
     (a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime(),
   )
 }

@@ -14,7 +14,7 @@ import { getApiPrimaryTariff } from '../utils/providerTariffs'
 type ProviderInput = Provider | ApiServiceProvider
 
 function isApiProvider(provider: ProviderInput): provider is ApiServiceProvider {
-  return 'addressId' in provider && 'tariffs' in provider && provider.tariffs.length > 0 && 'utilityTypeId' in provider.tariffs[0]
+  return 'utilityType' in provider && !('serviceType' in provider)
 }
 
 function getProviderUnit(provider: ProviderInput | undefined, meterType: MeterType): string {
@@ -26,13 +26,13 @@ function getProviderUnit(provider: ProviderInput | undefined, meterType: MeterTy
     const tariff = getApiPrimaryTariff(provider)
     if (tariff) {
       const unitMap: Record<number, string> = {
-        1: 'кВт·год',
-        2: 'м³',
+        1: 'м³',
+        2: 'кВт·год',
         3: 'м³',
         4: 'м³',
         5: 'Гкал',
       }
-      return unitMap[tariff.utilityTypeId] ?? 'од'
+      return unitMap[tariff.utilityType.id] ?? 'од'
     }
     return METER_TYPE_UNITS[meterType] ?? 'од'
   }
@@ -41,7 +41,7 @@ function getProviderUnit(provider: ProviderInput | undefined, meterType: MeterTy
 }
 
 function getMeterType(meter: Meter): MeterType {
-  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityType.id] ?? 'electricity'
 }
 
 // =============================================================================
@@ -205,7 +205,7 @@ export function toMeterTypeGroupViewModel(
 
   const meterDevices = meters.map((meter) => {
     const lastReading = readings
-      .filter((r) => r.meterId === meter.id)
+      .filter((r) => r.meter.id === meter.id)
       .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())[0]
 
     const lastSubmission = lastReading
@@ -271,10 +271,10 @@ export function toAddressMetersSnapshotViewModel(
 
     const meterIds = typeMeters.map((m) => m.id)
     const typeReadings = readings
-      .filter((r) => meterIds.includes(r.meterId))
+      .filter((r) => meterIds.includes(r.meter.id))
       .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())
 
-    const provider = providers.find((p) => p.id === typeMeters[0]?.serviceProviderId)
+    const provider = providers.find((p) => p.id === typeMeters[0]?.serviceProvider?.id)
 
     groups[meterType] = toMeterTypeGroupViewModel(
       meterType,

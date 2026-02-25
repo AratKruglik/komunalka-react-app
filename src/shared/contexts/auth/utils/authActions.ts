@@ -52,6 +52,18 @@ export async function loginAction(
       id: response.userId,
       username: response.username,
       email: response.email,
+      role: response.role,
+      authProvider: response.authProvider,
+      emailVerified: response.emailVerified,
+      firstName: null,
+      lastName: null,
+      phoneNumber: null,
+      lastLoginAt: null,
+      avatarOptimizedUrl: null,
+      avatarThumbnailUrl: null,
+      addresses: [],
+      createdAt: '',
+      updatedAt: '',
     }
 
     dispatch({
@@ -107,6 +119,18 @@ export async function registerAction(
       id: response.userId,
       username: response.username,
       email: response.email,
+      role: response.role,
+      authProvider: response.authProvider,
+      emailVerified: response.emailVerified,
+      firstName: null,
+      lastName: null,
+      phoneNumber: null,
+      lastLoginAt: null,
+      avatarOptimizedUrl: null,
+      avatarThumbnailUrl: null,
+      addresses: [],
+      createdAt: '',
+      updatedAt: '',
     }
 
     dispatch({
@@ -160,6 +184,18 @@ export async function oauthCallbackAction(
       id: response.userId,
       username: response.username,
       email: response.email,
+      role: response.role,
+      authProvider: response.authProvider,
+      emailVerified: response.emailVerified,
+      firstName: null,
+      lastName: null,
+      phoneNumber: null,
+      lastLoginAt: null,
+      avatarOptimizedUrl: null,
+      avatarThumbnailUrl: null,
+      addresses: [],
+      createdAt: '',
+      updatedAt: '',
     }
 
     dispatch({

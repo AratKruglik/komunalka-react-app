@@ -2,13 +2,9 @@ import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { API_CONFIG } from './config'
 import { authService } from './authService'
-import { formatApiError, withAuthHeader } from './utils'
+import { formatApiError, withAuthHeader, snakeToCamelKeys, camelToSnakeKeys } from './utils'
 import { ROUTES } from '../constants'
 
-/**
- * Create axios instance with default configuration
- * This is a singleton - created once and reused
- */
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_CONFIG.baseURL,
   timeout: API_CONFIG.timeout,
@@ -17,14 +13,20 @@ const apiClient: AxiosInstance = axios.create({
   },
 })
 
-/**
- * Perform API request with automatic token injection and 401 handling
- * Attempts to refresh token on 401 and retries once
- *
- * @param config - Axios request configuration
- * @returns Response data
- * @throws Formatted API error
- */
+apiClient.interceptors.response.use((response) => {
+  if (response.data != null && typeof response.data === 'object') {
+    response.data = snakeToCamelKeys(response.data)
+  }
+  return response
+})
+
+apiClient.interceptors.request.use((config) => {
+  if (config.data != null && !(config.data instanceof FormData)) {
+    config.data = camelToSnakeKeys(config.data)
+  }
+  return config
+})
+
 async function performRequest<T>(config: AxiosRequestConfig, token?: string | null): Promise<AxiosResponse<T>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const headersWithAuth = withAuthHeader(config.headers as any, token)
@@ -34,12 +36,6 @@ async function performRequest<T>(config: AxiosRequestConfig, token?: string | nu
   })
 }
 
-/**
- * Attempt to refresh token and retry request
- *
- * @param config - Original request configuration
- * @throws Error if refresh fails or no refresh token available
- */
 async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
   const refreshToken = authService.getRefreshToken()
 
@@ -59,14 +55,6 @@ async function refreshAndRetry<T>(config: AxiosRequestConfig): Promise<AxiosResp
   }
 }
 
-/**
- * Generic API request wrapper
- * Adds Authorization header from authService and retries once on 401 with refresh flow
- *
- * @param config - Axios request configuration
- * @returns Promise with response data
- * @throws Formatted error object
- */
 export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promise<T> {
   let hasRetried = false
 
@@ -75,7 +63,6 @@ export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promi
     const response = await performRequest<T>(config, token)
     return response.data
   } catch (error) {
-    // Handle 401 Unauthorized - attempt token refresh
     if (axios.isAxiosError(error) && error.response?.status === 401 && !hasRetried) {
       hasRetried = true
       const retryResponse = await refreshAndRetry<T>(config)
@@ -86,10 +73,6 @@ export async function apiRequest<T = unknown>(config: AxiosRequestConfig): Promi
   }
 }
 
-/**
- * Convenience methods for different HTTP verbs
- * These wrap apiRequest with specific method configurations
- */
 export const api = {
   get: <T = unknown>(url: string, config?: AxiosRequestConfig) =>
     apiRequest<T>({ ...config, method: 'GET', url }),

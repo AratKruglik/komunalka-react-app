@@ -151,7 +151,7 @@ export function AddMeterForm({ onCancel, onSuccess }: AddMeterFormProps) {
     const targetUtilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[meterType]
 
     return addressProviders.filter((provider) => {
-      return provider.tariffs.some((tariff) => tariff.utilityTypeId === targetUtilityTypeId)
+      return provider.tariffs.some((tariff) => tariff.utilityType.id === targetUtilityTypeId)
     })
   }, [meterType, addressProviders])
 
@@ -168,7 +168,7 @@ export function AddMeterForm({ onCancel, onSuccess }: AddMeterFormProps) {
       return []
     }
     const targetUtilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[meterType]
-    return selectedProvider.tariffs.filter((tariff) => tariff.utilityTypeId === targetUtilityTypeId)
+    return selectedProvider.tariffs.filter((tariff) => tariff.utilityType.id === targetUtilityTypeId)
   }, [selectedProvider, meterType])
 
   useEffect(() => {
@@ -403,7 +403,7 @@ export function AddMeterForm({ onCancel, onSuccess }: AddMeterFormProps) {
                 {providerTariffs.map((tariff) => (
                   <p key={tariff.id} className="text-sm text-blue-700 dark:text-blue-300">
                     {tariff.name}: {formatApiTariffLabel(tariff)}
-                    {tariff.serviceFee > 0 && ` + абонплата ${tariff.serviceFee.toFixed(2)} ${tariff.currencySymbol}`}
+                    {tariff.serviceFee > 0 && ` + абонплата ${tariff.serviceFee.toFixed(2)} ${tariff.currency.symbol}`}
                   </p>
                 ))}
                 <p className="text-xs text-blue-600 dark:text-blue-400">

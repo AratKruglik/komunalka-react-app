@@ -18,8 +18,6 @@ vi.mock('@shared/api/apiClient', () => ({
 const mockRegion: Region = {
   id: 9,
   name: 'Київська область',
-  createdAt: '2025-01-01T00:00:00Z',
-  updatedAt: '2025-01-01T00:00:00Z',
 }
 
 const mockAddressType: AddressType = {
@@ -27,14 +25,10 @@ const mockAddressType: AddressType = {
   name: 'Квартира',
   description: 'Багатоквартирний будинок у місті',
   icon: 'apartment',
-  createdAt: '2025-01-01T00:00:00Z',
-  updatedAt: '2025-01-01T00:00:00Z',
 }
 
 const mockAddress: Address = {
   id: 1,
-  userId: 1,
-  regionId: 9,
   city: 'Київ',
   street: 'вул. Хрещатик',
   buildingNumber: '1',
@@ -42,7 +36,6 @@ const mockAddress: Address = {
   zipCode: '01001',
   notes: 'Центр міста',
   isPrimary: true,
-  addressTypeId: 1,
   region: mockRegion,
   addressType: mockAddressType,
   createdAt: '2025-01-15T10:00:00Z',
@@ -196,9 +189,14 @@ describe('addressService', () => {
     it('creates new address and returns it', async () => {
       const createdAddress: Address = {
         ...mockAddress,
-        ...createData,
         id: 2,
-        userId: 1,
+        city: createData.city,
+        street: createData.street,
+        buildingNumber: createData.buildingNumber,
+        apartmentNumber: createData.apartmentNumber ?? null,
+        zipCode: createData.zipCode ?? null,
+        notes: createData.notes ?? null,
+        isPrimary: createData.isPrimary,
         region: mockRegion,
         addressType: mockAddressType,
         createdAt: '2025-01-20T12:00:00Z',

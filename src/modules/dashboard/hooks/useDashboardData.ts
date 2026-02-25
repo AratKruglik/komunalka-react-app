@@ -59,7 +59,7 @@ export function useDashboardData(): DashboardData {
     return meters
       .map((meter) => {
         const meterReadings = allReadings
-          .filter((r) => r.meterId === meter.id)
+          .filter((r) => r.meter.id === meter.id)
           .sort((a, b) => new Date(b.readingDate).getTime() - new Date(a.readingDate).getTime())
 
         const latestReading = meterReadings[0]
@@ -85,7 +85,7 @@ export function useDashboardData(): DashboardData {
 
   const recentReadings = useMemo(() => {
     return allReadings.slice(0, 5).map((reading) => {
-      const meter = meters.find((m) => m.id === reading.meterId)
+      const meter = meters.find((m) => m.id === reading.meter.id)
       if (!meter) return null
 
       const calculation = calculations.get(meter.id)

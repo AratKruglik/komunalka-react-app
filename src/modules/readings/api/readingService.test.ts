@@ -25,20 +25,21 @@ vi.mock('@shared/api/config', () => ({
 
 const mockReading: Reading = {
   id: 1,
-  meterId: 1,
-  date: '2025-01-20',
-  value: 1234.5,
+  readingValue: 1234.5,
+  readingDate: '2025-01-20',
+  previousReadingValue: 1184,
   consumption: 50.5,
-  submittedAt: '2025-01-20T10:30:00Z',
-  status: 'accepted',
-  note: 'Monthly reading',
-  photoUrl: 'https://api.example.com/photos/reading-1.jpg',
+  notes: 'Monthly reading',
+  isEstimated: false,
+  meter: { id: 1, serialNumber: 'M-000001' },
+  tariff: null,
+  photos: [],
+  createdAt: '2025-01-20T10:30:00Z',
+  updatedAt: '2025-01-20T10:30:00Z',
 }
 
 const mockReadingResponse: ReadingResponse = {
   ...mockReading,
-  createdAt: '2025-01-20T10:30:00Z',
-  updatedAt: '2025-01-20T10:30:00Z',
 }
 
 describe('readingService', () => {
@@ -175,8 +176,8 @@ describe('readingService', () => {
     ]
 
     it('creates batch readings and returns created data', async () => {
-      const createdReadings = [mockReading, { ...mockReading, id: 2, meterId: 2 }]
-      vi.mocked(apiRequest).mockResolvedValueOnce(createdReadings)
+      const createdReadings = [mockReading, { ...mockReading, id: 2, meter: { id: 2, serialNumber: 'M-000002' } }]
+      vi.mocked(apiRequest).mockResolvedValueOnce({ data: createdReadings })
 
       const result = await readingService.createBatch(1, batchReadings)
 
@@ -210,7 +211,7 @@ describe('readingService', () => {
       const formData = callArg.data as FormData
       const readingsJson = formData.get('ReadingsJson')
 
-      expect(readingsJson).toBe(JSON.stringify({ addressId: 1, readings: batchReadings }))
+      expect(readingsJson).toBe(JSON.stringify({ readings: batchReadings }))
     })
 
     it('includes photos when provided', async () => {
@@ -264,7 +265,7 @@ describe('readingService', () => {
       const callArg = vi.mocked(apiRequest).mock.calls[0][0]
       const formData = callArg.data as FormData
 
-      expect(formData.get('ReadingsJson')).toBe('{"addressId":1,"readings":[]}')
+      expect(formData.get('ReadingsJson')).toBe('{"readings":[]}')
     })
 
     it('throws error on validation failure', async () => {

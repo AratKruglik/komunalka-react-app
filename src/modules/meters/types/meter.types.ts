@@ -7,16 +7,16 @@ import type { PaginationParams } from '@shared/api/types'
  * API uses numeric IDs for utility types
  */
 export const UTILITY_TYPE_ID_MAP: Record<MeterType, number> = {
-  electricity: 1,
-  gas: 2,
+  gas: 1,
+  electricity: 2,
   coldWater: 3,
   hotWater: 4,
   heat: 5,
 }
 
 export const UTILITY_TYPE_FROM_ID: Record<number, MeterType> = {
-  1: 'electricity',
-  2: 'gas',
+  1: 'gas',
+  2: 'electricity',
   3: 'coldWater',
   4: 'hotWater',
   5: 'heat',
@@ -42,7 +42,7 @@ export interface CreateMeterRequest {
   location?: string
   installationDate: string
   initialReading?: number
-  serviceProviderId: number
+  serviceProviderId?: number
   notes?: string
   isActive: boolean
 }

@@ -17,20 +17,25 @@ vi.mock('@shared/api/apiClient', () => ({
 const mockMeter: Meter = {
   id: 1,
   addressId: 1,
-  providerId: 1,
-  type: 'electricity',
   name: 'Лічильник електроенергії',
-  meterNumber: 'E-12345',
+  serialNumber: 'E-12345',
+  description: null,
+  modelName: null,
   location: 'Кухня',
-  installedAt: '2024-01-15',
-  status: 'active',
-  nextCheckDate: '2026-01-15',
+  installationDate: '2024-01-15',
+  initialReading: null,
+  notes: null,
+  isActive: true,
+  utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' },
+  serviceProvider: { id: 1, name: 'Provider 1' },
+  photoUrl: null,
+  createdAt: '2024-01-15T10:00:00Z',
+  updatedAt: '2024-01-15T10:00:00Z',
 }
 
 const mockMeterResponse: MeterResponse = {
   ...mockMeter,
   photoUrl: 'https://api.example.com/photos/meter-1.jpg',
-  createdAt: '2024-01-15T10:00:00Z',
   updatedAt: '2025-01-20T15:30:00Z',
 }
 
@@ -129,7 +134,7 @@ describe('meterService', () => {
 
   describe('getByAddress', () => {
     it('returns meters for a specific address', async () => {
-      const mockMeters = [mockMeter, { ...mockMeter, id: 2, type: 'gas' as const }]
+      const mockMeters = [mockMeter, { ...mockMeter, id: 2, utilityType: { id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³' } }]
       vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeters })
 
       const result = await meterService.getByAddress(1)
@@ -195,7 +200,7 @@ describe('meterService', () => {
 
   describe('getById', () => {
     it('returns meter by id', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce(mockMeterResponse)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeterResponse })
 
       const result = await meterService.getById(1)
 
@@ -204,7 +209,7 @@ describe('meterService', () => {
     })
 
     it('calls correct endpoint with different ids', async () => {
-      vi.mocked(api.get).mockResolvedValueOnce(mockMeterResponse)
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeterResponse })
 
       await meterService.getById(123)
 
@@ -236,7 +241,7 @@ describe('meterService', () => {
     }
 
     it('creates meter via api.post with JSON payload', async () => {
-      vi.mocked(api.post).mockResolvedValueOnce(mockMeterResponse)
+      vi.mocked(api.post).mockResolvedValueOnce({ data: mockMeterResponse })
 
       const result = await meterService.create(createData)
 
@@ -252,7 +257,7 @@ describe('meterService', () => {
         initialReading: 1000.5,
         notes: 'Test notes',
       }
-      vi.mocked(api.post).mockResolvedValueOnce(mockMeterResponse)
+      vi.mocked(api.post).mockResolvedValueOnce({ data: mockMeterResponse })
 
       await meterService.create(dataWithOptional)
 
@@ -286,7 +291,7 @@ describe('meterService', () => {
 
     it('updates meter and returns updated data', async () => {
       const updatedMeter: MeterResponse = { ...mockMeterResponse, ...updateData }
-      vi.mocked(api.put).mockResolvedValueOnce(updatedMeter)
+      vi.mocked(api.put).mockResolvedValueOnce({ data: updatedMeter })
 
       const result = await meterService.update(1, updateData)
 
@@ -296,8 +301,8 @@ describe('meterService', () => {
 
     it('handles partial updates', async () => {
       const partialUpdate: UpdateMeterRequest = { isActive: false }
-      const updatedMeter: MeterResponse = { ...mockMeterResponse, status: 'inactive' }
-      vi.mocked(api.put).mockResolvedValueOnce(updatedMeter)
+      const updatedMeter: MeterResponse = { ...mockMeterResponse, isActive: false }
+      vi.mocked(api.put).mockResolvedValueOnce({ data: updatedMeter })
 
       const result = await meterService.update(1, partialUpdate)
 
@@ -306,7 +311,7 @@ describe('meterService', () => {
     })
 
     it('calls correct endpoint with different ids', async () => {
-      vi.mocked(api.put).mockResolvedValueOnce(mockMeterResponse)
+      vi.mocked(api.put).mockResolvedValueOnce({ data: mockMeterResponse })
 
       await meterService.update(42, updateData)
 

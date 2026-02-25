@@ -45,6 +45,18 @@ export async function refreshToken(
         id: response.userId,
         username: response.username,
         email: response.email,
+        firstName: null,
+        lastName: null,
+        phoneNumber: null,
+        role: response.role,
+        authProvider: response.authProvider,
+        emailVerified: response.emailVerified,
+        lastLoginAt: null,
+        avatarOptimizedUrl: null,
+        avatarThumbnailUrl: null,
+        addresses: [],
+        createdAt: '',
+        updatedAt: '',
       }
     }
 

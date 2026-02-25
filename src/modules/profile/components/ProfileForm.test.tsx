@@ -344,7 +344,7 @@ describe('ProfileForm', () => {
       const newPasswordInput = screen.getByLabelText('Новий пароль')
       await user.type(newPasswordInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /зберегти зміни/i })
+      const submitButton = screen.getByRole('button', { name: /змінити пароль/i })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -363,7 +363,7 @@ describe('ProfileForm', () => {
       const currentPasswordInput = screen.getByLabelText('Поточний пароль')
       await user.type(currentPasswordInput, 'currentpassword')
 
-      const submitButton = screen.getByRole('button', { name: /зберегти зміни/i })
+      const submitButton = screen.getByRole('button', { name: /змінити пароль/i })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -387,7 +387,7 @@ describe('ProfileForm', () => {
       await user.type(newPasswordInput, 'NewPassword123!')
       await user.type(confirmPasswordInput, 'DifferentPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /зберегти зміни/i })
+      const submitButton = screen.getByRole('button', { name: /змінити пароль/i })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -409,7 +409,7 @@ describe('ProfileForm', () => {
       await user.type(currentPasswordInput, 'currentpassword')
       await user.type(newPasswordInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /зберегти зміни/i })
+      const submitButton = screen.getByRole('button', { name: /змінити пароль/i })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -461,7 +461,7 @@ describe('ProfileForm', () => {
       await user.type(newPasswordInput, 'NewPassword123!')
       await user.type(confirmPasswordInput, 'NewPassword123!')
 
-      const submitButton = screen.getByRole('button', { name: /зберегти зміни/i })
+      const submitButton = screen.getByRole('button', { name: /змінити пароль/i })
       await user.click(submitButton)
 
       await waitFor(() => {
@@ -477,14 +477,15 @@ describe('ProfileForm', () => {
   })
 
   describe('loading state', () => {
-    it('shows loading text on submit button when loading', () => {
+    it('shows loading text on submit buttons when loading', () => {
       setupDefaultMocks({ isLoading: true })
 
       renderWithProviders(<ProfileForm />, {
         authContext: { state: createAuthenticatedState() },
       })
 
-      expect(screen.getByRole('button', { name: /збереження\.\.\./i })).toBeInTheDocument()
+      const loadingButtons = screen.getAllByRole('button', { name: /збереження\.\.\./i })
+      expect(loadingButtons.length).toBeGreaterThanOrEqual(1)
     })
 
     it('disables form inputs when loading', () => {
@@ -572,7 +573,8 @@ describe('ProfileForm', () => {
         authContext: { state: createAuthenticatedState() },
       })
 
-      expect(screen.getByText('Помилка оновлення профілю')).toBeInTheDocument()
+      const errorMessages = screen.getAllByText('Помилка оновлення профілю')
+      expect(errorMessages.length).toBeGreaterThanOrEqual(1)
     })
 
     it('calls clearError when form is submitted', async () => {

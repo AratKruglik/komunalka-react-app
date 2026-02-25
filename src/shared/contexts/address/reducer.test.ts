@@ -5,8 +5,6 @@ import type { Address } from '@shared/types/entities'
 
 const createMockAddress = (overrides: Partial<Address> = {}): Address => ({
   id: 1,
-  userId: 1,
-  regionId: 1,
   city: 'Kyiv',
   street: 'Main St',
   buildingNumber: '1',
@@ -14,20 +12,15 @@ const createMockAddress = (overrides: Partial<Address> = {}): Address => ({
   zipCode: '01001',
   notes: '',
   isPrimary: false,
-  addressTypeId: 1,
   region: {
     id: 1,
     name: 'Kyiv Oblast',
-    createdAt: '2024-01-01',
-    updatedAt: '2024-01-01',
   },
   addressType: {
     id: 1,
     name: 'Apartment',
     description: 'Apartment',
     icon: 'apartment',
-    createdAt: '2024-01-01',
-    updatedAt: '2024-01-01',
   },
   createdAt: '2024-01-01',
   updatedAt: '2024-01-01',

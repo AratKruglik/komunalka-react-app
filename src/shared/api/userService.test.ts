@@ -3,7 +3,7 @@ import { userService } from './userService'
 import { api } from './apiClient'
 import { authService } from './authService'
 import { API_ENDPOINTS } from '../constants'
-import type { User, CreateUserRequest, UpdateUserRequest, ChangePasswordRequest } from '../types/auth/user.types'
+import type { User, CreateUserRequest, UpdateUserRequest } from '../types/auth/user.types'
 import type { PaginatedResponse } from './types'
 
 vi.mock('./apiClient', () => ({
@@ -34,6 +34,15 @@ const mockUser: User = {
   firstName: 'John',
   lastName: 'Doe',
   phoneNumber: '+380501234567',
+  role: 'user',
+  authProvider: null,
+  emailVerified: false,
+  lastLoginAt: null,
+  avatarOptimizedUrl: null,
+  avatarThumbnailUrl: null,
+  addresses: [],
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
 }
 
 const mockPaginatedResponse: PaginatedResponse<User> = {
@@ -250,29 +259,4 @@ describe('userService', () => {
     })
   })
 
-  describe('changePassword', () => {
-    const passwordData: ChangePasswordRequest = {
-      currentPassword: 'oldPassword123',
-      newPassword: 'newSecurePassword456',
-    }
-
-    it('changes password successfully', async () => {
-      vi.mocked(api.post).mockResolvedValueOnce(undefined)
-
-      await expect(userService.changePassword(passwordData)).resolves.toBeUndefined()
-      expect(api.post).toHaveBeenCalledWith(API_ENDPOINTS.USER.CHANGE_PASSWORD, passwordData)
-    })
-
-    it('throws error on incorrect current password', async () => {
-      vi.mocked(api.post).mockRejectedValueOnce(new Error('Current password is incorrect'))
-
-      await expect(userService.changePassword(passwordData)).rejects.toThrow('Current password is incorrect')
-    })
-
-    it('throws error on weak new password', async () => {
-      vi.mocked(api.post).mockRejectedValueOnce(new Error('Password does not meet requirements'))
-
-      await expect(userService.changePassword(passwordData)).rejects.toThrow('Password does not meet requirements')
-    })
-  })
 })

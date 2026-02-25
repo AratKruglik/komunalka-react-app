@@ -110,8 +110,7 @@ describe('RegisterForm', () => {
       renderWithProviders(<RegisterForm />)
 
       expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /facebook/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /apple/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /github/i })).toBeInTheDocument()
     })
 
     it('renders submit button', () => {
@@ -388,8 +387,7 @@ describe('RegisterForm', () => {
       })
 
       expect(screen.getByRole('button', { name: /google/i })).toBeDisabled()
-      expect(screen.getByRole('button', { name: /facebook/i })).toBeDisabled()
-      expect(screen.getByRole('button', { name: /apple/i })).toBeDisabled()
+      expect(screen.getByRole('button', { name: /github/i })).toBeDisabled()
     })
   })
 
