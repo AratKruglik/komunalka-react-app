@@ -336,7 +336,7 @@ describe('RegisterForm', () => {
             email: 'john@example.com',
             phoneNumber: '+380501234567',
             password: 'StrongPassword123!',
-            confirmPassword: 'StrongPassword123!',
+            passwordConfirmation: 'StrongPassword123!',
           }),
           true
         )

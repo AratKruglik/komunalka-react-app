@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         phoneNumber: string;
         email: string;
         password: string;
-        confirmPassword: string;
+        passwordConfirmation: string;
       },
       rememberMe = true
     ) => {

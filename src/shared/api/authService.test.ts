@@ -5,11 +5,17 @@ const mockPost = vi.fn()
 const mockGet = vi.fn()
 
 vi.mock('axios', async () => {
+  const noopInterceptors = {
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
+  }
   return {
     default: {
       create: vi.fn(() => ({
         post: mockPost,
         get: mockGet,
+        delete: vi.fn(),
+        interceptors: noopInterceptors,
       })),
     },
   }
@@ -48,7 +54,7 @@ interface RegisterRequestType {
   phoneNumber: string
   email: string
   password: string
-  confirmPassword: string
+  passwordConfirmation: string
 }
 
 const mockAuthResponse: AuthResponseType = {
@@ -105,7 +111,7 @@ describe('authService', () => {
       phoneNumber: '+380501234567',
       email: 'john@example.com',
       password: 'password123',
-      confirmPassword: 'password123',
+      passwordConfirmation: 'password123',
     }
 
     it('saves tokens to cookies on success', async () => {
@@ -325,7 +331,7 @@ describe('authService', () => {
       await authService.revokeToken('test-refresh-token')
 
       expect(mockPost).toHaveBeenCalledWith('/auth/revoke-token', {
-        refresh_token: 'test-refresh-token',
+        refreshToken: 'test-refresh-token',
       })
     })
   })

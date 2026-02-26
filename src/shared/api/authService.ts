@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { API_CONFIG } from './config'
 import { API_ENDPOINTS } from '../constants'
+import { snakeToCamelKeys, camelToSnakeKeys } from './utils'
 import type {
   OAuthProvider,
   OAuthAuthorizationResponse,
@@ -24,7 +25,7 @@ export interface RegisterRequest {
   phoneNumber: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  passwordConfirmation: string;
 }
 
 export type AuthProvider = 'Local' | 'Google' | 'GitHub';
@@ -61,6 +62,20 @@ const authHttp = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+})
+
+authHttp.interceptors.request.use((config) => {
+  if (config.data != null && !(config.data instanceof FormData)) {
+    config.data = camelToSnakeKeys(config.data)
+  }
+  return config
+})
+
+authHttp.interceptors.response.use((response) => {
+  if (response.data != null && typeof response.data === 'object') {
+    response.data = snakeToCamelKeys(response.data)
+  }
+  return response
 })
 
 type SameSite = 'Lax' | 'Strict' | 'None';
@@ -184,7 +199,7 @@ export const authService = {
    * Відкликання refresh токена
    */
   revokeToken: (refreshToken: string) =>
-    authHttp.post(API_ENDPOINTS.AUTH.REVOKE, { refresh_token: refreshToken }),
+    authHttp.post(API_ENDPOINTS.AUTH.REVOKE, { refreshToken }),
 
   /**
    * Валідація JWT токена
