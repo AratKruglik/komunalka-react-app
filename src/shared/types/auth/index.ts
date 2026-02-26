@@ -13,5 +13,6 @@ export type {
   OAuthCallbackRequest,
   OAuthLinkRequest,
   OAuthLinkResponse,
+  OAuthUnlinkRequest,
   OAuthUnlinkResponse,
 } from './oauth.types'

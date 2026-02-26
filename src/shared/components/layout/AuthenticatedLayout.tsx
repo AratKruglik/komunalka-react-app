@@ -41,7 +41,7 @@ export function AuthenticatedLayout({
       return {
         name: fullName,
         email: authUser.email,
-        avatarUrl: authUser.avatarUrl ? userService.getAvatarUrl(authUser.id, 'thumbnail') : undefined,
+        avatarUrl: authUser.avatarOptimizedUrl ? userService.getAvatarUrl(authUser.id, 'thumbnail') : undefined,
       }
     }
     return {

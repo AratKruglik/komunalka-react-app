@@ -16,7 +16,7 @@ export interface AuthContextValue {
     phoneNumber: string;
     email: string;
     password: string;
-    confirmPassword: string;
+    passwordConfirmation: string;
   }, rememberMe?: boolean) => Promise<void>;
   refreshTokenManually: () => Promise<void>;
   updateProfile: (data: UpdateProfilePayload) => Promise<User>;

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AddAddressForm } from './AddAddressForm'
-// @ts-ignore
+// @ts-expect-error - test utils module resolution
 import {
   renderWithProviders,
   screen,
@@ -32,6 +32,28 @@ vi.mock('../hooks', () => ({
     },
     isSuccess: false,
     reset: vi.fn(),
+  }),
+}))
+
+vi.mock('@shared/hooks', () => ({
+  useRegions: () => ({
+    regions: [
+      { id: 9, name: 'Київська область' },
+      { id: 10, name: 'Львівська область' },
+    ],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+  useAddressTypes: () => ({
+    addressTypes: [
+      { id: 1, name: 'Квартира', description: 'Багатоквартирний будинок у місті', icon: 'apartment' },
+      { id: 2, name: 'Приватний будинок', description: 'Окрема садиба або дача', icon: 'house' },
+      { id: 3, name: 'Офіс', description: 'Комерційне або офісне приміщення', icon: 'office' },
+    ],
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
   }),
 }))
 

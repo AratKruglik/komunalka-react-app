@@ -6,9 +6,9 @@ export interface CreateAddressRequest {
   city: string
   street: string
   buildingNumber: string
-  apartmentNumber: string
-  zipCode: string
-  notes: string
+  apartmentNumber?: string
+  zipCode?: string
+  notes?: string
   isPrimary: boolean
   addressTypeId: number
 }

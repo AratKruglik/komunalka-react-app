@@ -1,0 +1,115 @@
+# Antigravity Rules
+
+This file provides guidance to Antigravity Agents when working with code in this repository.
+
+## Workflow Orchestration
+
+### 1. Plan Node Default
+- Enter plan mode and generate a plan artifact for ANY non-trivial task (3+ steps or architectural decisions).
+- If something goes sideways, STOP and re-plan immediately – don't keep pushing.
+- Use plan mode for verification steps, not just building.
+- Write detailed specs upfront to reduce ambiguity.
+
+### 2. Multi-Agent Strategy
+- Use the Agent Manager liberally to keep the main context window clean.
+- Offload research, exploration, and parallel analysis to separate agent processes.
+- For complex problems, throw more compute at it by assigning multiple agents to focused tasks.
+- One tack per agent for focused execution.
+
+### 3. Self-Improvement Loop
+- After ANY correction from the user: update `docs/tasks-docs/lessons.md` with the pattern.
+- Write rules for yourself that prevent the same mistake.
+- Ruthlessly iterate on these lessons until mistake rate drops.
+- Review lessons at session start for relevant project.
+
+### 4. Verification Before Done
+- Never mark a task complete without proving it works.
+- Diff behavior between main and your changes when relevant using the built-in diff viewer.
+- Ask yourself: "Would a staff engineer approve this?".
+- Run tests, check logs, and demonstrate correctness using the integrated terminal and browser.
+
+### 5. Demand Elegance (Balanced)
+- For non-trivial changes: pause and ask "is there a more elegant way?".
+- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution".
+- Skip this for simple, obvious fixes – don't over-engineer.
+- Challenge your own work before presenting the final artifact.
+
+### 6. Autonomous Bug Fixing
+- When given a bug report: just fix it. Don't ask for hand-holding.
+- Point at logs, errors, failing tests – then resolve them.
+- Zero context switching required from the user.
+- Go fix failing CI tests without being told how.
+
+## Task Management
+1. **Plan First**: Write plan to `docs/tasks-docs/todo.md` with checkable items.
+2. **Verify Plan**: Check in before starting implementation.
+3. **Track Progress**: Mark items complete as you go.
+4. **Explain Changes**: High-level summary at each step in the agent chat.
+5. **Document Results**: Add review section to `docs/tasks-docs/todo.md`.
+6. **Capture Lessons**: Update `docs/tasks-docs/lessons.md` after corrections.
+
+## Core Principles
+- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
+- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
+- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+
+## 1. Project Overview
+React/TypeScript web application for tracking utility meter readings (komunalka = utilities in Ukrainian).
+Features: manage addresses, track meters (electricity, gas, hot/cold water, heating), record readings, view usage statistics and analytics.
+
+Data model hierarchy:
+- **User** -> has multiple **Addresses**.
+- **Address** -> has multiple **Meters**.
+- **Meter** -> has historical **Readings**.
+
+API documentation: `Komunalka.API.http` is the **authoritative source of truth** for all API interactions (endpoints, request/response formats, auth, validation). Always verify against this file before implementing API calls.
+
+## 2. Repository Map and Tech Stack
+
+### Tech Stack
+- Framework: React 19.1.1
+- Language: TypeScript 5.9.3
+- Build: Vite 7.1.7
+- Styling: Tailwind CSS 4.1.14, tailwind-variants 3.2.2
+- Forms: react-hook-form 7.53.1
+- HTTP: Axios 1.13.2
+- Charts: Recharts 3.3.0
+- Icons: Lucide React
+- Routing: React Router 7.x
+- Tests: Vitest 4.0.18, Playwright 1.56.1
+- Linting: ESLint 9.36.0
+- Package manager: pnpm
+
+### Directory Structure
+Follows domain-driven structure in `src/modules/` (addresses, auth, dashboard, meters, profile, providers, readings, settings).
+Shared code in `src/shared/` (components, ui, hooks, utils, types, constants).
+Tests in `tests/` (e2e, pages, fixtures, helpers).
+
+## 3. Setup and Environment
+Prerequisites: Node.js, pnpm.
+Copy `.env.example` to `.env`. Do not hardcode secrets; use environment variables.
+
+## 4. Code Style, Linting and Formatting
+- ESLint: No semicolons, TS strict recommended, React Hooks + Refresh.
+- TypeScript: strict, verbatimModuleSyntax, erasableSyntaxOnly.
+- Naming Conventions: Components in PascalCase, use<Name> for hooks, UPPER_SNAKE_CASE for constants.
+
+## 5. Domain and Business Constraints
+- `Komunalka.API.http` is the authoritative source. When in doubt, the `.http` file is always correct, not the code.
+- Authentication: JWT access + refresh tokens; OAuth providers (Google, GitHub).
+- Test credentials (`test+2@example.com`) are for E2E testing only.
+
+## 6. Git and PR Workflow
+- **Never** create commits or push without explicit user command.
+- **Never** mention AI assistance in commits or PRs (no "Generated with...", "Co-Authored-By: AI", etc.).
+- Write commit messages as if written by a human developer.
+- Focus on what was changed and why.
+- Main branch: `develop`.
+
+## 7. Non-Goals and Do Not Touch
+- Do NOT modify `Komunalka.API.http`.
+- Do NOT add global state management libraries (Redux, Zustand, etc.).
+- Do NOT convert to Next.js, Remix, or any SSR framework.
+- Do NOT change package manager from pnpm.
+- Do NOT add CSS-in-JS libraries (styled-components, emotion, etc.).
+- Do NOT introduce new external dependencies without explicit instruction.

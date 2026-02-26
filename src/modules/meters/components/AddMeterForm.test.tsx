@@ -28,25 +28,22 @@ const mockApiProviders: ApiServiceProvider[] = [
     email: null,
     website: null,
     isActive: true,
+    utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год', description: 'Електроенергія', isActive: true, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     tariffs: [
       {
         id: 1,
-        serviceProviderId: 1,
-        utilityTypeId: 1,
-        currencyId: 1,
         name: 'Електроенергія',
         baseRate: 4.32,
         serviceFee: 0,
         effectiveFrom: '2024-01-01T00:00:00Z',
         effectiveTo: null,
         notes: null,
+        utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год', description: 'Електроенергія', isActive: true, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+        currency: { id: 1, code: 'UAH', name: 'Українська гривня', symbol: '₴', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
-        utilityTypeName: 'Електроенергія',
-        currencyCode: 'UAH',
-        currencySymbol: '₴',
       },
     ],
   },
@@ -59,25 +56,22 @@ const mockApiProviders: ApiServiceProvider[] = [
     email: null,
     website: null,
     isActive: true,
+    utilityType: { id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³', description: 'Газ', isActive: true, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     tariffs: [
       {
         id: 2,
-        serviceProviderId: 2,
-        utilityTypeId: 2,
-        currencyId: 1,
         name: 'Газ',
         baseRate: 7.96,
         serviceFee: 0,
         effectiveFrom: '2024-01-01T00:00:00Z',
         effectiveTo: null,
         notes: null,
+        utilityType: { id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³', description: 'Газ', isActive: true, createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
+        currency: { id: 1, code: 'UAH', name: 'Українська гривня', symbol: '₴', createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' },
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
-        utilityTypeName: 'Газ',
-        currencyCode: 'UAH',
-        currencySymbol: '₴',
       },
     ],
   },
@@ -144,10 +138,6 @@ function getInstallationDateInput() {
 
 function getInitialReadingInput() {
   return screen.getByLabelText(/початкові показання/i)
-}
-
-function getTariffInput() {
-  return screen.getByLabelText(/поточний тариф/i)
 }
 
 function getProviderSelect() {
@@ -333,7 +323,7 @@ describe('AddMeterForm', () => {
       expect(screen.getByText(/yasno/i)).toBeInTheDocument()
     })
 
-    it('updates tariff when provider selected', async () => {
+    it('shows tariff info when provider selected', async () => {
       const user = userEvent.setup()
       renderWithProviders(<AddMeterForm />)
 
@@ -345,7 +335,7 @@ describe('AddMeterForm', () => {
       await user.selectOptions(getProviderSelect(), '1')
 
       await waitFor(() => {
-        expect(getTariffInput()).toHaveValue(4.32)
+        expect(screen.getByText(/тарифна інформація/i)).toBeInTheDocument()
       })
     })
   })
@@ -444,7 +434,7 @@ describe('AddMeterForm', () => {
       })
     })
 
-    it('shows error when tariff is empty', async () => {
+    it('shows error when provider is not selected', async () => {
       const user = userEvent.setup()
       renderWithProviders(<AddMeterForm />)
 
@@ -457,7 +447,9 @@ describe('AddMeterForm', () => {
       await user.click(getSubmitButton())
 
       await waitFor(() => {
-        expect(screen.getByText(/вкажіть тариф/i)).toBeInTheDocument()
+        const errorMessages = screen.getAllByText(/оберіть провайдера послуги/i)
+        const errorElement = errorMessages.find((el) => el.classList.contains('text-red-500'))
+        expect(errorElement).toBeDefined()
       })
     })
   })
@@ -483,10 +475,11 @@ describe('AddMeterForm', () => {
         expect(mockCreateMeter).toHaveBeenCalledWith(
           expect.objectContaining({
             addressId: 1,
-            utilityTypeId: 1,
+            utilityTypeId: 2,
             serialNumber: 'AE123456',
             installationDate: '2024-01-15',
             isActive: true,
+            serviceProviderId: 1,
           })
         )
       })

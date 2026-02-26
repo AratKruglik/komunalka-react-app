@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { API_CONFIG } from './config'
 import { API_ENDPOINTS } from '../constants'
+import { snakeToCamelKeys, camelToSnakeKeys } from './utils'
 import type {
   OAuthProvider,
   OAuthAuthorizationResponse,
@@ -8,6 +9,7 @@ import type {
   OAuthLoginRequest,
   OAuthLinkRequest,
   OAuthLinkResponse,
+  OAuthUnlinkRequest,
   OAuthUnlinkResponse,
 } from '../types/auth'
 
@@ -23,7 +25,7 @@ export interface RegisterRequest {
   phoneNumber: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  passwordConfirmation: string;
 }
 
 export type AuthProvider = 'Local' | 'Google' | 'GitHub';
@@ -31,7 +33,8 @@ export type AuthProvider = 'Local' | 'Google' | 'GitHub';
 export interface AuthResponse {
   token: string;
   refreshToken: string;
-  expiration: string;
+  expiration?: string;
+  expiresIn?: string | number;
   userId: number;
   username: string;
   email: string;
@@ -59,6 +62,20 @@ const authHttp = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+})
+
+authHttp.interceptors.request.use((config) => {
+  if (config.data != null && !(config.data instanceof FormData)) {
+    config.data = camelToSnakeKeys(config.data)
+  }
+  return config
+})
+
+authHttp.interceptors.response.use((response) => {
+  if (response.data != null && typeof response.data === 'object') {
+    response.data = snakeToCamelKeys(response.data)
+  }
+  return response
 })
 
 type SameSite = 'Lax' | 'Strict' | 'None';
@@ -104,8 +121,20 @@ function deleteCookie(name: string) {
   setCookie(name, '', { maxAge: -1 })
 }
 
+export function resolveExpirationIso(response: AuthResponse): string {
+  if (response.expiration) {
+    return response.expiration
+  }
+  if (response.expiresIn != null) {
+    const seconds = Number(response.expiresIn)
+    return new Date(Date.now() + seconds * 1000).toISOString()
+  }
+  return new Date(Date.now() + 3600 * 1000).toISOString()
+}
+
 function saveAuthCookies(response: AuthResponse, rememberMe: boolean) {
-  const expiresAtDate = new Date(response.expiration)
+  const expirationIso = resolveExpirationIso(response)
+  const expiresAtDate = new Date(expirationIso)
   const cookieOptions = rememberMe ? { expires: expiresAtDate } : {}
 
   if (rememberMe) {
@@ -116,7 +145,7 @@ function saveAuthCookies(response: AuthResponse, rememberMe: boolean) {
 
   setCookie('jwt_token', response.token, cookieOptions)
   setCookie('refresh_token', response.refreshToken, cookieOptions)
-  setCookie('expires_at', response.expiration, cookieOptions)
+  setCookie('expires_at', expirationIso, cookieOptions)
 }
 
 function clearAuthCookies() {
@@ -235,10 +264,11 @@ export const authService = {
     return response.data
   },
 
-  unlinkProvider: async (provider: OAuthProvider): Promise<OAuthUnlinkResponse> => {
+  unlinkProvider: async (provider: OAuthProvider, data: OAuthUnlinkRequest): Promise<OAuthUnlinkResponse> => {
     const token = getCookie('jwt_token')
     const response = await authHttp.delete<OAuthUnlinkResponse>(API_ENDPOINTS.OAUTH.UNLINK(provider), {
       headers: { Authorization: `Bearer ${token}` },
+      data,
     })
     return response.data
   },

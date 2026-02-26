@@ -136,7 +136,7 @@ export function RegisterForm({ className = '' }: RegisterFormProps) {
         phoneNumber: `+380${formData.phone}`,
         email: formData.email,
         password: formData.password,
-        confirmPassword: formData.confirmPassword,
+        passwordConfirmation: formData.confirmPassword,
       }, true) // Зберігаємо в localStorage за замовчуванням
 
       // Перенаправлення на головну сторінку

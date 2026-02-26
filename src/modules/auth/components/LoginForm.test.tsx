@@ -55,8 +55,7 @@ describe('LoginForm', () => {
       renderWithProviders(<LoginForm />)
 
       expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /facebook/i })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /apple/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /github/i })).toBeInTheDocument()
     })
 
     it('renders forgot password link', () => {
@@ -250,15 +249,14 @@ describe('LoginForm', () => {
       })
 
       expect(screen.getByRole('button', { name: /google/i })).toBeDisabled()
-      expect(screen.getByRole('button', { name: /facebook/i })).toBeDisabled()
-      expect(screen.getByRole('button', { name: /apple/i })).toBeDisabled()
+      expect(screen.getByRole('button', { name: /github/i })).toBeDisabled()
     })
   })
 
   describe('error handling', () => {
     it('displays general error message on login failure', async () => {
       const user = userEvent.setup()
-      const mockLogin = vi.fn().mockRejectedValue({ message: 'Invalid credentials' })
+      const mockLogin = vi.fn().mockRejectedValue({ message: 'Invalid credentials', status: 401 })
 
       renderWithProviders(<LoginForm />, {
         authContext: {
@@ -274,7 +272,7 @@ describe('LoginForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('Invalid credentials')).toBeInTheDocument()
+        expect(screen.getByText('Невірна електронна пошта або пароль.')).toBeInTheDocument()
       })
     })
 
@@ -304,7 +302,7 @@ describe('LoginForm', () => {
       const user = userEvent.setup()
       const mockLogin = vi
         .fn()
-        .mockRejectedValueOnce({ message: 'First error' })
+        .mockRejectedValueOnce({ message: 'Server error', status: 500 })
         .mockResolvedValueOnce(undefined)
 
       renderWithProviders(<LoginForm />, {
@@ -321,13 +319,13 @@ describe('LoginForm', () => {
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.getByText('First error')).toBeInTheDocument()
+        expect(screen.getByText('Помилка сервера. Спробуйте пізніше.')).toBeInTheDocument()
       })
 
       await user.click(submitButton)
 
       await waitFor(() => {
-        expect(screen.queryByText('First error')).not.toBeInTheDocument()
+        expect(screen.queryByText('Помилка сервера. Спробуйте пізніше.')).not.toBeInTheDocument()
       })
     })
   })

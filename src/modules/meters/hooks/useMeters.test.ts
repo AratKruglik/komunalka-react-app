@@ -25,47 +25,58 @@ const mockMeters: Meter[] = [
   {
     id: 1,
     addressId: 1,
-    providerId: 1,
-    type: 'electricity',
     name: 'Electricity Meter',
-    meterNumber: 'E-001',
+    serialNumber: 'E-001',
+    description: null,
+    modelName: null,
     location: 'Entrance',
-    installedAt: '2024-01-15T10:00:00Z',
-    status: 'active',
+    installationDate: '2024-01-15T10:00:00Z',
+    initialReading: null,
+    notes: null,
+    isActive: true,
+    utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' },
+    serviceProvider: { id: 1, name: 'Provider 1' },
+    photoUrl: null,
+    createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-15T10:00:00Z',
   },
   {
     id: 2,
     addressId: 1,
-    providerId: 2,
-    type: 'gas',
     name: 'Gas Meter',
-    meterNumber: 'G-001',
+    serialNumber: 'G-001',
+    description: null,
+    modelName: null,
     location: 'Kitchen',
-    installedAt: '2024-01-15T10:00:00Z',
-    status: 'active',
+    installationDate: '2024-01-15T10:00:00Z',
+    initialReading: null,
+    notes: null,
+    isActive: true,
+    utilityType: { id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³' },
+    serviceProvider: { id: 2, name: 'Provider 2' },
+    photoUrl: null,
+    createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-15T10:00:00Z',
   },
 ]
 
 const mockMeterResponse: MeterResponse = {
-  Id: 1,
-  AddressId: 1,
-  UtilityTypeId: 1,
-  UtilityTypeName: 'Electricity',
-  Name: 'Electricity Meter',
-  SerialNumber: 'E-001',
-  ModelName: 'Model X',
-  Location: 'Entrance',
-  InstallationDate: '2024-01-15',
-  IsActive: true,
-  InitialReading: 0,
-  CurrentReading: 1500,
-  ServiceProviderId: 1,
-  ServiceProviderName: 'Provider 1',
-  Notes: null,
-  PhotoUrl: null,
-  PhotoThumbnailUrl: null,
-  CreatedAt: '2024-01-15T10:00:00Z',
-  UpdatedAt: '2024-01-15T10:00:00Z',
+  id: 1,
+  addressId: 1,
+  name: 'Electricity Meter',
+  serialNumber: 'E-001',
+  description: null,
+  modelName: 'Model X',
+  location: 'Entrance',
+  installationDate: '2024-01-15',
+  initialReading: 0,
+  notes: null,
+  isActive: true,
+  utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' },
+  serviceProvider: { id: 1, name: 'Provider 1' },
+  photoUrl: null,
+  createdAt: '2024-01-15T10:00:00Z',
+  updatedAt: '2024-01-15T10:00:00Z',
 }
 
 const createMeterData: CreateMeterRequest = {
@@ -250,7 +261,7 @@ describe('useMeter', () => {
 
   it('refetches when meterId changes', async () => {
     const meter1 = mockMeterResponse
-    const meter2 = { ...mockMeterResponse, Id: 2, Name: 'Gas Meter' }
+    const meter2 = { ...mockMeterResponse, id: 2, name: 'Gas Meter' }
 
     vi.mocked(meterService.getById)
       .mockResolvedValueOnce(meter1)
@@ -468,7 +479,7 @@ describe('useUpdateMeter', () => {
   })
 
   it('updates meter successfully', async () => {
-    const updatedResponse = { ...mockMeterResponse, Name: 'Updated Meter' }
+    const updatedResponse = { ...mockMeterResponse, name: 'Updated Meter' }
     vi.mocked(meterService.update).mockResolvedValueOnce(updatedResponse)
 
     const { result } = renderHook(() => useUpdateMeter())
@@ -577,7 +588,6 @@ describe('useDeleteMeter', () => {
 
     expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBeNull()
-    expect(result.current.isDeleted).toBe(false)
   })
 
   it('deletes meter successfully', async () => {
@@ -585,13 +595,14 @@ describe('useDeleteMeter', () => {
 
     const { result } = renderHook(() => useDeleteMeter())
 
+    let success: boolean | undefined
     await act(async () => {
-      await result.current.deleteMeter(1)
+      success = await result.current.deleteMeter(1)
     })
 
+    expect(success).toBe(true)
     expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBeNull()
-    expect(result.current.isDeleted).toBe(true)
     expect(meterService.delete).toHaveBeenCalledWith(1)
   })
 
@@ -603,13 +614,12 @@ describe('useDeleteMeter', () => {
 
     const { result } = renderHook(() => useDeleteMeter())
 
-    let deletePromise: Promise<void>
+    let deletePromise: Promise<boolean>
     act(() => {
       deletePromise = result.current.deleteMeter(1)
     })
 
     expect(result.current.isLoading).toBe(true)
-    expect(result.current.isDeleted).toBe(false)
 
     await act(async () => {
       resolvePromise!()
@@ -617,7 +627,6 @@ describe('useDeleteMeter', () => {
     })
 
     expect(result.current.isLoading).toBe(false)
-    expect(result.current.isDeleted).toBe(true)
   })
 
   it('handles deletion error', async () => {
@@ -626,18 +635,13 @@ describe('useDeleteMeter', () => {
 
     const { result } = renderHook(() => useDeleteMeter())
 
-    let thrownError: Error | undefined
+    let success: boolean | undefined
     await act(async () => {
-      try {
-        await result.current.deleteMeter(999)
-      } catch (err) {
-        thrownError = err as Error
-      }
+      success = await result.current.deleteMeter(999)
     })
 
-    expect(thrownError?.message).toBe(errorMessage)
+    expect(success).toBe(false)
     expect(result.current.error).toBe(errorMessage)
-    expect(result.current.isDeleted).toBe(false)
   })
 
   it('handles non-Error error objects', async () => {
@@ -645,21 +649,17 @@ describe('useDeleteMeter', () => {
 
     const { result } = renderHook(() => useDeleteMeter())
 
-    let thrownError: unknown
+    let success: boolean | undefined
     await act(async () => {
-      try {
-        await result.current.deleteMeter(1)
-      } catch (err) {
-        thrownError = err
-      }
+      success = await result.current.deleteMeter(1)
     })
 
-    expect(thrownError).toBe('String error')
+    expect(success).toBe(false)
     expect(result.current.error).toBe('Не вдалося видалити лічильник')
   })
 
-  it('reset clears error and isDeleted states', async () => {
-    vi.mocked(meterService.delete).mockResolvedValueOnce(undefined)
+  it('reset clears error state', async () => {
+    vi.mocked(meterService.delete).mockRejectedValueOnce(new Error('Some error'))
 
     const { result } = renderHook(() => useDeleteMeter())
 
@@ -667,14 +667,13 @@ describe('useDeleteMeter', () => {
       await result.current.deleteMeter(1)
     })
 
-    expect(result.current.isDeleted).toBe(true)
+    expect(result.current.error).toBe('Some error')
 
     act(() => {
       result.current.reset()
     })
 
     expect(result.current.error).toBeNull()
-    expect(result.current.isDeleted).toBe(false)
   })
 
   it('clears previous state on new deletion attempt', async () => {
@@ -685,20 +684,17 @@ describe('useDeleteMeter', () => {
     const { result } = renderHook(() => useDeleteMeter())
 
     await act(async () => {
-      try {
-        await result.current.deleteMeter(1)
-      } catch {
-        // Expected to throw
-      }
+      await result.current.deleteMeter(1)
     })
 
     expect(result.current.error).toBe('First error')
 
+    let success: boolean | undefined
     await act(async () => {
-      await result.current.deleteMeter(1)
+      success = await result.current.deleteMeter(1)
     })
 
+    expect(success).toBe(true)
     expect(result.current.error).toBeNull()
-    expect(result.current.isDeleted).toBe(true)
   })
 })

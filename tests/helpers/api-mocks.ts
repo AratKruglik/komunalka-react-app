@@ -192,11 +192,15 @@ export async function mockValidateToken(page: Page, isValid = true): Promise<voi
 export interface MockUser {
   id: number;
   username: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
+  firstName: string | null;
+  lastName: string | null;
+  phoneNumber?: string | null;
   email: string;
-  avatarUrl?: string | null;
+  role?: string;
+  authProvider?: string | null;
+  emailVerified?: boolean;
+  lastLoginAt?: string | null;
+  avatarOptimizedUrl?: string | null;
   avatarThumbnailUrl?: string | null;
   addresses?: unknown[];
   createdAt?: string;
@@ -216,7 +220,7 @@ export async function mockUserProfile(page: Page, user?: Partial<MockUser>, opti
     lastName: 'Петренко',
     phoneNumber: '+380501234567',
     email: 'test@example.com',
-    avatarUrl: null,
+    avatarOptimizedUrl: null,
     avatarThumbnailUrl: null,
     addresses: [],
     createdAt: now,
@@ -337,7 +341,7 @@ export async function mockUpdateProfile(page: Page, options: MockOptions = {}): 
         lastName: requestData.lastName ?? 'Петренко',
         phoneNumber: requestData.phoneNumber ?? '+380501234567',
         email: requestData.email ?? 'test@example.com',
-        avatarUrl: `${API_BASE_URL}/users/${userId}/avatar`,
+        avatarOptimizedUrl: `${API_BASE_URL}/users/${userId}/avatar`,
         avatarThumbnailUrl: `${API_BASE_URL}/users/${userId}/avatar/thumbnail`,
         createdAt: '2025-01-01T00:00:00Z',
         updatedAt: now,
@@ -349,16 +353,16 @@ export async function mockUpdateProfile(page: Page, options: MockOptions = {}): 
 export interface MockAddress {
   id: number;
   userId?: number;
-  regionId: number;
+  regionId?: number;
   region?: { id: number; name: string };
   city: string;
   street: string;
   buildingNumber: string;
-  apartmentNumber?: string;
-  zipCode?: string;
-  notes?: string;
+  apartmentNumber?: string | null;
+  zipCode?: string | null;
+  notes?: string | null;
   isPrimary: boolean;
-  addressTypeId: number;
+  addressTypeId?: number;
   addressType?: { id: number; name: string; description: string; icon?: string };
   createdAt?: string;
   updatedAt?: string;
@@ -643,8 +647,8 @@ export async function mockCurrencies(page: Page, currencies?: MockCurrency[]): P
 export interface MockMeter {
   id: number;
   addressId: number;
-  utilityTypeId: number;
-  utilityType?: { id: number; name: string };
+  utilityTypeId?: number;
+  utilityType?: { id: number; name?: string; slug?: string; displayName?: string; unit?: string };
   name: string;
   serialNumber: string;
   modelName?: string;
@@ -652,6 +656,7 @@ export interface MockMeter {
   installationDate?: string;
   initialReading?: number;
   serviceProviderId?: number;
+  serviceProvider?: { id: number; name: string } | null;
   notes?: string;
   isActive: boolean;
   photoUrl?: string | null;
@@ -1141,9 +1146,9 @@ export const ADDRESS_TYPES = {
 
 export interface MockTariff {
   id: number;
-  serviceProviderId: number;
-  utilityTypeId: number;
-  currencyId: number;
+  serviceProviderId?: number;
+  utilityTypeId?: number;
+  currencyId?: number;
   name: string;
   baseRate: number;
   serviceFee: number;
@@ -1152,9 +1157,11 @@ export interface MockTariff {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
-  utilityTypeName: string;
-  currencyCode: string;
-  currencySymbol: string;
+  utilityTypeName?: string;
+  currencyCode?: string;
+  currencySymbol?: string;
+  utilityType?: { id: number; slug: string; displayName: string; unit: string; description?: string; isActive?: boolean; createdAt?: string; updatedAt?: string };
+  currency?: { id: number; code: string; name: string; symbol: string; createdAt?: string; updatedAt?: string };
 }
 
 export interface MockServiceProvider {
@@ -1166,6 +1173,7 @@ export interface MockServiceProvider {
   email: string | null;
   website: string | null;
   isActive: boolean;
+  utilityType?: { id: number; slug: string; displayName: string; unit: string; description?: string; isActive?: boolean; createdAt?: string; updatedAt?: string };
   createdAt: string;
   updatedAt: string;
   tariffs: MockTariff[];
@@ -1373,7 +1381,7 @@ export async function mockUploadAvatar(
       status: options.status ?? 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        avatarUrl: `${API_BASE_URL}/users/${userId}/avatar`,
+        avatarOptimizedUrl: `${API_BASE_URL}/users/${userId}/avatar`,
         avatarThumbnailUrl: `${API_BASE_URL}/users/${userId}/avatar/thumbnail`,
       }),
     })

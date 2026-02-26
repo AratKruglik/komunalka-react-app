@@ -44,21 +44,21 @@ export function adaptApiTariffToLegacy(tariff: ApiTariff): ProviderTariff {
   return {
     id: String(tariff.id),
     name: tariff.name,
-    price: tariff.baseRate,
+    price: Number(tariff.baseRate),
   }
 }
 
 export function formatApiTariffLabel(tariff: ApiTariff): string {
-  const price = tariff.baseRate.toFixed(2)
-  const symbol = tariff.currencySymbol
-  const unit = getUnitForUtilityType(tariff.utilityTypeId)
+  const price = Number(tariff.baseRate).toFixed(2)
+  const symbol = tariff.currency.symbol
+  const unit = getUnitForUtilityType(tariff.utilityType.id)
   return `${price} ${symbol}/${unit}`
 }
 
 function getUnitForUtilityType(utilityTypeId: number): string {
   const units: Record<number, string> = {
-    1: 'кВт·год',
-    2: 'м³',
+    1: 'м³',
+    2: 'кВт·год',
     3: 'м³',
     4: 'м³',
     5: 'Гкал',
@@ -71,11 +71,9 @@ function getUnitForUtilityType(utilityTypeId: number): string {
 // =============================================================================
 
 export function adaptApiProviderToLegacy(apiProvider: ApiServiceProvider): Provider {
-  const primaryTariff = apiProvider.tariffs[0]
-  const utilityTypeId = primaryTariff?.utilityTypeId ?? 1
-  const meterType = utilityTypeIdToMeterType(utilityTypeId)
+  const meterType = utilityTypeToMeterType(apiProvider.utilityType)
   const serviceLabel = meterTypeToServiceLabel(meterType)
-  const unit = getUnitForUtilityType(utilityTypeId)
+  const unit = getUnitForUtilityType(apiProvider.utilityType.id)
 
   return {
     id: apiProvider.id,
@@ -120,7 +118,7 @@ export function getActiveTariff(
 }
 
 export function calculateCost(consumption: number, tariff: ApiTariff): number {
-  const consumptionCost = consumption * tariff.baseRate
-  const serviceFee = tariff.serviceFee
+  const consumptionCost = consumption * Number(tariff.baseRate)
+  const serviceFee = Number(tariff.serviceFee)
   return consumptionCost + serviceFee
 }

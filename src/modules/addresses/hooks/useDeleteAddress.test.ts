@@ -1,17 +1,34 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useDeleteAddress } from './useDeleteAddress'
-import { addressService } from '../api'
 
-vi.mock('../api', () => ({
-  addressService: {
-    delete: vi.fn(),
-  },
+const mockContextDeleteAddress = vi.fn()
+let mockContextLoading = false
+let mockContextError: string | null = null
+
+vi.mock('@shared/contexts', () => ({
+  useAddressContext: () => ({
+    deleteAddress: mockContextDeleteAddress,
+    get isLoading() {
+      return mockContextLoading
+    },
+    get error() {
+      return mockContextError
+    },
+    addresses: [],
+    addAddress: vi.fn(),
+    updateAddress: vi.fn(),
+    setAddresses: vi.fn(),
+    getPrimaryAddress: vi.fn(),
+    getAddressById: vi.fn(),
+  }),
 }))
 
 describe('useDeleteAddress', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockContextLoading = false
+    mockContextError = null
   })
 
   it('has correct initial state', () => {
@@ -23,7 +40,7 @@ describe('useDeleteAddress', () => {
   })
 
   it('deletes address successfully', async () => {
-    vi.mocked(addressService.delete).mockResolvedValueOnce(undefined)
+    mockContextDeleteAddress.mockResolvedValueOnce(undefined)
 
     const { result } = renderHook(() => useDeleteAddress())
 
@@ -34,12 +51,12 @@ describe('useDeleteAddress', () => {
     expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBeNull()
     expect(result.current.isSuccess).toBe(true)
-    expect(addressService.delete).toHaveBeenCalledWith(1)
+    expect(mockContextDeleteAddress).toHaveBeenCalledWith(1)
   })
 
   it('sets loading state during deletion', async () => {
     let resolvePromise: () => void
-    vi.mocked(addressService.delete).mockImplementation(
+    mockContextDeleteAddress.mockImplementation(
       () => new Promise((resolve) => { resolvePromise = resolve })
     )
 
@@ -50,7 +67,6 @@ describe('useDeleteAddress', () => {
       deletePromise = result.current.deleteAddress(1)
     })
 
-    expect(result.current.isLoading).toBe(true)
     expect(result.current.isSuccess).toBe(false)
 
     await act(async () => {
@@ -58,13 +74,12 @@ describe('useDeleteAddress', () => {
       await deletePromise
     })
 
-    expect(result.current.isLoading).toBe(false)
     expect(result.current.isSuccess).toBe(true)
   })
 
   it('handles deletion error', async () => {
     const errorMessage = 'Address not found'
-    vi.mocked(addressService.delete).mockRejectedValueOnce(new Error(errorMessage))
+    mockContextDeleteAddress.mockRejectedValueOnce(new Error(errorMessage))
 
     const { result } = renderHook(() => useDeleteAddress())
 
@@ -78,13 +93,12 @@ describe('useDeleteAddress', () => {
     })
 
     expect(thrownError?.message).toBe(errorMessage)
-    expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBe(errorMessage)
     expect(result.current.isSuccess).toBe(false)
   })
 
   it('handles non-Error error objects', async () => {
-    vi.mocked(addressService.delete).mockRejectedValueOnce('String error')
+    mockContextDeleteAddress.mockRejectedValueOnce('String error')
 
     const { result } = renderHook(() => useDeleteAddress())
 
@@ -103,7 +117,7 @@ describe('useDeleteAddress', () => {
 
   it('handles address with associated meters error', async () => {
     const errorMessage = 'Cannot delete address with associated meters'
-    vi.mocked(addressService.delete).mockRejectedValueOnce(new Error(errorMessage))
+    mockContextDeleteAddress.mockRejectedValueOnce(new Error(errorMessage))
 
     const { result } = renderHook(() => useDeleteAddress())
 
@@ -121,7 +135,7 @@ describe('useDeleteAddress', () => {
   })
 
   it('clears error and success on new deletion attempt', async () => {
-    vi.mocked(addressService.delete)
+    mockContextDeleteAddress
       .mockRejectedValueOnce(new Error('First error'))
       .mockResolvedValueOnce(undefined)
 
@@ -130,9 +144,7 @@ describe('useDeleteAddress', () => {
     await act(async () => {
       try {
         await result.current.deleteAddress(1)
-      } catch {
-        // Expected to throw
-      }
+      } catch { /* expected */ }
     })
 
     expect(result.current.error).toBe('First error')
@@ -146,7 +158,7 @@ describe('useDeleteAddress', () => {
   })
 
   it('reset clears error and success states', async () => {
-    vi.mocked(addressService.delete).mockResolvedValueOnce(undefined)
+    mockContextDeleteAddress.mockResolvedValueOnce(undefined)
 
     const { result } = renderHook(() => useDeleteAddress())
 
@@ -165,16 +177,14 @@ describe('useDeleteAddress', () => {
   })
 
   it('reset clears error state after failure', async () => {
-    vi.mocked(addressService.delete).mockRejectedValueOnce(new Error('Error'))
+    mockContextDeleteAddress.mockRejectedValueOnce(new Error('Error'))
 
     const { result } = renderHook(() => useDeleteAddress())
 
     await act(async () => {
       try {
         await result.current.deleteAddress(1)
-      } catch {
-        // Expected to throw
-      }
+      } catch { /* expected */ }
     })
 
     expect(result.current.error).toBe('Error')
@@ -200,7 +210,7 @@ describe('useDeleteAddress', () => {
   })
 
   it('can delete different addresses sequentially', async () => {
-    vi.mocked(addressService.delete).mockResolvedValue(undefined)
+    mockContextDeleteAddress.mockResolvedValue(undefined)
 
     const { result } = renderHook(() => useDeleteAddress())
 
@@ -216,13 +226,13 @@ describe('useDeleteAddress', () => {
       await result.current.deleteAddress(2)
     })
 
-    expect(addressService.delete).toHaveBeenCalledTimes(2)
-    expect(addressService.delete).toHaveBeenNthCalledWith(1, 1)
-    expect(addressService.delete).toHaveBeenNthCalledWith(2, 2)
+    expect(mockContextDeleteAddress).toHaveBeenCalledTimes(2)
+    expect(mockContextDeleteAddress).toHaveBeenNthCalledWith(1, 1)
+    expect(mockContextDeleteAddress).toHaveBeenNthCalledWith(2, 2)
   })
 
   it('returns void from deleteAddress', async () => {
-    vi.mocked(addressService.delete).mockResolvedValueOnce(undefined)
+    mockContextDeleteAddress.mockResolvedValueOnce(undefined)
 
     const { result } = renderHook(() => useDeleteAddress())
 

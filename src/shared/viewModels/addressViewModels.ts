@@ -13,7 +13,7 @@ import type { LucideIcon } from 'lucide-react'
 import { Star } from 'lucide-react'
 
 function getMeterType(meter: Meter): MeterType {
-  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityType.id] ?? 'electricity'
 }
 
 // =============================================================================

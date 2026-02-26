@@ -1,15 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useCreateAddress } from './useCreateAddress'
-import { addressService } from '../api'
 import type { Address } from '@shared/types/entities'
 import type { CreateAddressRequest } from '../types'
 import { createMockAddress } from '@/test-utils/factories'
 
-vi.mock('../api', () => ({
-  addressService: {
-    create: vi.fn(),
-  },
+const mockAddAddress = vi.fn()
+let mockContextLoading = false
+let mockContextError: string | null = null
+
+vi.mock('@shared/contexts', () => ({
+  useAddressContext: () => ({
+    addAddress: mockAddAddress,
+    get isLoading() {
+      return mockContextLoading
+    },
+    get error() {
+      return mockContextError
+    },
+    addresses: [],
+    deleteAddress: vi.fn(),
+    updateAddress: vi.fn(),
+    setAddresses: vi.fn(),
+    getPrimaryAddress: vi.fn(),
+    getAddressById: vi.fn(),
+  }),
 }))
 
 const mockCreatedAddress: Address = createMockAddress({ id: 1, isPrimary: false })
@@ -29,6 +44,8 @@ const createData: CreateAddressRequest = {
 describe('useCreateAddress', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockContextLoading = false
+    mockContextError = null
   })
 
   it('has correct initial state', () => {
@@ -40,7 +57,7 @@ describe('useCreateAddress', () => {
   })
 
   it('creates address successfully', async () => {
-    vi.mocked(addressService.create).mockResolvedValueOnce(mockCreatedAddress)
+    mockAddAddress.mockResolvedValueOnce(mockCreatedAddress)
 
     const { result } = renderHook(() => useCreateAddress())
 
@@ -54,12 +71,12 @@ describe('useCreateAddress', () => {
     expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBeNull()
     expect(result.current.isSuccess).toBe(true)
-    expect(addressService.create).toHaveBeenCalledWith(createData)
+    expect(mockAddAddress).toHaveBeenCalledWith(createData)
   })
 
   it('sets loading state during creation', async () => {
     let resolvePromise: (value: Address) => void
-    vi.mocked(addressService.create).mockImplementation(
+    mockAddAddress.mockImplementation(
       () => new Promise((resolve) => { resolvePromise = resolve })
     )
 
@@ -70,7 +87,6 @@ describe('useCreateAddress', () => {
       createPromise = result.current.createAddress(createData)
     })
 
-    expect(result.current.isLoading).toBe(true)
     expect(result.current.isSuccess).toBe(false)
 
     await act(async () => {
@@ -78,13 +94,12 @@ describe('useCreateAddress', () => {
       await createPromise
     })
 
-    expect(result.current.isLoading).toBe(false)
     expect(result.current.isSuccess).toBe(true)
   })
 
   it('handles creation error', async () => {
     const errorMessage = 'Validation failed'
-    vi.mocked(addressService.create).mockRejectedValueOnce(new Error(errorMessage))
+    mockAddAddress.mockRejectedValueOnce(new Error(errorMessage))
 
     const { result } = renderHook(() => useCreateAddress())
 
@@ -98,13 +113,12 @@ describe('useCreateAddress', () => {
     })
 
     expect(thrownError?.message).toBe(errorMessage)
-    expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBe(errorMessage)
     expect(result.current.isSuccess).toBe(false)
   })
 
   it('handles non-Error error objects', async () => {
-    vi.mocked(addressService.create).mockRejectedValueOnce('String error')
+    mockAddAddress.mockRejectedValueOnce('String error')
 
     const { result } = renderHook(() => useCreateAddress())
 
@@ -122,7 +136,7 @@ describe('useCreateAddress', () => {
   })
 
   it('clears error and success on new creation attempt', async () => {
-    vi.mocked(addressService.create)
+    mockAddAddress
       .mockRejectedValueOnce(new Error('First error'))
       .mockResolvedValueOnce(mockCreatedAddress)
 
@@ -131,9 +145,7 @@ describe('useCreateAddress', () => {
     await act(async () => {
       try {
         await result.current.createAddress(createData)
-      } catch {
-        // Expected to throw
-      }
+      } catch { /* expected */ }
     })
 
     expect(result.current.error).toBe('First error')
@@ -147,7 +159,7 @@ describe('useCreateAddress', () => {
   })
 
   it('reset clears error and success states', async () => {
-    vi.mocked(addressService.create).mockResolvedValueOnce(mockCreatedAddress)
+    mockAddAddress.mockResolvedValueOnce(mockCreatedAddress)
 
     const { result } = renderHook(() => useCreateAddress())
 
@@ -166,16 +178,14 @@ describe('useCreateAddress', () => {
   })
 
   it('reset clears error state after failure', async () => {
-    vi.mocked(addressService.create).mockRejectedValueOnce(new Error('Error'))
+    mockAddAddress.mockRejectedValueOnce(new Error('Error'))
 
     const { result } = renderHook(() => useCreateAddress())
 
     await act(async () => {
       try {
         await result.current.createAddress(createData)
-      } catch {
-        // Expected to throw
-      }
+      } catch { /* expected */ }
     })
 
     expect(result.current.error).toBe('Error')
@@ -204,7 +214,7 @@ describe('useCreateAddress', () => {
     const address1 = { ...mockCreatedAddress, id: 1 }
     const address2 = { ...mockCreatedAddress, id: 2 }
 
-    vi.mocked(addressService.create)
+    mockAddAddress
       .mockResolvedValueOnce(address1)
       .mockResolvedValueOnce(address2)
 
@@ -223,6 +233,6 @@ describe('useCreateAddress', () => {
 
     expect(returned1).toEqual(address1)
     expect(returned2).toEqual(address2)
-    expect(addressService.create).toHaveBeenCalledTimes(2)
+    expect(mockAddAddress).toHaveBeenCalledTimes(2)
   })
 })

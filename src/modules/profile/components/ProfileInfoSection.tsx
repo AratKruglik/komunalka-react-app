@@ -35,7 +35,7 @@ export function ProfileInfoSection({ profile }: ProfileInfoSectionProps) {
     phone: '',
   })
 
-  const initialAvatarPreview = user?.avatarUrl
+  const initialAvatarPreview = user?.avatarOptimizedUrl
     ? userService.getAvatarUrl(user.id, 'full')
     : null
   const initialAvatarLabel = initialAvatarPreview ? 'Поточний аватар' : null
@@ -61,7 +61,7 @@ export function ProfileInfoSection({ profile }: ProfileInfoSectionProps) {
         phone: phoneWithoutPrefix,
       })
       setAvatarFile(null)
-      if (user.avatarUrl) {
+      if (user.avatarOptimizedUrl) {
         setAvatarPreview(userService.getAvatarUrl(user.id, 'full'))
         setAvatarFileName('Поточний аватар')
       }

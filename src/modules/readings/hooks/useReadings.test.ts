@@ -20,25 +20,31 @@ vi.mock('../api', () => ({
 const mockReadings: Reading[] = [
   {
     id: 1,
-    meterId: 1,
-    date: '2025-01-15',
-    value: 1500,
+    readingValue: 1500,
+    readingDate: '2025-01-15',
+    previousReadingValue: 1450,
     consumption: 50,
-    submittedAt: '2025-01-15T10:00:00Z',
-    status: 'accepted',
-    note: undefined,
-    photoUrl: undefined,
+    notes: null,
+    isEstimated: false,
+    meter: { id: 1, serialNumber: 'M-000001' },
+    tariff: null,
+    photos: [],
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
   },
   {
     id: 2,
-    meterId: 2,
-    date: '2025-01-15',
-    value: 350,
+    readingValue: 350,
+    readingDate: '2025-01-15',
+    previousReadingValue: 325,
     consumption: 25,
-    submittedAt: '2025-01-15T10:00:00Z',
-    status: 'accepted',
-    note: undefined,
-    photoUrl: undefined,
+    notes: null,
+    isEstimated: false,
+    meter: { id: 2, serialNumber: 'M-000002' },
+    tariff: null,
+    photos: [],
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
   },
 ]
 
@@ -117,7 +123,7 @@ describe('useReadingsByAddress', () => {
 
   it('refetches when addressId changes', async () => {
     const readings1 = mockReadings
-    const readings2 = [{ ...mockReadings[0], id: 3, meterId: 3 }]
+    const readings2 = [{ ...mockReadings[0], id: 3, meter: { id: 3, serialNumber: 'M-000003' } }]
 
     vi.mocked(readingService.getByAddress)
       .mockResolvedValueOnce(readings1)

@@ -35,6 +35,23 @@ vi.mock('@modules/providers/hooks', () => ({
   useServiceProvidersByAddress: vi.fn(),
 }))
 
+const electricityUtilityType = {
+  id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год',
+  description: 'Електроенергія', isActive: true,
+  createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
+}
+
+const gasUtilityType = {
+  id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³',
+  description: 'Газ', isActive: true,
+  createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
+}
+
+const uahCurrency = {
+  id: 1, code: 'UAH', name: 'Українська гривня', symbol: '₴',
+  createdAt: '2024-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z',
+}
+
 const baseTariffFields = {
   serviceFee: 0,
   effectiveFrom: '2024-01-01T00:00:00Z',
@@ -42,9 +59,7 @@ const baseTariffFields = {
   notes: null,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
-  currencyId: 1,
-  currencyCode: 'UAH',
-  currencySymbol: '₴',
+  currency: uahCurrency,
 }
 
 const baseProviderFields = {
@@ -63,24 +78,21 @@ const mockApiProviders: ApiServiceProvider[] = [
     id: 1,
     name: 'YASNO',
     ...baseProviderFields,
+    utilityType: electricityUtilityType,
     tariffs: [
       {
         id: 7,
-        serviceProviderId: 1,
-        utilityTypeId: 1,
         name: 'День',
         baseRate: 2.64,
         ...baseTariffFields,
-        utilityTypeName: 'Електроенергія',
+        utilityType: electricityUtilityType,
       },
       {
         id: 8,
-        serviceProviderId: 1,
-        utilityTypeId: 1,
         name: 'Ніч',
         baseRate: 1.32,
         ...baseTariffFields,
-        utilityTypeName: 'Електроенергія',
+        utilityType: electricityUtilityType,
       },
     ],
   },
@@ -88,15 +100,14 @@ const mockApiProviders: ApiServiceProvider[] = [
     id: 2,
     name: 'Київгаз',
     ...baseProviderFields,
+    utilityType: gasUtilityType,
     tariffs: [
       {
         id: 2,
-        serviceProviderId: 2,
-        utilityTypeId: 2,
         name: 'Газ',
         baseRate: 7.96,
         ...baseTariffFields,
-        utilityTypeName: 'Газ',
+        utilityType: gasUtilityType,
       },
     ],
   },
@@ -135,8 +146,8 @@ const mockMeters: Meter[] = [
   createMockMeter({
     id: 100,
     addressId: 1,
-    serviceProviderId: 1,
-    utilityTypeId: 1,
+    serviceProvider: { id: 1, name: 'YASNO' },
+    utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' },
     name: 'Основний тариф',
     serialNumber: 'EL-238923',
     isActive: true,
@@ -144,8 +155,8 @@ const mockMeters: Meter[] = [
   createMockMeter({
     id: 101,
     addressId: 1,
-    serviceProviderId: 2,
-    utilityTypeId: 2,
+    serviceProvider: { id: 2, name: 'Київгаз' },
+    utilityType: { id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³' },
     name: 'Плита на кухні',
     serialNumber: 'GS-88342',
     isActive: true,
@@ -155,30 +166,27 @@ const mockMeters: Meter[] = [
 const mockReadings: Reading[] = [
   createMockReading({
     id: 1,
-    meterId: 100,
+    meter: { id: 100, serialNumber: 'EL-238923' },
     readingValue: 1500,
     consumption: 150,
     readingDate: '2025-01-15',
-    tariffId: 7,
-    tariffName: 'День',
+    tariff: { id: 7, name: 'День' },
   }),
   createMockReading({
     id: 3,
-    meterId: 100,
+    meter: { id: 100, serialNumber: 'EL-238923' },
     readingValue: 800,
     consumption: 80,
     readingDate: '2025-01-15',
-    tariffId: 8,
-    tariffName: 'Ніч',
+    tariff: { id: 8, name: 'Ніч' },
   }),
   createMockReading({
     id: 2,
-    meterId: 101,
+    meter: { id: 101, serialNumber: 'GS-88342' },
     readingValue: 350,
     consumption: 25,
     readingDate: '2025-01-15',
-    tariffId: 2,
-    tariffName: 'Газ',
+    tariff: { id: 2, name: 'Газ' },
   }),
 ]
 

@@ -38,7 +38,7 @@ function getDefaultValues(meter: Meter): EditMeterFormValues {
     manufacturer: meter.modelName ?? '',
     installationDate: meter.installationDate.split('T')[0],
     initialReading: meter.initialReading != null ? String(meter.initialReading) : '',
-    providerId: meter.serviceProviderId ? String(meter.serviceProviderId) : '',
+    providerId: meter.serviceProvider?.id ? String(meter.serviceProvider.id) : '',
     notes: meter.notes ?? '',
     isActive: meter.isActive,
   }
@@ -54,7 +54,7 @@ function toUpdateRequest(values: EditMeterFormValues, meter: Meter): UpdateMeter
     serviceProviderId: values.providerId ? Number(values.providerId) : undefined,
     notes: values.notes || undefined,
     isActive: values.isActive,
-    utilityTypeId: meter.utilityTypeId,
+    utilityTypeId: meter.utilityType.id,
     name: meter.name,
   }
 }
@@ -69,7 +69,7 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
   const { updateMeter, isLoading: isUpdating, error: updateError } = useUpdateMeter()
   const { providers: addressProviders, isLoading: providersLoading } = useServiceProvidersByAddress(meter.addressId)
 
-  const meterType = fromUtilityTypeId(meter.utilityTypeId)
+  const meterType = fromUtilityTypeId(meter.utilityType.id)
   const meterTypeLabel = METER_TYPE_OPTIONS.find((o) => o.value === meterType)?.title ?? meterType
   const readingUnit = meterType in METER_TYPE_UNITS ? METER_TYPE_UNITS[meterType] : 'од.'
 
@@ -89,17 +89,17 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
     if (!addressProviders.length) return []
     const targetUtilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[meterType]
     return addressProviders.filter((provider) =>
-      provider.tariffs.some((tariff) => tariff.utilityTypeId === targetUtilityTypeId),
+      provider.tariffs.some((tariff) => tariff.utilityType.id === targetUtilityTypeId),
     )
   }, [meterType, addressProviders])
 
   useEffect(() => {
-    if (providersLoading || !meter.serviceProviderId) return
-    const exists = availableProviders.some((p) => p.id === meter.serviceProviderId)
+    if (providersLoading || !meter.serviceProvider?.id) return
+    const exists = availableProviders.some((p) => p.id === meter.serviceProvider?.id)
     if (exists) {
-      setValue('providerId', String(meter.serviceProviderId))
+      setValue('providerId', String(meter.serviceProvider.id))
     }
-  }, [providersLoading, availableProviders, meter.serviceProviderId, setValue])
+  }, [providersLoading, availableProviders, meter.serviceProvider, setValue])
 
   const selectedProvider = useMemo(() => {
     if (!providerId) return null
@@ -109,7 +109,7 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
   const providerTariffs = useMemo(() => {
     if (!selectedProvider) return []
     const targetUtilityTypeId = METER_TYPE_TO_UTILITY_TYPE_ID[meterType]
-    return selectedProvider.tariffs.filter((t) => t.utilityTypeId === targetUtilityTypeId)
+    return selectedProvider.tariffs.filter((t) => t.utilityType.id === targetUtilityTypeId)
   }, [selectedProvider, meterType])
 
   const onSubmit = handleSubmit(async (values) => {
@@ -224,9 +224,9 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
                 })}
               </Select>
               <FormMessage variant="error">{errors.providerId?.message}</FormMessage>
-              {!providersLoading && meter.serviceProviderName && !availableProviders.some((p) => p.id === meter.serviceProviderId) && (
+              {!providersLoading && meter.serviceProvider?.name && !availableProviders.some((p) => p.id === meter.serviceProvider?.id) && (
                 <FormMessage variant="default">
-                  Поточний провайдер «{meter.serviceProviderName}» більше не доступний для цієї адреси. Оберіть нового.
+                  Поточний провайдер «{meter.serviceProvider.name}» більше не доступний для цієї адреси. Оберіть нового.
                 </FormMessage>
               )}
             </div>
@@ -237,7 +237,7 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
                 {providerTariffs.map((tariff) => (
                   <p key={tariff.id} className="text-sm text-blue-700 dark:text-blue-300">
                     {tariff.name}: {formatApiTariffLabel(tariff)}
-                    {tariff.serviceFee > 0 && ` + абонплата ${tariff.serviceFee.toFixed(2)} ${tariff.currencySymbol}`}
+                    {Number(tariff.serviceFee) > 0 && ` + абонплата ${Number(tariff.serviceFee).toFixed(2)} ${tariff.currency.symbol}`}
                   </p>
                 ))}
                 <p className="text-xs text-blue-600 dark:text-blue-400">Джерело: {selectedProvider.name}</p>

@@ -31,13 +31,13 @@ interface EditAddressFormValues {
 
 function getDefaultValues(address: Address): EditAddressFormValues {
   return {
-    addressTypeId: String(address.addressTypeId),
-    regionId: String(address.regionId),
+    addressTypeId: String(address.addressType.id),
+    regionId: String(address.region.id),
     city: address.city,
     street: address.street,
     buildingNumber: address.buildingNumber,
-    apartmentNumber: address.apartmentNumber,
-    zipCode: address.zipCode,
+    apartmentNumber: address.apartmentNumber ?? '',
+    zipCode: address.zipCode ?? '',
     notes: address.notes ?? '',
     isPrimary: address.isPrimary,
   }

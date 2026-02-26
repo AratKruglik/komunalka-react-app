@@ -1,2605 +1,1106 @@
-### Komunalka API HTTP Client
-# Base URLs for different environments (uncomment the one you need)
-#@KomunalkaAPI_HostAddress = http://localhost:8080/api/v1
-# @KomunalkaAPI_HostAddress = http://localhost:5242/api/v1
- @KomunalkaAPI_HostAddress = https://localhost:7095/api/v1
-
-# JWT Token variables (update these after successful login)
-# Example tokens from test user:
-@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwianRpIjoiNDA2NjM3NTUtOTA2OS00OGZjLWE4ZDUtMWQzYWI3NjdkNzhmIiwidW5pcXVlX25hbWUiOiJ0ZXN0dXNlciIsInJvbGUiOiJVc2VyIiwibmJmIjoxNzY0OTMyODc2LCJleHAiOjE3NjQ5MzQ2NzYsImlhdCI6MTc2NDkzMjg3NiwiaXNzIjoia29tdW5hbGthLWFwaSIsImF1ZCI6ImtvbXVuYWxrYS1jbGllbnQifQ.1pGnQzsQycW21X4wczQqYX8yU-7rujI91Y9pfXW3gv4
-@refresh_token = c0YCDucdInwaIXd9V4fHnztbrgblXUFGAfOR4Qi5ssI=
+### Komunalka Laravel API — HTTP Client
+# Base URL: http-client.env.json
+# Tokens: http-client.private.env.json (gitignored)
+# Login/refresh requests auto-save tokens via response handlers
 
 ### ============================================================================
 ### Authentication Endpoints
 ### ============================================================================
 
-###
-# Register new user
-POST {{KomunalkaAPI_HostAddress}}/auth/register
+### Register new user (without phone number)
+# Response 200 OK:
+# {
+#   "data": {
+#     "user": {
+#       "id": 1,
+#       "username": "testuser",
+#       "first_name": "Олена",
+#       "last_name": "Петренко",
+#       "email": "test (at) example.com",
+#       "phone_number": null,
+#       "role": "user",
+#       "auth_provider": null,
+#       "email_verified": false,
+#       "last_login_at": null,
+#       "addresses": [],
+#       "avatar_optimized_url": null,
+#       "avatar_thumbnail_url": null,
+#       "created_at": "2025-01-10T10:00:00.000000Z",
+#       "updated_at": "2025-01-10T10:00:00.000000Z"
+#     },
+#     "access_token": "eyJ...",
+#     "refresh_token": "abc123...",
+#     "token_type": "bearer",
+#     "expires_in": 3600
+#   }
+# }
+#
+# Response 422 Unprocessable Entity:
+# {
+#   "message": "Data validation error",
+#   "errors": { "email": ["The email has already been taken."] }
+# }
+POST {{host}}/auth/register
 Content-Type: application/json
+Accept: application/json
 
 {
   "username": "testuser",
-  "firstName": "Олена",
-  "lastName": "Петренко",
-  "phoneNumber": "+380501234567",
+  "first_name": "Олена",
+  "last_name": "Петренко",
   "email": "test@example.com",
-  "password": "Password123",
-  "confirmPassword": "Password123"
+  "password": "Password123!",
+  "password_confirmation": "Password123!"
 }
 
-# Response 201 Created:
+### Register new user (with phone number)
+POST {{host}}/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "petrenko",
+  "first_name": "Олена",
+  "last_name": "Петренко",
+  "phone_number": "+380501234567",
+  "email": "olena@example.com",
+  "password": "Password123!",
+  "password_confirmation": "Password123!"
+}
+
+### Login user — saves auth_token and refresh_token
+# Response 200 OK:
 # {
-#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#   "refreshToken": "c0YCDucdInwaIXd9V4fHnztbrgblXUFGAfOR4Qi5ssI=",
-#   "expiration": "2025-02-05T12:30:00Z",
-#   "userId": 1,
-#   "username": "testuser",
-#   "email": "test@example.com",
-#   "role": "User",
-#   "authProvider": "Local",
-#   "emailVerified": false
-# }
-#
-# Response 400 Bad Request (validation error):
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "One or more validation errors occurred.",
-#   "status": 400,
-#   "errors": {
-#     "Email": ["Email is already taken"],
-#     "Password": ["Password must be at least 8 characters"]
+#   "data": {
+#     "user": { "id": 1, "username": "testuser", ... },
+#     "access_token": "eyJ...",
+#     "refresh_token": "abc123...",
+#     "token_type": "bearer",
+#     "expires_in": 3600
 #   }
 # }
-
-###
-# Login user
-POST {{KomunalkaAPI_HostAddress}}/auth/login
+#
+# Response 401 Unauthorized:
+# { "message": "Invalid email or password" }
+POST {{host}}/auth/login
 Content-Type: application/json
+Accept: application/json
 
 {
   "email": "test@example.com",
-  "password": "Password123"
+  "password": "Password123!"
 }
 
-# Response 200 OK:
-# {
-#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#   "refreshToken": "c0YCDucdInwaIXd9V4fHnztbrgblXUFGAfOR4Qi5ssI=",
-#   "expiration": "2025-02-05T12:30:00Z",
-#   "userId": 1,
-#   "username": "testuser",
-#   "email": "test@example.com",
-#   "role": "User",
-#   "authProvider": "Local",
-#   "emailVerified": true
-# }
-#
-# Response 401 Unauthorized:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-#   "title": "Unauthorized",
-#   "status": 401,
-#   "detail": "Invalid email or password"
-# }
+> {%
+    client.global.set("auth_token", response.body.data.access_token);
+    client.global.set("refresh_token", response.body.data.refresh_token);
+%}
 
-###
-# Refresh JWT Token
-POST {{KomunalkaAPI_HostAddress}}/auth/refresh-token
+### Login as admin — saves admin_token
+POST {{host}}/auth/login
 Content-Type: application/json
+Accept: application/json
 
 {
-  "refreshToken": "{{refresh_token}}"
+  "email": "admin@komunalka.com",
+  "password": "Password123!"
 }
 
+> {%
+    client.global.set("admin_token", response.body.data.access_token);
+    client.global.set("refresh_token", response.body.data.refresh_token);
+%}
+
+### Refresh JWT token — saves new tokens
 # Response 200 OK:
 # {
-#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#   "refreshToken": "newRefreshToken123=",
-#   "expiration": "2025-02-05T13:00:00Z",
-#   "userId": 1,
-#   "username": "testuser",
-#   "email": "test@example.com",
-#   "role": "User",
-#   "authProvider": "Local",
-#   "emailVerified": true
+#   "data": {
+#     "user": { ... },
+#     "access_token": "eyJ...",
+#     "refresh_token": "newToken...",
+#     "token_type": "bearer",
+#     "expires_in": 3600
+#   }
 # }
 #
 # Response 401 Unauthorized:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-#   "title": "Unauthorized",
-#   "status": 401,
-#   "detail": "Invalid or expired refresh token"
-# }
-
-###
-# Revoke refresh token (requires authentication)
-POST {{KomunalkaAPI_HostAddress}}/auth/revoke-token
+# { "message": "Invalid or expired refresh token" }
+POST {{host}}/auth/refresh-token
 Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
+Accept: application/json
 
 {
-  "refreshToken": "{{refresh_token}}"
+  "refresh_token": "{{refresh_token}}"
 }
 
+> {%
+    client.global.set("auth_token", response.body.data.access_token);
+    client.global.set("refresh_token", response.body.data.refresh_token);
+%}
+
+### Validate JWT token
 # Response 200 OK:
 # {
-#   "message": "Token revoked successfully"
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "Token not found or already revoked"
-# }
-
-###
-# Validate JWT token
-GET {{KomunalkaAPI_HostAddress}}/auth/validate-token
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "valid": true,
-#   "userId": 1,
-#   "email": "test@example.com",
-#   "username": "testuser",
-#   "role": "User",
-#   "expiresAt": "2025-02-05T12:30:00Z"
+#   "data": {
+#     "id": 1,
+#     "username": "testuser",
+#     "first_name": "Олена",
+#     "last_name": "Петренко",
+#     "email": "test (at) example.com",
+#     "phone_number": "+380501234567",
+#     "role": "user",
+#     "auth_provider": null,
+#     "email_verified": true,
+#     "last_login_at": "2025-01-15T10:30:00.000000Z",
+#     "addresses": [],
+#     "avatar_optimized_url": null,
+#     "avatar_thumbnail_url": null,
+#     "created_at": "2025-01-10T10:00:00.000000Z",
+#     "updated_at": "2025-01-15T10:30:00.000000Z"
+#   }
 # }
 #
 # Response 401 Unauthorized:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-#   "title": "Unauthorized",
-#   "status": 401,
-#   "detail": "Invalid or expired token"
-# }
+# { "message": "Unauthenticated." }
+GET {{host}}/auth/validate-token
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Revoke refresh token
+# Response 200 OK:
+# { "message": "Token revoked successfully." }
+POST {{host}}/auth/revoke-token
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "refresh_token": "{{refresh_token}}"
+}
 
 ### ============================================================================
 ### OAuth Authentication Endpoints
 ### ============================================================================
 
-###
-# Get Google OAuth authorization URL
-GET {{KomunalkaAPI_HostAddress}}/auth/oauth/google/authorize
-
+### Get Google OAuth authorization URL
 # Response 200 OK:
 # {
-#   "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&redirect_uri=...&response_type=code&scope=openid%20email%20profile&state=random_state_value"
+#   "data": {
+#     "authorization_url": "https://accounts.google.com/o/oauth2/v2/auth?client_id=...&redirect_uri=...&response_type=code&scope=openid%20email%20profile&state=..."
+#   }
 # }
+GET {{host}}/auth/oauth/google/authorize
+Accept: application/json
 
-###
-# Get GitHub OAuth authorization URL
-GET {{KomunalkaAPI_HostAddress}}/auth/oauth/github/authorize
-
+### Get GitHub OAuth authorization URL
 # Response 200 OK:
 # {
-#   "authorizationUrl": "https://github.com/login/oauth/authorize?client_id=...&redirect_uri=...&scope=user:email&state=random_state_value"
+#   "data": {
+#     "authorization_url": "https://github.com/login/oauth/authorize?client_id=...&redirect_uri=...&scope=user:email&state=..."
+#   }
 # }
+GET {{host}}/auth/oauth/github/authorize
+Accept: application/json
 
-###
-# OAuth login with ID token (Google) or access token (GitHub)
-# Provider: "Google" or "GitHub"
-POST {{KomunalkaAPI_HostAddress}}/auth/oauth/login
-Content-Type: application/json
-
-{
-  "provider": "Google",
-  "token": "your-id-token-or-access-token"
-}
-
-# Response 200 OK (existing user):
+### OAuth login with token (Google ID token or GitHub access token)
+# Response 200 OK:
 # {
-#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#   "refreshToken": "oauthRefreshToken123=",
-#   "expiration": "2025-02-05T12:30:00Z",
-#   "userId": 1,
-#   "username": "googleuser",
-#   "email": "user@gmail.com",
-#   "role": "User",
-#   "authProvider": "Google",
-#   "emailVerified": true
-# }
-#
-# Response 201 Created (new user auto-created):
-# {
-#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#   "refreshToken": "oauthRefreshToken123=",
-#   "expiration": "2025-02-05T12:30:00Z",
-#   "userId": 5,
-#   "username": "john_doe_google",
-#   "email": "john@gmail.com",
-#   "role": "User",
-#   "authProvider": "Google",
-#   "emailVerified": true
+#   "data": {
+#     "user": { "id": 5, "username": "john_doe_google", "auth_provider": "google", ... },
+#     "access_token": "eyJ...",
+#     "refresh_token": "oauthRefreshToken...",
+#     "token_type": "bearer",
+#     "expires_in": 3600
+#   }
 # }
 #
 # Response 401 Unauthorized:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-#   "title": "Unauthorized",
-#   "status": 401,
-#   "detail": "Invalid OAuth token"
-# }
-
-###
-# OAuth callback (authorization code flow)
-POST {{KomunalkaAPI_HostAddress}}/auth/oauth/callback
+# { "message": "Invalid OAuth token" }
+POST {{host}}/auth/oauth/login
 Content-Type: application/json
+Accept: application/json
 
 {
-  "provider": "GitHub",
+  "provider": "google",
+  "token": "your-id-token-or-access-token"
+}
+
+### OAuth callback (authorization code flow)
+# Response 200 OK:
+# {
+#   "data": {
+#     "user": { "id": 2, "username": "githubuser", "auth_provider": "github", ... },
+#     "access_token": "eyJ...",
+#     "refresh_token": "githubRefreshToken...",
+#     "token_type": "bearer",
+#     "expires_in": 3600
+#   }
+# }
+#
+# Response 400 Bad Request:
+# { "message": "Invalid authorization code or state mismatch" }
+POST {{host}}/auth/oauth/callback
+Content-Type: application/json
+Accept: application/json
+
+{
+  "provider": "github",
   "code": "authorization-code-from-provider",
   "state": "state-parameter"
 }
 
+### Link OAuth provider to existing account
 # Response 200 OK:
-# {
-#   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-#   "refreshToken": "githubRefreshToken123=",
-#   "expiration": "2025-02-05T12:30:00Z",
-#   "userId": 2,
-#   "username": "githubuser",
-#   "email": "user@github.com",
-#   "role": "User",
-#   "authProvider": "GitHub",
-#   "emailVerified": true
-# }
+# { "message": "OAuth provider linked successfully." }
 #
 # Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "Invalid authorization code or state mismatch"
-# }
-
-###
-# Link OAuth provider to existing account (requires authentication)
-POST {{KomunalkaAPI_HostAddress}}/auth/oauth/link
+# { "message": "This account is already linked to another user" }
+POST {{host}}/auth/oauth/link
 Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "provider": "GitHub",
+  "provider": "github",
   "token": "your-access-token"
 }
 
+### Unlink OAuth provider from account
 # Response 200 OK:
-# {
-#   "message": "GitHub account linked successfully",
-#   "linkedProviders": ["Local", "GitHub"]
-# }
+# { "message": "OAuth provider unlinked successfully." }
 #
 # Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "This GitHub account is already linked to another user"
-# }
+# { "message": "Cannot unlink the only authentication method" }
+DELETE {{host}}/auth/oauth/unlink/github
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
-###
-# Unlink OAuth provider from account (requires authentication)
-DELETE {{KomunalkaAPI_HostAddress}}/auth/oauth/unlink/GitHub
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "message": "GitHub account unlinked successfully",
-#   "linkedProviders": ["Local"]
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "Cannot unlink the only authentication method"
-# }
+{
+  "password": "Password123!"
+}
 
 ### ============================================================================
 ### User Management Endpoints
 ### ============================================================================
 
-###
-# Get all users (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/users
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# [
-#   {
-#     "id": 1,
-#     "username": "testuser",
-#     "firstName": "Олена",
-#     "lastName": "Петренко",
-#     "phoneNumber": "+380501234567",
-#     "email": "test@example.com",
-#     "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
-#     "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
-#     "addresses": [
-#       {
-#         "id": 1,
-#         "userId": 1,
-#         "regionId": 9,
-#         "city": "Київ",
-#         "street": "вул. Хрещатик",
-#         "buildingNumber": "1",
-#         "apartmentNumber": "101",
-#         "zipCode": "01001",
-#         "notes": "Центр міста",
-#         "isPrimary": true,
-#         "addressTypeId": 1,
-#         "region": {
-#           "id": 9,
-#           "name": "Київська область",
-#           "createdAt": "2025-01-01T00:00:00Z",
-#           "updatedAt": "2025-01-01T00:00:00Z"
-#         },
-#         "addressType": {
-#           "id": 1,
-#           "name": "Квартира",
-#           "description": "Багатоквартирний будинок у місті",
-#           "icon": "apartment",
-#           "createdAt": "2025-01-01T00:00:00Z",
-#           "updatedAt": "2025-01-01T00:00:00Z"
-#         },
-#         "createdAt": "2025-01-15T10:30:00Z",
-#         "updatedAt": "2025-01-15T10:30:00Z"
-#       }
-#     ],
-#     "createdAt": "2025-01-10T10:00:00Z",
-#     "updatedAt": "2025-01-15T10:30:00Z"
-#   }
-# ]
-
-###
-# Get user by ID (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/users/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
+### Get all users (admin)
 # Response 200 OK:
 # {
-#   "id": 1,
-#   "username": "testuser",
-#   "firstName": "Олена",
-#   "lastName": "Петренко",
-#   "phoneNumber": "+380501234567",
-#   "email": "test@example.com",
-#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
-#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
-#   "addresses": [
+#   "data": [
 #     {
 #       "id": 1,
-#       "userId": 1,
-#       "regionId": 9,
-#       "city": "Київ",
-#       "street": "вул. Хрещатик",
-#       "buildingNumber": "1",
-#       "apartmentNumber": "101",
-#       "zipCode": "01001",
-#       "notes": "Центр міста",
-#       "isPrimary": true,
-#       "addressTypeId": 1,
-#       "region": {
-#         "id": 9,
-#         "name": "Київська область",
-#         "createdAt": "2025-01-01T00:00:00Z",
-#         "updatedAt": "2025-01-01T00:00:00Z"
-#       },
-#       "addressType": {
-#         "id": 1,
-#         "name": "Квартира",
-#         "description": "Багатоквартирний будинок у місті",
-#         "icon": "apartment",
-#         "createdAt": "2025-01-01T00:00:00Z",
-#         "updatedAt": "2025-01-01T00:00:00Z"
-#       },
-#       "createdAt": "2025-01-15T10:30:00Z",
-#       "updatedAt": "2025-01-15T10:30:00Z"
+#       "username": "testuser",
+#       "first_name": "Олена",
+#       "last_name": "Петренко",
+#       "email": "test (at) example.com",
+#       "phone_number": "+380501234567",
+#       "role": "user",
+#       "auth_provider": null,
+#       "email_verified": true,
+#       "last_login_at": "2025-01-15T10:30:00.000000Z",
+#       "addresses": [],
+#       "avatar_optimized_url": null,
+#       "avatar_thumbnail_url": null,
+#       "created_at": "2025-01-10T10:00:00.000000Z",
+#       "updated_at": "2025-01-15T10:30:00.000000Z"
 #     }
-#   ],
-#   "createdAt": "2025-01-10T10:00:00Z",
-#   "updatedAt": "2025-01-15T10:30:00Z"
+#   ]
 # }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "User with ID 999 not found"
-# }
+GET {{host}}/users
+Accept: application/json
+Authorization: Bearer {{admin_token}}
 
-###
-# Create new user (requires authentication)
-POST {{KomunalkaAPI_HostAddress}}/users
+### Get user by ID
+GET {{host}}/users/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Create user (admin)
+# Fields: username, first_name, last_name, phone_number?, email, password, password_confirmation, role (user|admin)
+# Response 201 Created:
+# {
+#   "data": {
+#     "id": 2,
+#     "username": "newuser",
+#     "first_name": "Іван",
+#     "last_name": "Коваленко",
+#     "email": "ivan (at) example.com",
+#     "phone_number": "+380671234567",
+#     "role": "user",
+#     ...
+#   }
+# }
+POST {{host}}/users
 Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
+Accept: application/json
+Authorization: Bearer {{admin_token}}
 
 {
   "username": "newuser",
-  "email": "newuser@example.com",
-  "password": "password123"
+  "first_name": "Іван",
+  "last_name": "Коваленко",
+  "phone_number": "+380671234567",
+  "email": "ivan@example.com",
+  "password": "Password123!",
+  "password_confirmation": "Password123!",
+  "role": "user"
 }
 
-# Response 201 Created:
-# {
-#   "id": 2,
-#   "username": "newuser",
-#   "firstName": null,
-#   "lastName": null,
-#   "phoneNumber": null,
-#   "email": "newuser@example.com",
-#   "avatarUrl": null,
-#   "avatarThumbnailUrl": null,
-#   "addresses": [],
-#   "createdAt": "2025-02-05T10:05:00Z",
-#   "updatedAt": "2025-02-05T10:05:00Z"
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "One or more validation errors occurred.",
-#   "status": 400,
-#   "errors": {
-#     "Email": ["Email is already taken"],
-#     "Username": ["Username is already taken"]
-#   }
-# }
-
-###
-# Update user without password change (requires authentication)
-PUT {{KomunalkaAPI_HostAddress}}/users/1
+### Update user profile
+PUT {{host}}/users/1
 Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "username": "updateduser",
-  "firstName": "Олена",
-  "lastName": "Іваненко",
-  "phoneNumber": "+380501234567",
-  "email": "updated@example.com"
+  "first_name": "Олена",
+  "last_name": "Петренко-Іваненко",
+  "phone_number": "+380509876543"
 }
 
-# Response 200 OK:
-# {
-#   "id": 1,
-#   "username": "updateduser",
-#   "firstName": "Олена",
-#   "lastName": "Іваненко",
-#   "phoneNumber": "+380501234567",
-#   "email": "updated@example.com",
-#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
-#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
-#   "addresses": [],
-#   "createdAt": "2025-01-10T10:00:00Z",
-#   "updatedAt": "2025-02-05T10:15:00Z"
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "User with ID 999 not found"
-# }
-
-###
-# Update user WITH password change (requires authentication)
-# Password requirements:
-# - Minimum 8 characters
-# - At least 1 uppercase letter
-# - At least 1 lowercase letter
-# - At least 1 digit
-PUT {{KomunalkaAPI_HostAddress}}/users/1
+### Update user password
+PUT {{host}}/users/1
 Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "username": "updateduser",
-  "firstName": "Олена",
-  "lastName": "Петренко",
-  "phoneNumber": "+380501234567",
-  "email": "updated@example.com",
-  "currentPassword": "Password123",
-  "newPassword": "NewPassword456",
-  "confirmNewPassword": "NewPassword456"
+  "current_password": "Password123!",
+  "new_password": "NewPassword456!",
+  "new_password_confirmation": "NewPassword456!"
 }
 
+### Delete user (admin)
 # Response 200 OK:
-# {
-#   "id": 1,
-#   "username": "updateduser",
-#   "firstName": "Олена",
-#   "lastName": "Петренко",
-#   "phoneNumber": "+380501234567",
-#   "email": "updated@example.com",
-#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
-#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
-#   "addresses": [],
-#   "createdAt": "2025-01-10T10:00:00Z",
-#   "updatedAt": "2025-02-05T10:20:00Z"
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "Current password is incorrect"
-# }
-
-###
-# Update user WITH avatar upload (requires authentication)
-# Allowed image types: JPG, JPEG, PNG, GIF, HEIC; max size 2 MB
-# Replace ./path/to/avatar.jpg with an existing small test image on your machine
-PUT {{KomunalkaAPI_HostAddress}}/users/1
-Authorization: Bearer {{jwt_token}}
-Content-Type: multipart/form-data; boundary=AvatarBoundary
-
---AvatarBoundary
-Content-Disposition: form-data; name="username"
-
-updateduser
---AvatarBoundary
-Content-Disposition: form-data; name="firstName"
-
-Олена
---AvatarBoundary
-Content-Disposition: form-data; name="lastName"
-
-Петренко
---AvatarBoundary
-Content-Disposition: form-data; name="phoneNumber"
-
-+380501234567
---AvatarBoundary
-Content-Disposition: form-data; name="email"
-
-updated@example.com
---AvatarBoundary
-Content-Disposition: form-data; name="avatar"; filename="avatar.jpg"
-Content-Type: image/jpeg
-
-< ./path/to/avatar.jpg
---AvatarBoundary--
-
-# Response 200 OK:
-# {
-#   "id": 1,
-#   "username": "updateduser",
-#   "firstName": "Олена",
-#   "lastName": "Петренко",
-#   "phoneNumber": "+380501234567",
-#   "email": "updated@example.com",
-#   "avatarUrl": "http://localhost:8080/api/v1/users/1/avatar",
-#   "avatarThumbnailUrl": "http://localhost:8080/api/v1/users/1/avatar/thumbnail",
-#   "addresses": [],
-#   "createdAt": "2025-01-10T10:00:00Z",
-#   "updatedAt": "2025-02-05T10:25:00Z"
-# }
-#
-# Response 400 Bad Request (invalid file):
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "File size exceeds 2MB limit"
-# }
-
-###
-# Get user avatar (optimized)
-GET {{KomunalkaAPI_HostAddress}}/users/1/avatar
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK: binary JPEG stream (optimized, oriented/stripped EXIF)
-# Content-Type: image/jpeg
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Avatar not found for user 1"
-# }
-
-###
-# Get user avatar (thumbnail)
-GET {{KomunalkaAPI_HostAddress}}/users/1/avatar/thumbnail
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK: binary JPEG thumbnail stream (150x150)
-# Content-Type: image/jpeg
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Avatar not found for user 1"
-# }
-
-###
-# Delete user (requires authentication)
-DELETE {{KomunalkaAPI_HostAddress}}/users/1
-Authorization: Bearer {{jwt_token}}
-
-# Response 204 No Content
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "User with ID 1 not found"
-# }
-
-### ============================================================================
-### Address Management Endpoints
-### ============================================================================
-
-###
-# Get all addresses with pagination (requires authentication)
-# Returns only addresses associated with the current user
-GET {{KomunalkaAPI_HostAddress}}/address?page=1&perPage=10
+# { "message": "User deleted successfully." }
+DELETE {{host}}/users/1
 Accept: application/json
-Authorization: Bearer {{jwt_token}}
+Authorization: Bearer {{admin_token}}
 
-# Response 200 OK (Laravel-compatible pagination format):
-# {
-#   "data": [
-#     {
-#       "id": 1,
-#       "userId": 1,
-#       "regionId": 9,
-#       "city": "Київ",
-#       "street": "вул. Хрещатик",
-#       "buildingNumber": "1",
-#       "apartmentNumber": "101",
-#       "zipCode": "01001",
-#       "notes": "Центр міста",
-#       "isPrimary": true,
-#       "addressTypeId": 1,
-#       "region": {
-#         "id": 9,
-#         "name": "Київська область",
-#         "createdAt": "2025-01-01T00:00:00Z",
-#         "updatedAt": "2025-01-01T00:00:00Z"
-#       },
-#       "addressType": {
-#         "id": 1,
-#         "name": "Квартира",
-#         "description": "Багатоквартирний будинок у місті",
-#         "icon": "apartment",
-#         "createdAt": "2025-01-01T00:00:00Z",
-#         "updatedAt": "2025-01-01T00:00:00Z"
-#       },
-#       "createdAt": "2025-01-15T10:30:00Z",
-#       "updatedAt": "2025-01-15T10:30:00Z"
-#     }
-#   ],
-#   "links": {
-#     "first": "/api/v1/address?page=1&perPage=10",
-#     "last": "/api/v1/address?page=1&perPage=10",
-#     "prev": null,
-#     "next": null
-#   },
-#   "meta": {
-#     "current_page": 1,
-#     "from": 1,
-#     "last_page": 1,
-#     "per_page": 10,
-#     "to": 1,
-#     "total": 1
-#   }
-# }
+### Get user avatar (no auth required)
+# Response 200 OK: Binary image data
+# Response 404 Not Found: No avatar uploaded
+GET {{host}}/users/1/avatar
+Accept: image/*
 
-###
-# Get address by ID (requires authentication)
-# Returns address only if current user has access to it
-GET {{KomunalkaAPI_HostAddress}}/address/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "id": 1,
-#   "userId": 1,
-#   "regionId": 9,
-#   "city": "Київ",
-#   "street": "вул. Хрещатик",
-#   "buildingNumber": "1",
-#   "apartmentNumber": "101",
-#   "zipCode": "01001",
-#   "notes": "Центр міста",
-#   "isPrimary": true,
-#   "addressTypeId": 1,
-#   "region": {
-#     "id": 9,
-#     "name": "Київська область",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   "addressType": {
-#     "id": 1,
-#     "name": "Квартира",
-#     "description": "Багатоквартирний будинок у місті",
-#     "icon": "apartment",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   "createdAt": "2025-01-15T10:30:00Z",
-#   "updatedAt": "2025-01-15T10:30:00Z"
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Address with ID 999 not found or you don't have access"
-# }
-
-###
-# Create new address (requires authentication)
-# If isPrimary is true, all other addresses for this user will be marked as non-primary
-# addressTypeId: 1 = Квартира, 2 = Приватний будинок, 3 = Офіс
-POST {{KomunalkaAPI_HostAddress}}/address
-Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
-
-{
-  "regionId": 9,
-  "city": "Київ",
-  "street": "вул. Хрещатик",
-  "buildingNumber": "1",
-  "apartmentNumber": "101",
-  "zipCode": "01001",
-  "notes": "Центр міста",
-  "isPrimary": true,
-  "addressTypeId": 1
-}
-
-# Response 201 Created:
-# {
-#   "id": 1,
-#   "userId": 1,
-#   "regionId": 9,
-#   "city": "Київ",
-#   "street": "вул. Хрещатик",
-#   "buildingNumber": "1",
-#   "apartmentNumber": "101",
-#   "zipCode": "01001",
-#   "notes": "Центр міста",
-#   "isPrimary": true,
-#   "addressTypeId": 1,
-#   "region": {
-#     "id": 9,
-#     "name": "Київська область",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   "addressType": {
-#     "id": 1,
-#     "name": "Квартира",
-#     "description": "Багатоквартирний будинок у місті",
-#     "icon": "apartment",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   "createdAt": "2025-02-05T10:30:00Z",
-#   "updatedAt": "2025-02-05T10:30:00Z"
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "One or more validation errors occurred.",
-#   "status": 400,
-#   "errors": {
-#     "City": ["City is required"],
-#     "RegionId": ["Invalid region ID"]
-#   }
-# }
-
-###
-# Update address (requires authentication)
-# If isPrimary is changed to true, all other addresses for this user will be marked as non-primary
-# Only updates the address if current user has access to it
-# addressTypeId: 1 = Квартира, 2 = Приватний будинок, 3 = Офіс
-PUT {{KomunalkaAPI_HostAddress}}/address/1
-Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
-
-{
-  "regionId": 9,
-  "zipCode": "01001",
-  "city": "Київ",
-  "street": "вул. Хрещатик",
-  "buildingNumber": "1",
-  "apartmentNumber": "101",
-  "notes": "Оновлені примітки",
-  "isPrimary": true,
-  "addressTypeId": 1
-}
-
-# Response 200 OK:
-# {
-#   "id": 1,
-#   "userId": 1,
-#   "regionId": 9,
-#   "city": "Київ",
-#   "street": "вул. Хрещатик",
-#   "buildingNumber": "1",
-#   "apartmentNumber": "101",
-#   "zipCode": "01001",
-#   "notes": "Оновлені примітки",
-#   "isPrimary": true,
-#   "addressTypeId": 1,
-#   "region": {
-#     "id": 9,
-#     "name": "Київська область",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   "addressType": {
-#     "id": 1,
-#     "name": "Квартира",
-#     "description": "Багатоквартирний будинок у місті",
-#     "icon": "apartment",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   "createdAt": "2025-01-15T10:30:00Z",
-#   "updatedAt": "2025-02-05T10:35:00Z"
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Address with ID 999 not found or you don't have access"
-# }
-
-###
-# Delete address (requires authentication)
-# Removes the link between user and address
-# If this was the last user linked to this address, the address is soft-deleted
-DELETE {{KomunalkaAPI_HostAddress}}/address/1
-Authorization: Bearer {{jwt_token}}
-
-# Response 204 No Content
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Address with ID 1 not found or you don't have access"
-# }
+### Get user avatar thumbnail (no auth required)
+GET {{host}}/users/1/avatar/thumbnail
+Accept: image/*
 
 ### ============================================================================
-### Region Management Endpoints
+### Shared / Reference Data Endpoints
 ### ============================================================================
 
-###
-# Get all regions (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/region
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# [
-#   {
-#     "id": 1,
-#     "name": "Вінницька область",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   {
-#     "id": 2,
-#     "name": "Волинська область",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   {
-#     "id": 9,
-#     "name": "Київська область",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   }
-#   // ... 26 regions total
-# ]
-
-###
-# Get region by ID (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/region/9
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "id": 9,
-#   "name": "Київська область",
-#   "createdAt": "2025-01-01T00:00:00Z",
-#   "updatedAt": "2025-01-01T00:00:00Z"
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Region with ID 999 not found"
-# }
-
-### ============================================================================
-### Address Type Management Endpoints
-### ============================================================================
-
-###
-# Get all address types (requires authentication)
-# Available types: Квартира (1), Приватний будинок (2), Офіс (3)
-GET {{KomunalkaAPI_HostAddress}}/addresstype
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# [
-#   {
-#     "id": 1,
-#     "name": "Квартира",
-#     "description": "Багатоквартирний будинок у місті",
-#     "icon": "apartment",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   {
-#     "id": 2,
-#     "name": "Приватний будинок",
-#     "description": "Окрема садиба або дача",
-#     "icon": "house",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   {
-#     "id": 3,
-#     "name": "Офіс",
-#     "description": "Комерційне або офісне приміщення",
-#     "icon": "office",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   }
-# ]
-
-###
-# Get address type by ID (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/addresstype/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "id": 1,
-#   "name": "Квартира",
-#   "description": "Багатоквартирний будинок у місті",
-#   "icon": "apartment",
-#   "createdAt": "2025-01-01T00:00:00Z",
-#   "updatedAt": "2025-01-01T00:00:00Z"
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "AddressType with ID 999 not found"
-# }
-
-### ============================================================================
-### Meter Reading Management Endpoints (Legacy - ServiceCounterValue)
-### ============================================================================
-
-###
-# Create meter reading without image (requires authentication)
-POST {{KomunalkaAPI_HostAddress}}/meterreading
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-Authorization: Bearer {{jwt_token}}
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="ServiceCounterId"
-
-1
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="Value"
-
-123.45
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-# Response 201 Created:
-# {
-#   "data": {
-#     "id": 1,
-#     "serviceCounterId": 1,
-#     "value": 123.45,
-#     "createdAt": "2025-02-05T10:30:00Z",
-#     "updatedAt": "2025-02-05T10:30:00Z",
-#     "images": []
-#   }
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "One or more validation errors occurred.",
-#   "status": 400,
-#   "errors": {
-#     "ServiceCounterId": ["ServiceCounterId is required"],
-#     "Value": ["Value must be greater than or equal to 0"]
-#   }
-# }
-
-###
-# Create meter reading with image (requires authentication)
-# Note: Replace "path/to/meter-photo.jpg" with actual image path
-POST {{KomunalkaAPI_HostAddress}}/meterreading
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-Authorization: Bearer {{jwt_token}}
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="ServiceCounterId"
-
-1
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="Value"
-
-150.75
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="image"; filename="meter-photo.jpg"
-Content-Type: image/jpeg
-
-< ./path/to/meter-photo.jpg
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-# Response 201 Created:
-# {
-#   "data": {
-#     "id": 2,
-#     "serviceCounterId": 1,
-#     "value": 150.75,
-#     "createdAt": "2025-02-05T10:35:00Z",
-#     "updatedAt": "2025-02-05T10:35:00Z",
-#     "images": [
-#       {
-#         "id": 1,
-#         "serviceCounterValueId": 2,
-#         "optimizedUrl": "http://localhost:8080/api/v1/meterreading/images/1/optimized",
-#         "thumbnailUrl": "http://localhost:8080/api/v1/meterreading/images/1/thumbnail",
-#         "optimizedSizeInBytes": 204800,
-#         "thumbnailSizeInBytes": 51200,
-#         "width": 1920,
-#         "height": 1080,
-#         "mimeType": "image/jpeg",
-#         "isProcessed": true,
-#         "createdAt": "2025-02-05T10:35:00Z"
-#       }
-#     ]
-#   }
-# }
-
-###
-# Get meter reading by ID with images (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meterreading/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "serviceCounterId": 1,
-#     "value": 123.45,
-#     "createdAt": "2025-02-05T10:30:00Z",
-#     "updatedAt": "2025-02-05T10:30:00Z",
-#     "images": [
-#       {
-#         "id": 1,
-#         "serviceCounterValueId": 1,
-#         "optimizedUrl": "http://localhost:8080/api/v1/meterreading/images/1/optimized",
-#         "thumbnailUrl": "http://localhost:8080/api/v1/meterreading/images/1/thumbnail",
-#         "optimizedSizeInBytes": 204800,
-#         "thumbnailSizeInBytes": 51200,
-#         "width": 1920,
-#         "height": 1080,
-#         "mimeType": "image/jpeg",
-#         "isProcessed": true,
-#         "createdAt": "2025-02-05T10:30:00Z"
-#       }
-#     ]
-#   }
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Meter reading with ID 999 not found"
-# }
-
-###
-# Get optimized image (public access)
-GET {{KomunalkaAPI_HostAddress}}/meterreading/images/1/optimized
-
-# Response 200 OK: binary JPEG stream (optimized, oriented/stripped EXIF)
-# Content-Type: image/jpeg
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Image with ID 1 not found"
-# }
-
-###
-# Get thumbnail image (public access)
-GET {{KomunalkaAPI_HostAddress}}/meterreading/images/1/thumbnail
-
-# Response 200 OK: binary JPEG thumbnail stream (150x150)
-# Content-Type: image/jpeg
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Image with ID 1 not found"
-# }
-
-###
-# Delete meter reading with images (requires authentication)
-DELETE {{KomunalkaAPI_HostAddress}}/meterreading/1
-Authorization: Bearer {{jwt_token}}
-
-# Response 204 No Content
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Meter reading with ID 1 not found"
-# }
-
-### ============================================================================
-### Meter (Лічильник) Management Endpoints
-### ============================================================================
-
-###
-# Get all meters (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meter
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
+### List utility types (no auth required)
 # Response 200 OK:
 # {
 #   "data": [
 #     {
 #       "id": 1,
-#       "addressId": 1,
-#       "utilityTypeId": 1,
-#       "serialNumber": "AB12345678",
-#       "name": "Лічильник електроенергії",
-#       "description": null,
-#       "modelName": "НІК 2102",
-#       "location": "На кухні біля дверей",
-#       "photoPath": "uploads/meters/meter_1_photo.jpg",
-#       "installationDate": "2024-01-15T00:00:00Z",
-#       "initialReading": 1500.50,
-#       "serviceProviderId": 1,
-#       "notes": "Перевірено та опломбовано",
-#       "isActive": true,
-#       "createdAt": "2025-01-15T10:00:00Z",
-#       "updatedAt": "2025-01-15T10:00:00Z",
-#       "utilityTypeName": "Електроенергія",
-#       "serviceProviderName": "Київенерго"
-#     },
-#     {
-#       "id": 2,
-#       "addressId": 1,
-#       "utilityTypeId": 2,
-#       "serialNumber": "GZ98765432",
-#       "name": "Лічильник газу",
-#       "description": null,
-#       "modelName": "Metrix G4",
-#       "location": "У коридорі на стіні",
-#       "photoPath": null,
-#       "installationDate": "2024-02-20T00:00:00Z",
-#       "initialReading": 250.0,
-#       "serviceProviderId": 1,
-#       "notes": "Встановлено та опломбовано газовою службою",
-#       "isActive": true,
-#       "createdAt": "2025-01-15T10:05:00Z",
-#       "updatedAt": "2025-01-15T10:05:00Z",
-#       "utilityTypeName": "Газ",
-#       "serviceProviderName": "Київгаз"
-#     }
-#   ]
-# }
-
-###
-# Get meter by ID (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meter/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "addressId": 1,
-#     "utilityTypeId": 1,
-#     "serialNumber": "AB12345678",
-#     "name": "Лічильник електроенергії",
-#     "description": null,
-#     "modelName": "НІК 2102",
-#     "location": "На кухні біля дверей",
-#     "photoPath": "uploads/meters/meter_1_photo.jpg",
-#     "installationDate": "2024-01-15T00:00:00Z",
-#     "initialReading": 1500.50,
-#     "serviceProviderId": 1,
-#     "notes": "Перевірено та опломбовано",
-#     "isActive": true,
-#     "createdAt": "2025-01-15T10:00:00Z",
-#     "updatedAt": "2025-01-15T10:00:00Z",
-#     "utilityTypeName": "Електроенергія",
-#     "serviceProviderName": "Київенерго"
-#   }
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Meter with ID 999 not found"
-# }
-
-###
-# Get meters by address ID (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meter/address/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "data": [
-#     {
-#       "id": 1,
-#       "addressId": 1,
-#       "utilityTypeId": 1,
-#       "serialNumber": "AB12345678",
-#       "name": "Лічильник електроенергії",
-#       "description": null,
-#       "modelName": "НІК 2102",
-#       "location": "На кухні біля дверей",
-#       "photoPath": "uploads/meters/meter_1_photo.jpg",
-#       "installationDate": "2024-01-15T00:00:00Z",
-#       "initialReading": 1500.50,
-#       "serviceProviderId": 1,
-#       "notes": "Перевірено та опломбовано",
-#       "isActive": true,
-#       "createdAt": "2025-01-15T10:00:00Z",
-#       "updatedAt": "2025-01-15T10:00:00Z",
-#       "utilityTypeName": "Електроенергія",
-#       "serviceProviderName": "Київенерго"
-#     }
-#   ]
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Address with ID 999 not found"
-# }
-
-###
-# Get active meters (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meter/active
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "data": [
-#     {
-#       "id": 1,
-#       "addressId": 1,
-#       "utilityTypeId": 1,
-#       "serialNumber": "AB12345678",
-#       "name": "Лічильник електроенергії",
-#       "description": null,
-#       "modelName": "НІК 2102",
-#       "location": "На кухні біля дверей",
-#       "photoPath": "uploads/meters/meter_1_photo.jpg",
-#       "installationDate": "2024-01-15T00:00:00Z",
-#       "initialReading": 1500.50,
-#       "serviceProviderId": 1,
-#       "notes": "Перевірено та опломбовано",
-#       "isActive": true,
-#       "createdAt": "2025-01-15T10:00:00Z",
-#       "updatedAt": "2025-01-15T10:00:00Z",
-#       "utilityTypeName": "Електроенергія",
-#       "serviceProviderName": "Київенерго"
-#     }
-#   ]
-# }
-
-###
-# Create new meter (requires authentication)
-# utilityTypeId: 1 = Електроенергія, 2 = Газ, 3 = Холодна вода, 4 = Гаряча вода, 5 = Опалення
-# serviceProviderId: REQUIRED - ID of the service provider (must match utility type)
-POST {{KomunalkaAPI_HostAddress}}/meter
-Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
-
-{
-  "addressId": 1,
-  "utilityTypeId": 1,
-  "name": "Лічильник електроенергії",
-  "serialNumber": "AB12345678",
-  "modelName": "НІК 2102",
-  "location": "На кухні біля дверей",
-  "installationDate": "2024-01-15",
-  "initialReading": 1500.50,
-  "serviceProviderId": 1,
-  "notes": "Перевірено та опломбовано",
-  "isActive": true
-}
-
-# Response 201 Created:
-# {
-#   "data": {
-#     "id": 1,
-#     "addressId": 1,
-#     "utilityTypeId": 1,
-#     "serialNumber": "AB12345678",
-#     "name": "Лічильник електроенергії",
-#     "description": null,
-#     "modelName": "НІК 2102",
-#     "location": "На кухні біля дверей",
-#     "photoPath": null,
-#     "installationDate": "2024-01-15T00:00:00Z",
-#     "initialReading": 1500.50,
-#     "serviceProviderId": 1,
-#     "notes": "Перевірено та опломбовано",
-#     "isActive": true,
-#     "createdAt": "2025-02-05T10:00:00Z",
-#     "updatedAt": "2025-02-05T10:00:00Z",
-#     "utilityTypeName": "Електроенергія",
-#     "serviceProviderName": "Київенерго"
-#   }
-# }
-#
-# Response 400 Bad Request (validation error):
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "One or more validation errors occurred.",
-#   "status": 400,
-#   "errors": {
-#     "AddressId": ["AddressId is required"],
-#     "UtilityTypeId": ["Invalid utility type ID"],
-#     "ServiceProviderId": ["Service provider is required"]
-#   }
-# }
-#
-# Response 400 Bad Request (service provider validation):
-# {
-#   "error": "Service provider not found"
-# }
-# OR
-# {
-#   "error": "Service provider is not active"
-# }
-# OR
-# {
-#   "error": "Service provider utility type does not match meter utility type"
-# }
-
-###
-# Upload photo for meter (requires authentication)
-# Note: Replace "./path/to/meter-photo.jpg" with actual image path
-POST {{KomunalkaAPI_HostAddress}}/meter/1/photo
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-Authorization: Bearer {{jwt_token}}
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="photo"; filename="meter-photo.jpg"
-Content-Type: image/jpeg
-
-< ./path/to/meter-photo.jpg
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "addressId": 1,
-#     "utilityTypeId": 1,
-#     "serialNumber": "AB12345678",
-#     "name": "Лічильник електроенергії",
-#     "description": null,
-#     "modelName": "НІК 2102",
-#     "location": "На кухні біля дверей",
-#     "photoPath": "uploads/meters/abc123-def456.jpg",
-#     "installationDate": "2024-01-15T00:00:00Z",
-#     "initialReading": 1500.50,
-#     "serviceProviderId": 1,
-#     "notes": "Перевірено та опломбовано",
-#     "isActive": true,
-#     "createdAt": "2025-02-05T10:00:00Z",
-#     "updatedAt": "2025-02-05T10:15:00Z",
-#     "utilityTypeName": "Електроенергія",
-#     "serviceProviderName": "Київенерго"
-#   }
-# }
-#
-# Response 404 Not Found:
-# {
-#   "error": "Meter not found"
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "error": "Photo file is required"
-# }
-
-###
-# Update meter (requires authentication)
-PUT {{KomunalkaAPI_HostAddress}}/meter/1
-Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
-
-{
-  "serialNumber": "AB12345678-NEW",
-  "name": "Лічильник електроенергії (оновлено)",
-  "modelName": "НІК 2102-01",
-  "location": "На кухні біля дверей (ліва стіна)",
-  "notes": "Пройшов повірку 2024-11-25",
-  "isActive": true
-}
-
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "addressId": 1,
-#     "utilityTypeId": 1,
-#     "serialNumber": "AB12345678-NEW",
-#     "name": "Лічильник електроенергії (оновлено)",
-#     "description": null,
-#     "modelName": "НІК 2102-01",
-#     "location": "На кухні біля дверей (ліва стіна)",
-#     "photoPath": "uploads/meters/meter_1_photo.jpg",
-#     "installationDate": "2024-01-15T00:00:00Z",
-#     "initialReading": 1500.50,
-#     "serviceProviderId": 1,
-#     "notes": "Пройшов повірку 2024-11-25",
-#     "isActive": true,
-#     "createdAt": "2025-01-15T10:00:00Z",
-#     "updatedAt": "2025-02-05T10:10:00Z",
-#     "utilityTypeName": "Електроенергія",
-#     "serviceProviderName": "Київенерго"
-#   }
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Meter with ID 999 not found"
-# }
-
-###
-# Delete meter (requires authentication)
-DELETE {{KomunalkaAPI_HostAddress}}/meter/1
-Authorization: Bearer {{jwt_token}}
-
-# Response 204 No Content
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Meter with ID 1 not found"
-# }
-
-### ============================================================================
-### Batch Meter Readings Management Endpoints
-### ============================================================================
-
-###
-# Submit batch meter readings WITHOUT photos (requires authentication)
-# Automatically calculates consumption and cost based on effective tariffs
-# JSON Payload Structure:
-# {
-#   "addressId": 1,
-#   "readings": [
-#     {
-#       "meterId": 1,              // Required: ID of the meter
-#       "readingValue": 5097,      // Required: Current reading value (must be >= 0)
-#       "readingDate": "2025-11-25T00:00:00Z",  // Required: Date and time of reading
-#       "notes": "Примітка",       // Optional: Additional notes (max 1000 characters)
-#       "isEstimated": false,      // Optional: Whether reading is estimated (default: false)
-#       "tariffId": 1              // Optional: Specific tariff to use for calculation
-#     }
-#   ]
-# }
-POST {{KomunalkaAPI_HostAddress}}/meter-readings/batch
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-Authorization: Bearer {{jwt_token}}
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="AddressId"
-
-1
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="ReadingsJson"
-
-{
-  "addressId": 1,
-  "readings": [
-    {
-      "meterId": 1,
-      "readingValue": 5097,
-      "readingDate": "2025-11-25T00:00:00Z",
-      "notes": "Електроенергія (денний тариф)",
-      "isEstimated": false,
-      "tariffId": 1
-    },
-    {
-      "meterId": 2,
-      "readingValue": 606,
-      "readingDate": "2025-11-25T00:00:00Z",
-      "notes": "Газ",
-      "isEstimated": false
-    },
-    {
-      "meterId": 3,
-      "readingValue": 99,
-      "readingDate": "2025-11-25T00:00:00Z",
-      "notes": "Гаряча вода",
-      "isEstimated": false
-    }
-  ]
-}
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-# Response 201 Created:
-# {
-#   "data": {
-#     "addressId": 1,
-#     "addressDisplay": "Київ, вул. Хрещатик, 1, кв. 101",
-#     "readings": [
-#       {
-#         "id": 1,
-#         "meterId": 1,
-#         "readingValue": 5097.0,
-#       "readingDate": "2025-11-25T00:00:00Z",
-#       "previousReadingValue": 5000.0,
-#       "consumption": 97.0,
-#       "notes": "Електроенергія",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:30:00Z",
-#       "updatedAt": "2025-02-05T10:30:00Z",
-#       "meterName": "Лічильник електроенергії",
-#       "utilityTypeName": "Електроенергія",
-#       "unit": "кВт·год",
-#       "photos": []
-#     },
-#     {
-#       "id": 2,
-#       "meterId": 2,
-#       "readingValue": 606.0,
-#       "readingDate": "2025-11-25T00:00:00Z",
-#       "previousReadingValue": 600.0,
-#       "consumption": 6.0,
-#       "notes": "Газ",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:30:00Z",
-#       "updatedAt": "2025-02-05T10:30:00Z",
-#       "meterName": "Лічильник газу",
-#       "utilityTypeName": "Газ",
-#       "unit": "м³",
-#       "photos": []
-#     },
-#     {
-#       "id": 3,
-#       "meterId": 3,
-#       "readingValue": 99.0,
-#       "readingDate": "2025-11-25T00:00:00Z",
-#       "previousReadingValue": 95.0,
-#       "consumption": 4.0,
-#       "notes": "Гаряча вода",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:30:00Z",
-#       "updatedAt": "2025-02-05T10:30:00Z",
-#       "meterName": "Лічильник гарячої води",
-#       "utilityTypeName": "Гаряча вода",
-#       "unit": "м³",
-#       "photos": []
-#     }
-#   ],
-#   "calculations": [
-#     {
-#       "meterId": 1,
-#       "meterName": "Лічильник електроенергії",
-#       "utilityType": "Електроенергія",
-#       "consumption": 97.0,
-#       "unit": "кВт·год",
-#       "baseRate": 2.64,
-#       "serviceFee": 0.0,
-#       "currencyCode": "UAH",
-#       "currencySymbol": "₴",
-#       "totalCost": 256.08,
-#       "tariffIdentifier": "ELEC-2025-01",
-#       "tariffEffectiveFrom": "2025-01-01T00:00:00Z",
-#       "tariffEffectiveTo": null,
-#       "consumptionCost": 256.08,
-#       "serviceFeeCost": 0.0
-#     },
-#     {
-#       "meterId": 2,
-#       "meterName": "Лічильник газу",
-#       "utilityType": "Газ",
-#       "consumption": 6.0,
-#       "unit": "м³",
-#       "baseRate": 7.99,
-#       "serviceFee": 0.0,
-#       "currencyCode": "UAH",
-#       "currencySymbol": "₴",
-#       "totalCost": 47.94,
-#       "tariffIdentifier": "GAS-2025-01",
-#       "tariffEffectiveFrom": "2025-01-01T00:00:00Z",
-#       "tariffEffectiveTo": null,
-#       "consumptionCost": 47.94,
-#       "serviceFeeCost": 0.0
-#     },
-#     {
-#       "meterId": 3,
-#       "meterName": "Лічильник гарячої води",
-#       "utilityType": "Гаряча вода",
-#       "consumption": 4.0,
-#       "unit": "м³",
-#       "baseRate": 45.00,
-#       "serviceFee": 5.00,
-#       "currencyCode": "UAH",
-#       "currencySymbol": "₴",
-#       "totalCost": 185.00,
-#       "tariffIdentifier": "HOTWATER-2025-01",
-#       "tariffEffectiveFrom": "2025-01-01T00:00:00Z",
-#       "tariffEffectiveTo": null,
-#       "consumptionCost": 180.00,
-#       "serviceFeeCost": 5.00
-#     }
-#   ],
-#     "totalCost": 489.02,
-#     "currencyCode": "UAH",
-#     "currencySymbol": "₴",
-#     "submittedAt": "2025-02-05T10:30:00Z"
-#   }
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "Reading value 5097 is less than previous reading 5100 for meter 1"
-# }
-
-###
-# Submit batch meter readings WITH PHOTOS (requires authentication)
-# Photos are matched to meters by meterId in filename (photo_1.jpg, photo_2.jpg, etc.)
-# Note: Replace ./path/to/photo files with actual image paths
-#
-# JSON Payload Structure (same as without photos):
-# {
-#   "addressId": 1,
-#   "readings": [
-#     {
-#       "meterId": 1,              // Required: ID of the meter
-#       "readingValue": 5100,      // Required: Current reading value (must be >= 0)
-#       "readingDate": "2025-11-26T00:00:00Z",  // Required: Date and time of reading
-#       "notes": "Примітка",       // Optional: Additional notes (max 1000 characters)
-#       "isEstimated": false,      // Optional: Whether reading is estimated (default: false)
-#       "tariffId": 1              // Optional: Specific tariff to use for calculation
-#     }
-#   ]
-# }
-#
-# Photos naming convention:
-# - photo_1.jpg will be matched to meterId: 1
-# - photo_2.jpg will be matched to meterId: 2
-# - etc.
-POST {{KomunalkaAPI_HostAddress}}/meter-readings/batch
-Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-Authorization: Bearer {{jwt_token}}
-
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="AddressId"
-
-1
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="ReadingsJson"
-
-{
-  "addressId": 1,
-  "readings": [
-    {
-      "meterId": 1,
-      "readingValue": 5100,
-      "readingDate": "2025-11-26T00:00:00Z",
-      "notes": "Електроенергія з фото",
-      "isEstimated": false,
-      "tariffId": 1
-    },
-    {
-      "meterId": 2,
-      "readingValue": 610,
-      "readingDate": "2025-11-26T00:00:00Z",
-      "notes": "Газ з фото",
-      "isEstimated": false
-    }
-  ]
-}
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="Photos"; filename="photo_1.jpg"
-Content-Type: image/jpeg
-
-< ./path/to/electricity-meter-photo.jpg
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="Photos"; filename="photo_2.jpg"
-Content-Type: image/jpeg
-
-< ./path/to/gas-meter-photo.jpg
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-
-# Response 201 Created:
-# {
-#   "data": {
-#     "addressId": 1,
-#     "addressDisplay": "Київ, вул. Хрещатик, 1, кв. 101",
-#     "readings": [
-#       {
-#         "id": 4,
-#         "meterId": 1,
-#         "readingValue": 5100.0,
-#       "readingDate": "2025-11-26T00:00:00Z",
-#       "previousReadingValue": 5097.0,
-#       "consumption": 3.0,
-#       "notes": "Електроенергія з фото",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:35:00Z",
-#       "updatedAt": "2025-02-05T10:35:00Z",
-#       "meterName": "Лічильник електроенергії",
-#       "utilityTypeName": "Електроенергія",
-#       "unit": "кВт·год",
-#       "photos": [
-#         {
-#           "id": 1,
-#           "optimizedUrl": "http://localhost:8080/api/v1/meter-readings/photos/1/optimized",
-#           "thumbnailUrl": "http://localhost:8080/api/v1/meter-readings/photos/1/thumbnail",
-#           "width": 1920,
-#           "height": 1080,
-#           "isProcessed": true
-#         }
-#       ]
-#     },
-#     {
-#       "id": 5,
-#       "meterId": 2,
-#       "readingValue": 610.0,
-#       "readingDate": "2025-11-26T00:00:00Z",
-#       "previousReadingValue": 606.0,
-#       "consumption": 4.0,
-#       "notes": "Газ з фото",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:35:00Z",
-#       "updatedAt": "2025-02-05T10:35:00Z",
-#       "meterName": "Лічильник газу",
-#       "utilityTypeName": "Газ",
-#       "unit": "м³",
-#       "photos": [
-#         {
-#           "id": 2,
-#           "optimizedUrl": "http://localhost:8080/api/v1/meter-readings/photos/2/optimized",
-#           "thumbnailUrl": "http://localhost:8080/api/v1/meter-readings/photos/2/thumbnail",
-#           "width": 1920,
-#           "height": 1080,
-#           "isProcessed": true
-#         }
-#       ]
-#     }
-#   ],
-#   "calculations": [
-#     {
-#       "meterId": 1,
-#       "meterName": "Лічильник електроенергії",
-#       "utilityType": "Електроенергія",
-#       "consumption": 3.0,
-#       "unit": "кВт·год",
-#       "baseRate": 2.64,
-#       "serviceFee": 0.0,
-#       "currencyCode": "UAH",
-#       "currencySymbol": "₴",
-#       "totalCost": 7.92,
-#       "tariffIdentifier": "ELEC-2025-01",
-#       "tariffEffectiveFrom": "2025-01-01T00:00:00Z",
-#       "tariffEffectiveTo": null,
-#       "consumptionCost": 7.92,
-#       "serviceFeeCost": 0.0
-#     },
-#     {
-#       "meterId": 2,
-#       "meterName": "Лічильник газу",
-#       "utilityType": "Газ",
-#       "consumption": 4.0,
-#       "unit": "м³",
-#       "baseRate": 7.99,
-#       "serviceFee": 0.0,
-#       "currencyCode": "UAH",
-#       "currencySymbol": "₴",
-#       "totalCost": 31.96,
-#       "tariffIdentifier": "GAS-2025-01",
-#       "tariffEffectiveFrom": "2025-01-01T00:00:00Z",
-#       "tariffEffectiveTo": null,
-#       "consumptionCost": 31.96,
-#       "serviceFeeCost": 0.0
-#     }
-#   ],
-#     "totalCost": 39.88,
-#     "currencyCode": "UAH",
-#     "currencySymbol": "₴",
-#     "submittedAt": "2025-02-05T10:35:00Z"
-#   }
-# }
-
-###
-# Get meter readings by address ID (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meter-readings/address/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "data": [
-#     {
-#       "id": 1,
-#       "meterId": 1,
-#       "readingValue": 5097.0,
-#       "readingDate": "2025-11-25T00:00:00Z",
-#       "previousReadingValue": 5000.0,
-#       "consumption": 97.0,
-#       "notes": "Електроенергія",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:30:00Z",
-#       "updatedAt": "2025-02-05T10:30:00Z",
-#       "meterName": "Лічильник електроенергії",
-#       "utilityTypeName": "Електроенергія",
-#       "unit": "кВт·год",
-#       "photos": []
-#     },
-#     {
-#       "id": 2,
-#       "meterId": 2,
-#       "readingValue": 606.0,
-#       "readingDate": "2025-11-25T00:00:00Z",
-#       "previousReadingValue": 600.0,
-#       "consumption": 6.0,
-#       "notes": "Газ",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:30:00Z",
-#       "updatedAt": "2025-02-05T10:30:00Z",
-#       "meterName": "Лічильник газу",
-#       "utilityTypeName": "Газ",
-#       "unit": "м³",
-#       "photos": []
-#     }
-#   ]
-# }
-
-###
-# Get meter readings by address ID with date range (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meter-readings/address/1?from=2025-11-01T00:00:00Z&to=2025-11-30T23:59:59Z
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "data": [
-#     {
-#       "id": 1,
-#       "meterId": 1,
-#       "readingValue": 5097.0,
-#       "readingDate": "2025-11-25T00:00:00Z",
-#       "previousReadingValue": 5000.0,
-#       "consumption": 97.0,
-#       "notes": "Електроенергія",
-#       "isEstimated": false,
-#       "createdAt": "2025-02-05T10:30:00Z",
-#       "updatedAt": "2025-02-05T10:30:00Z",
-#       "meterName": "Лічильник електроенергії",
-#       "utilityTypeName": "Електроенергія",
-#       "unit": "кВт·год",
-#       "photos": []
-#     }
-#   ]
-# }
-
-###
-# Get single meter reading by ID (requires authentication)
-GET {{KomunalkaAPI_HostAddress}}/meter-readings/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "meterId": 1,
-#     "readingValue": 5097.0,
-#     "readingDate": "2025-11-25T00:00:00Z",
-#     "previousReadingValue": 5000.0,
-#     "consumption": 97.0,
-#     "notes": "Електроенергія",
-#     "isEstimated": false,
-#     "createdAt": "2025-02-05T10:30:00Z",
-#     "updatedAt": "2025-02-05T10:30:00Z",
-#     "meterName": "Лічильник електроенергії",
-#     "utilityTypeName": "Електроенергія",
-#     "unit": "кВт·год",
-#     "photos": [
-#       {
-#         "id": 1,
-#         "optimizedUrl": "http://localhost:8080/api/v1/meter-readings/photos/1/optimized",
-#         "thumbnailUrl": "http://localhost:8080/api/v1/meter-readings/photos/1/thumbnail",
-#         "width": 1920,
-#         "height": 1080,
-#         "isProcessed": true
-#       }
-#     ]
-#   }
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Meter reading with ID 999 not found"
-# }
-
-###
-# Delete meter reading (requires authentication)
-DELETE {{KomunalkaAPI_HostAddress}}/meter-readings/1
-Authorization: Bearer {{jwt_token}}
-
-# Response 204 No Content
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Meter reading with ID 1 not found"
-# }
-
-###
-# Get optimized photo for meter reading (public access)
-GET {{KomunalkaAPI_HostAddress}}/meter-readings/photos/1/optimized
-
-# Response 200 OK: binary JPEG stream (optimized, oriented/stripped EXIF)
-# Content-Type: image/jpeg
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Photo with ID 1 not found"
-# }
-
-###
-# Get thumbnail photo for meter reading (public access)
-GET {{KomunalkaAPI_HostAddress}}/meter-readings/photos/1/thumbnail
-
-# Response 200 OK: binary JPEG thumbnail stream (150x150)
-# Content-Type: image/jpeg
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Photo with ID 1 not found"
-# }
-
-### ============================================================================
-### Utility Type (Тип комунальної послуги) Endpoints
-### ============================================================================
-
-###
-# Get all active utility types (no auth required)
-GET {{KomunalkaAPI_HostAddress}}/utility-types
-Accept: application/json
-
-# Response 200 OK:
-# {
-#   "data": [
-#     {
-#       "id": 1,
-#       "slug": "electricity",
-#       "displayName": "Електроенергія",
-#       "unit": "kWh",
-#       "isActive": true
-#     },
-#     {
-#       "id": 2,
 #       "slug": "gas",
-#       "displayName": "Газопостачання",
-#       "unit": "m³",
-#       "isActive": true
+#       "display_name": "Газ",
+#       "unit": "м³",
+#       "description": "Природний газ",
+#       "is_active": true,
+#       "created_at": "2025-01-01T00:00:00.000000Z",
+#       "updated_at": "2025-01-01T00:00:00.000000Z"
+#     },
+#     {
+#       "id": 2,
+#       "slug": "electricity",
+#       "display_name": "Електроенергія",
+#       "unit": "кВт·год",
+#       "description": "Електрична енергія",
+#       "is_active": true,
+#       "created_at": "2025-01-01T00:00:00.000000Z",
+#       "updated_at": "2025-01-01T00:00:00.000000Z"
 #     }
 #   ]
 # }
-
-###
-# Get utility type by ID (no auth required)
-GET {{KomunalkaAPI_HostAddress}}/utility-types/1
+GET {{host}}/utility-types
 Accept: application/json
 
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "slug": "electricity",
-#     "displayName": "Електроенергія",
-#     "unit": "kWh",
-#     "isActive": true
-#   }
-# }
-#
-# Response 404 Not Found:
-# { "error": "Utility type not found" }
-
-### ============================================================================
-### Service Provider (Постачальник послуг) Management Endpoints
-### ============================================================================
-
-###
-# Get all service providers for the current user's addresses
-GET {{KomunalkaAPI_HostAddress}}/service-providers
+### Get utility type by ID
+GET {{host}}/utility-types/1
 Accept: application/json
-Authorization: Bearer {{jwt_token}}
 
+### List currencies (no auth required)
 # Response 200 OK:
 # {
 #   "data": [
 #     {
 #       "id": 1,
-#       "addressId": 1,
-#       "name": "Київенерго",
-#       "description": "Постачальник електроенергії",
-#       "phone": "+380441234567",
-#       "email": "info@kyivenergo.ua",
-#       "website": "https://kyivenergo.ua",
-#       "isActive": true,
-#       "createdAt": "2024-01-01T00:00:00Z",
-#       "updatedAt": "2024-01-01T00:00:00Z",
-#       "tariffs": [
-#         {
-#           "id": 1,
-#           "serviceProviderId": 1,
-#           "utilityTypeId": 1,
-#           "currencyId": 1,
-#           "name": "Електроенергія (фіксований)",
-#           "baseRate": 2.64,
-#           "serviceFee": 0,
-#           "effectiveFrom": "2024-01-01T00:00:00Z",
-#           "effectiveTo": null,
-#           "notes": null,
-#           "createdAt": "2024-01-01T00:00:00Z",
-#           "updatedAt": "2024-01-01T00:00:00Z",
-#           "utilityTypeName": "Електроенергія",
-#           "currencyCode": "UAH",
-#           "currencySymbol": "₴"
-#         }
-#       ]
+#       "code": "UAH",
+#       "name": "Українська гривня",
+#       "symbol": "₴",
+#       "created_at": "2025-01-01T00:00:00.000000Z",
+#       "updated_at": "2025-01-01T00:00:00.000000Z"
 #     }
 #   ]
 # }
-
-###
-# Get service provider by ID
-GET {{KomunalkaAPI_HostAddress}}/service-providers/1
+GET {{host}}/currencies
 Accept: application/json
-Authorization: Bearer {{jwt_token}}
 
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "addressId": 1,
-#     "name": "Київенерго",
-#     "description": "Постачальник електроенергії",
-#     "isActive": true,
-#     "tariffs": [...]
-#   }
-# }
-#
-# Response 404 Not Found:
-# { "error": "Service provider not found" }
-
-###
-# Get service providers by address ID
-GET {{KomunalkaAPI_HostAddress}}/service-providers/address/1
+### Get currency by ID
+GET {{host}}/currencies/1
 Accept: application/json
-Authorization: Bearer {{jwt_token}}
 
-# Response 200 OK:
-# {
-#   "data": [
-#     {
-#       "id": 1,
-#       "addressId": 1,
-#       "name": "Київенерго",
-#       "tariffs": [...]
-#     }
-#   ]
-# }
-
-###
-# Create a new service provider with tariffs
-POST {{KomunalkaAPI_HostAddress}}/service-providers
-Accept: application/json
-Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
-
-{
-  "addressId": 1,
-  "utilityTypeId": 3,
-  "name": "Київводоканал",
-  "description": "Постачальник водопостачання",
-  "phone": "+380441112233",
-  "email": "info@vodokanal.kyiv.ua",
-  "website": "https://vodokanal.kyiv.ua",
-  "isActive": true,
-  "tariffs": [
-    {
-      "utilityTypeId": 2,
-      "currencyId": 1,
-      "name": "Холодна вода",
-      "baseRate": 35.40,
-      "serviceFee": 0,
-      "effectiveFrom": "2024-06-01T00:00:00Z",
-      "effectiveTo": null
-    }
-  ]
-}
-
+### Create currency (admin)
+# Fields: code (3 chars, unique), name, symbol
 # Response 201 Created:
 # {
 #   "data": {
 #     "id": 2,
-#     "addressId": 1,
-#     "name": "Київводоканал",
-#     "description": "Постачальник водопостачання",
-#     "isActive": true,
-#     "tariffs": [...]
-#   }
-# }
-
-###
-# Update a service provider (partial update)
-PUT {{KomunalkaAPI_HostAddress}}/service-providers/1
-Accept: application/json
-Content-Type: application/json
-Authorization: Bearer {{jwt_token}}
-
-{
-  "name": "Київенерго (оновлено)",
-  "phone": "+380449876543",
-  "utilityTypeId": 1
-}
-
-# Response 200 OK:
-# {
-#   "data": {
-#     "id": 1,
-#     "addressId": 1,
-#     "name": "Київенерго (оновлено)",
-#     "phone": "+380449876543",
-#     "tariffs": [...]
-#   }
-# }
-
-###
-# Delete a service provider
-DELETE {{KomunalkaAPI_HostAddress}}/service-providers/1
-Accept: application/json
-Authorization: Bearer {{jwt_token}}
-
-# Response 204 No Content
-
-### ============================================================================
-### Currency Management Endpoints
-### ============================================================================
-
-###
-# Get all currencies (no authentication required)
-GET {{KomunalkaAPI_HostAddress}}/currency
-Accept: application/json
-
-# Response 200 OK:
-# [
-#   {
-#     "id": 1,
-#     "code": "UAH",
-#     "name": "Українська гривня",
-#     "symbol": "₴",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   {
-#     "id": 2,
-#     "code": "USD",
-#     "name": "US Dollar",
-#     "symbol": "$",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   },
-#   {
-#     "id": 3,
 #     "code": "EUR",
-#     "name": "Euro",
+#     "name": "Євро",
 #     "symbol": "€",
-#     "createdAt": "2025-01-01T00:00:00Z",
-#     "updatedAt": "2025-01-01T00:00:00Z"
-#   }
-# ]
-
-###
-# Get currency by ID (no authentication required)
-GET {{KomunalkaAPI_HostAddress}}/currency/1
+#     "created_at": "2025-01-15T10:00:00.000000Z",
+#     "updated_at": "2025-01-15T10:00:00.000000Z"
+#   },
+#   "message": "Currency created successfully."
+# }
+POST {{host}}/currencies
+Content-Type: application/json
 Accept: application/json
-
-# Response 200 OK:
-# {
-#   "id": 1,
-#   "code": "UAH",
-#   "name": "Українська гривня",
-#   "symbol": "₴",
-#   "createdAt": "2025-01-01T00:00:00Z",
-#   "updatedAt": "2025-01-01T00:00:00Z"
-# }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Currency with ID 999 not found"
-# }
-
-###
-# Create new currency (no authentication required)
-POST {{KomunalkaAPI_HostAddress}}/currency
-Content-Type: application/json
+Authorization: Bearer {{admin_token}}
 
 {
-  "name": "US Dollar",
-  "code": "USD",
-  "symbol": "$"
-}
-
-# Response 201 Created:
-# {
-#   "id": 2,
-#   "code": "USD",
-#   "name": "US Dollar",
-#   "symbol": "$",
-#   "createdAt": "2025-02-05T10:00:00Z",
-#   "updatedAt": "2025-02-05T10:00:00Z"
-# }
-#
-# Response 400 Bad Request:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "One or more validation errors occurred.",
-#   "status": 400,
-#   "errors": {
-#     "Code": ["Currency code is required", "Currency code must be 3 characters"],
-#     "Name": ["Currency name is required"]
-#   }
-# }
-
-###
-# Update currency (no authentication required)
-PUT {{KomunalkaAPI_HostAddress}}/currency/1
-Content-Type: application/json
-
-{
-  "name": "Euro",
   "code": "EUR",
+  "name": "Євро",
   "symbol": "€"
 }
 
+### Update currency (admin)
+PUT {{host}}/currencies/2
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "code": "EUR",
+  "name": "Euro",
+  "symbol": "€"
+}
+
+### Delete currency (admin)
+# Response 200 OK:
+# { "message": "Currency deleted successfully." }
+DELETE {{host}}/currencies/2
+Accept: application/json
+Authorization: Bearer {{admin_token}}
+
+### ============================================================================
+### Address Endpoints
+### ============================================================================
+
+### List regions
 # Response 200 OK:
 # {
-#   "id": 1,
-#   "code": "EUR",
-#   "name": "Euro",
-#   "symbol": "€",
-#   "createdAt": "2025-01-01T00:00:00Z",
-#   "updatedAt": "2025-02-05T10:05:00Z"
+#   "data": [
+#     { "id": 1, "name": "Вінницька область" },
+#     { "id": 9, "name": "Київська область" }
+#   ]
 # }
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Currency with ID 999 not found"
-# }
+GET {{host}}/region
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
-###
-# Delete currency (no authentication required)
-DELETE {{KomunalkaAPI_HostAddress}}/currency/1
+### Get region by ID
+GET {{host}}/region/9
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
-# Response 204 No Content
-#
-# Response 404 Not Found:
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-#   "title": "Not Found",
-#   "status": 404,
-#   "detail": "Currency with ID 1 not found"
-# }
-#
-# Response 400 Bad Request (if currency is in use):
-# {
-#   "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-#   "title": "Bad Request",
-#   "status": 400,
-#   "detail": "Cannot delete currency that is in use by tariffs"
-# }
-
-### ============================================================================
-### Health Check Endpoints
-### ============================================================================
-
-###
-# Health check
-GET http://localhost:8080/health
-
+### List address types
 # Response 200 OK:
 # {
-#   "status": "Healthy",
-#   "totalDuration": "00:00:00.0123456",
-#   "entries": {
-#     "database": {
-#       "status": "Healthy",
-#       "duration": "00:00:00.0100000"
+#   "data": [
+#     {
+#       "id": 1,
+#       "name": "Квартира",
+#       "description": "Багатоквартирний будинок у місті",
+#       "icon": "apartment"
+#     },
+#     {
+#       "id": 2,
+#       "name": "Будинок",
+#       "description": "Приватний будинок",
+#       "icon": "house"
 #     }
-#   }
+#   ]
 # }
-#
-# Response 503 Service Unavailable:
-# {
-#   "status": "Unhealthy",
-#   "totalDuration": "00:00:05.0000000",
-#   "entries": {
-#     "database": {
-#       "status": "Unhealthy",
-#       "duration": "00:00:05.0000000",
-#       "description": "Connection to database failed"
-#     }
-#   }
-# }
+GET {{host}}/addresstype
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
-###
-# Ready check
-GET http://localhost:8080/health/ready
+### Get address type by ID
+GET {{host}}/addresstype/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
+### List user addresses
 # Response 200 OK:
 # {
-#   "status": "Healthy",
-#   "totalDuration": "00:00:00.0123456",
-#   "entries": {
-#     "database": {
-#       "status": "Healthy",
-#       "duration": "00:00:00.0100000"
+#   "data": [
+#     {
+#       "id": 1,
+#       "city": "Київ",
+#       "street": "вул. Хрещатик",
+#       "building_number": "1",
+#       "apartment_number": "101",
+#       "zip_code": "01001",
+#       "notes": "Центр міста",
+#       "is_primary": true,
+#       "region": { "id": 9, "name": "Київська область" },
+#       "address_type": { "id": 1, "name": "Квартира", "description": "...", "icon": "apartment" },
+#       "created_at": "2025-01-15T10:30:00.000000Z",
+#       "updated_at": "2025-01-15T10:30:00.000000Z"
 #     }
-#   }
+#   ]
 # }
-#
-# Response 503 Service Unavailable:
+GET {{host}}/address
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get address by ID
+GET {{host}}/address/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Create address
+# Fields: region_id, address_type_id, city, street, building_number, apartment_number?, zip_code?, notes?, is_primary?
+# Response 201 Created:
 # {
-#   "status": "Unhealthy",
-#   "totalDuration": "00:00:05.0000000",
-#   "entries": {
-#     "database": {
-#       "status": "Unhealthy",
-#       "duration": "00:00:05.0000000",
-#       "description": "Database is not ready"
-#     }
+#   "data": {
+#     "id": 1,
+#     "city": "Київ",
+#     "street": "вул. Хрещатик",
+#     "building_number": "1",
+#     "apartment_number": "101",
+#     "zip_code": "01001",
+#     "notes": "Центр міста",
+#     "is_primary": true,
+#     "region": { "id": 9, "name": "Київська область" },
+#     "address_type": { "id": 1, "name": "Квартира", ... },
+#     "created_at": "2025-01-15T10:30:00.000000Z",
+#     "updated_at": "2025-01-15T10:30:00.000000Z"
 #   }
 # }
+POST {{host}}/address
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "region_id": 9,
+  "address_type_id": 1,
+  "city": "Київ",
+  "street": "вул. Хрещатик",
+  "building_number": "1",
+  "apartment_number": "101",
+  "zip_code": "01001",
+  "notes": "Центр міста",
+  "is_primary": true
+}
+
+### Update address (full)
+PUT {{host}}/address/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "region_id": 9,
+  "address_type_id": 1,
+  "city": "Київ",
+  "street": "вул. Хрещатик",
+  "building_number": "1",
+  "apartment_number": "202",
+  "zip_code": "01001",
+  "notes": "Оновлена адреса",
+  "is_primary": true
+}
+
+### Patch address (partial)
+PATCH {{host}}/address/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "apartment_number": "303",
+  "notes": "Змінено квартиру"
+}
+
+### Delete address
+# Response 200 OK:
+# { "message": "Address deleted successfully." }
+DELETE {{host}}/address/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 ### ============================================================================
-### Swagger Documentation
+### Billing / Service Provider Endpoints
 ### ============================================================================
 
-###
-# Swagger UI (Development only)
-# GET http://localhost:5242/swagger/index.html
+### List service providers
+# Response 200 OK:
+# {
+#   "data": [
+#     {
+#       "id": 1,
+#       "name": "Київгаз",
+#       "description": "Постачання природного газу",
+#       "phone": "+380441234567",
+#       "email": "info (at) kyivgaz.ua",
+#       "website": "https://kyivgaz.ua",
+#       "is_active": true,
+#       "address_id": 1,
+#       "utility_type": { "id": 1, "slug": "gas", "display_name": "Газ", "unit": "м³", ... },
+#       "tariffs": [
+#         {
+#           "id": 1,
+#           "name": "Базовий тариф газ",
+#           "base_rate": 7.96,
+#           "service_fee": 0.50,
+#           "effective_from": "2025-01-01",
+#           "effective_to": null,
+#           "notes": null,
+#           "utility_type": { ... },
+#           "currency": { "id": 1, "code": "UAH", "name": "Українська гривня", "symbol": "₴", ... },
+#           "created_at": "2025-01-01T00:00:00.000000Z",
+#           "updated_at": "2025-01-01T00:00:00.000000Z"
+#         }
+#       ],
+#       "created_at": "2025-01-01T00:00:00.000000Z",
+#       "updated_at": "2025-01-01T00:00:00.000000Z"
+#     }
+#   ]
+# }
+GET {{host}}/service-providers
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get service provider by ID
+GET {{host}}/service-providers/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get service providers by address
+GET {{host}}/service-providers/address/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Create service provider (with tariffs)
+# Fields: address_id, utility_type_id, name, description?, phone?, email?, website?, is_active?, tariffs[]?
+# Tariff fields: utility_type_id, currency_id, name, base_rate, service_fee?, effective_from, effective_to?, notes?
+# Response 201 Created:
+# {
+#   "data": {
+#     "id": 2,
+#     "name": "Київенерго",
+#     "description": "Постачання електроенергії",
+#     "utility_type": { "id": 2, "slug": "electricity", "display_name": "Електроенергія", ... },
+#     "tariffs": [ { "id": 1, "name": "Базовий тариф електроенергія", "base_rate": 2.64, ... } ],
+#     ...
+#   }
+# }
+POST {{host}}/service-providers
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "address_id": 1,
+  "utility_type_id": 2,
+  "name": "Київенерго",
+  "description": "Постачання електроенергії",
+  "phone": "+380442345678",
+  "email": "info@kyivenergo.ua",
+  "website": "https://kyivenergo.ua",
+  "is_active": true,
+  "tariffs": [
+    {
+      "utility_type_id": 2,
+      "currency_id": 1,
+      "name": "Базовий тариф електроенергія",
+      "base_rate": 2.64,
+      "service_fee": 0.00,
+      "effective_from": "2025-01-01",
+      "effective_to": null,
+      "notes": "До 250 кВт·год/місяць"
+    }
+  ]
+}
+
+### Update service provider
+# Fields: utility_type_id, name, description?, phone?, email?, website?, is_active?
+PUT {{host}}/service-providers/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "utility_type_id": 1,
+  "name": "Київгаз (оновлено)",
+  "description": "Постачання природного газу — оновлено",
+  "phone": "+380441234567",
+  "email": "support@kyivgaz.ua",
+  "website": "https://kyivgaz.ua",
+  "is_active": true
+}
+
+### Delete service provider
+# Response 200 OK:
+# { "message": "Service provider deleted successfully." }
+DELETE {{host}}/service-providers/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 ### ============================================================================
-### Notes
+### Meter Endpoints
 ### ============================================================================
-#
-# API Versioning: All endpoints use v1 by default (/api/v1/...)
-#
-# Authentication:
-# - Most endpoints require JWT authentication via Bearer token
-# - Register a user first, then login to get JWT and refresh tokens
-# - Update jwt_token and refresh_token variables after login
-#
-# OAuth Authentication (Social Login):
-# - Supported providers: Google, GitHub
-# - Two flows available:
-#   1. ID Token flow (mobile/SPA): POST /auth/oauth/login with provider token
-#   2. Authorization Code flow (web): GET /auth/oauth/{provider}/authorize → callback
-# - OAuth users are auto-created on first login
-# - Link/unlink OAuth to existing account: POST/DELETE /auth/oauth/link
-# - Configure credentials in .env: OAUTH__Google__ClientId, OAUTH__GitHub__ClientId, etc.
-#
-# User Management:
-# - Update user endpoint (PUT /users/{id}) supports optional password change
-# - To change password, provide: currentPassword, newPassword, confirmNewPassword
-# - Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
-# - Without password fields, only username and email are updated
-#
-# Docker URLs:
-# - API: http://localhost:8080
-# - Database: localhost:5432
-# - pgAdmin: http://localhost:5050 (login: admin at admin.com / admin)
-#
-# Local Development URLs:
-# - HTTP: http://localhost:5242
-# - HTTPS: https://localhost:7095
-# - Swagger: http://localhost:5242/swagger (Development only)
-#
-# Pagination:
-# - Address endpoint supports pagination with ?page=1&perPage=10 (or pageSize=10)
-# - Returns Laravel-compatible format with data, links, and meta
-# - Optional sorting: ?sortBy=city&desc=true (or updatedat, isprimary)
-#
-# Address Management:
-# - Many-to-many relationship: addresses can be shared between users
-# - Each user has independent isPrimary flag for their addresses
-# - Setting isPrimary=true auto-resets other addresses for that user
-# - Database uses Laravel naming convention: address_user pivot table
-#
-# Address Types (Updated to Ukrainian):
-# - ID 1: "Квартира" (Багатоквартирний будинок у місті)
-# - ID 2: "Приватний будинок" (Окрема садиба або дача)
-# - ID 3: "Офіс" (Комерційне або офісне приміщення)
-#
-# Regions:
-# - 26 Ukrainian regions available (області України)
-# - Use GET /api/v1/region to get full list with IDs
-#
-# Meters (Лічильники):
-# - Full CRUD operations for utility meters
-# - Supports photo upload (multipart/form-data)
-# - Fields: AddressId, UtilityTypeId, Name, SerialNumber, ModelName, Location
-# - Additional: InstallationDate, InitialReading, ServiceProviderId, Notes, IsActive
-# - Utility Types: 1=Електроенергія, 2=Газ, 3=Холодна вода, 4=Гаряча вода, 5=Опалення
-# - Photos saved to /uploads/meters/ directory
-# - Get meters by address: GET /api/v1/meter/address/{addressId}
-# - Get only active meters: GET /api/v1/meter/active
-#
-# Service Providers (Провайдери послуг):
-# - New entity for utility service providers
-# - Linked to meters via ServiceProviderId
-# - Stores provider contact information (name, phone, email, website)
-#
-# Batch Meter Readings (Масове внесення показників):
-# - Submit multiple meter readings at once: POST /api/v1/meter-readings/batch
-# - Supports photo uploads for each meter (match by filename: photo_{meterId}.jpg)
-# - Photos are automatically processed (optimized + thumbnail versions)
-# - Automatic consumption calculation (current - previous reading)
-# - Dynamic cost calculation based on effective tariffs
-# - Validates: current >= previous, no duplicates on same date
-# - Returns detailed calculations with tariff breakdown
-# - Atomic transactions: all readings saved together or none
-# - Get readings by address: GET /api/v1/meter-readings/address/{addressId}
-# - Optional date range filtering: ?from=...&to=...
-# - Response includes: consumption, baseRate, serviceFee, totalCost per meter
-# - Get photos: /meter-readings/photos/{id}/optimized or /thumbnail
-# - Supports HEIC/HEIF, JPEG, PNG formats
-# - See docs/BATCH_METER_READINGS_API.md for full documentation
-#
-# CORS:
-# - Configured to allow origins from environment variable
-# - Docker: allows all origins (*)
-# - Local: configure in .env file
+
+### List all meters
+# Response 200 OK:
+# {
+#   "data": [
+#     {
+#       "id": 1,
+#       "serial_number": "G-2024-001234",
+#       "name": "Лічильник газу кухня",
+#       "description": "Мембранний лічильник",
+#       "model_name": "Metrix G4",
+#       "location": "Кухня",
+#       "installation_date": "2024-06-15",
+#       "initial_reading": 1234.56,
+#       "notes": null,
+#       "is_active": true,
+#       "address_id": 1,
+#       "utility_type": { "id": 1, "slug": "gas", "display_name": "Газ", "unit": "м³", ... },
+#       "service_provider": { "id": 1, "name": "Київгаз", ... },
+#       "photo_url": null,
+#       "created_at": "2025-01-15T10:30:00.000000Z",
+#       "updated_at": "2025-01-15T10:30:00.000000Z"
+#     }
+#   ]
+# }
+GET {{host}}/meter
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get active meters
+GET {{host}}/meter/active
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get meters by address
+GET {{host}}/meter/address/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get meter by ID
+GET {{host}}/meter/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Create meter
+# Fields: address_id, utility_type_id, service_provider_id?, serial_number, name, description?, model_name?, location?, installation_date?, initial_reading, notes?, is_active?
+# Response 201 Created:
+# {
+#   "data": {
+#     "id": 1,
+#     "serial_number": "G-2024-001234",
+#     "name": "Лічильник газу кухня",
+#     "utility_type": { ... },
+#     "service_provider": { ... },
+#     ...
+#   }
+# }
+POST {{host}}/meter
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "address_id": 1,
+  "utility_type_id": 1,
+  "service_provider_id": 1,
+  "serial_number": "G-2024-001234",
+  "name": "Лічильник газу кухня",
+  "description": "Мембранний лічильник",
+  "model_name": "Metrix G4",
+  "location": "Кухня",
+  "installation_date": "2024-06-15",
+  "initial_reading": 1234.56,
+  "notes": null,
+  "is_active": true
+}
+
+### Update meter
+PUT {{host}}/meter/1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "name": "Лічильник газу кухня (оновлено)",
+  "location": "Кухня, біля плити",
+  "is_active": true
+}
+
+### Delete meter
+# Response 200 OK:
+# { "message": "Meter deleted successfully." }
+DELETE {{host}}/meter/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Upload meter photo (multipart)
+POST {{host}}/meter/1/photo
+Content-Type: multipart/form-data; boundary=boundary
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+--boundary
+Content-Disposition: form-data; name="photo"; filename="meter_photo.jpg"
+Content-Type: image/jpeg
+
+< ./storage/app/test/meter_photo.jpg
+--boundary--
+
+### ============================================================================
+### Meter Reading Endpoints
+### ============================================================================
+
+### Create batch meter readings (with photos, multipart)
+# Response 201 Created:
+# {
+#   "data": {
+#     "readings": [
+#       {
+#         "id": 1,
+#         "reading_value": 1345.78,
+#         "reading_date": "2025-02-25",
+#         "previous_reading_value": 1234.56,
+#         "consumption": 111.22,
+#         "notes": "Показання лютого",
+#         "is_estimated": false,
+#         "meter": { "id": 1, "serial_number": "G-2024-001234", ... },
+#         "tariff": { "id": 1, "name": "Базовий тариф газ", ... },
+#         "photos": [
+#           {
+#             "id": 1,
+#             "original_url": "https://localhost/api/v1/meter-readings/photos/1/optimized",
+#             "optimized_url": "https://localhost/api/v1/meter-readings/photos/1/optimized",
+#             "thumbnail_url": "https://localhost/api/v1/meter-readings/photos/1/thumbnail"
+#           }
+#         ],
+#         "created_at": "2025-02-25T12:00:00.000000Z",
+#         "updated_at": "2025-02-25T12:00:00.000000Z"
+#       }
+#     ],
+#     "tariff_calculations": [
+#       {
+#         "meter_id": 1,
+#         "meter_name": "Лічильник газу кухня",
+#         "consumption": 111.22,
+#         "unit": "м³",
+#         "base_rate": 7.96,
+#         "service_fee": 0.50,
+#         "total_cost": 885.81,
+#         "currency_code": "UAH",
+#         "currency_symbol": "₴"
+#       }
+#     ]
+#   }
+# }
+POST {{host}}/meter-readings/batch
+Content-Type: multipart/form-data; boundary=boundary
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+--boundary
+Content-Disposition: form-data; name="readings[0][meter_id]"
+
+1
+--boundary
+Content-Disposition: form-data; name="readings[0][reading_value]"
+
+1345.78
+--boundary
+Content-Disposition: form-data; name="readings[0][reading_date]"
+
+2025-02-25
+--boundary
+Content-Disposition: form-data; name="readings[0][notes]"
+
+Показання лютого
+--boundary
+Content-Disposition: form-data; name="readings[0][is_estimated]"
+
+false
+--boundary
+Content-Disposition: form-data; name="photos[0][0]"; filename="reading_photo.jpg"
+Content-Type: image/jpeg
+
+< ./storage/app/test/reading_photo.jpg
+--boundary--
+
+### Create batch meter readings (JSON, without photos)
+# readings[]: { meter_id, reading_value, reading_date, notes?, is_estimated? }
+POST {{host}}/meter-readings/batch
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "readings": [
+    {
+      "meter_id": 1,
+      "reading_value": 1345.78,
+      "reading_date": "2025-02-25",
+      "notes": "Показання лютого",
+      "is_estimated": false
+    },
+    {
+      "meter_id": 2,
+      "reading_value": 4567.89,
+      "reading_date": "2025-02-25",
+      "notes": null,
+      "is_estimated": false
+    }
+  ]
+}
+
+### Get meter readings by address
+GET {{host}}/meter-readings/address/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get meter readings by address (with date filter)
+GET {{host}}/meter-readings/address/1?from=2025-01-01&to=2025-02-28
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get meter reading by ID
+# Response 200 OK:
+# {
+#   "data": {
+#     "id": 1,
+#     "reading_value": 1345.78,
+#     "reading_date": "2025-02-25",
+#     "previous_reading_value": 1234.56,
+#     "consumption": 111.22,
+#     "notes": "Показання лютого",
+#     "is_estimated": false,
+#     "meter": { ... },
+#     "tariff": { ... },
+#     "photos": [ ... ],
+#     "created_at": "2025-02-25T12:00:00.000000Z",
+#     "updated_at": "2025-02-25T12:00:00.000000Z"
+#   }
+# }
+GET {{host}}/meter-readings/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Delete meter reading
+# Response 200 OK:
+# { "message": "Meter reading deleted successfully." }
+DELETE {{host}}/meter-readings/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get meter reading photo (optimized, no auth required)
+# Response 200 OK: Binary image data
+GET {{host}}/meter-readings/photos/1/optimized
+Accept: image/*
+
+### Get meter reading photo (thumbnail, no auth required)
+GET {{host}}/meter-readings/photos/1/thumbnail
+Accept: image/*
+
+### ============================================================================
+### Legacy Meter Reading Endpoints
+### ============================================================================
+
+### Create legacy meter reading (multipart)
+POST {{host}}/meterreading
+Content-Type: multipart/form-data; boundary=boundary
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+--boundary
+Content-Disposition: form-data; name="meter_id"
+
+1
+--boundary
+Content-Disposition: form-data; name="reading_value"
+
+1400.50
+--boundary
+Content-Disposition: form-data; name="reading_date"
+
+2025-02-25
+--boundary
+Content-Disposition: form-data; name="notes"
+
+Показання через legacy API
+--boundary
+Content-Disposition: form-data; name="photo"; filename="meter_reading.jpg"
+Content-Type: image/jpeg
+
+< ./storage/app/test/meter_reading.jpg
+--boundary--
+
+### Get legacy meter reading by ID
+GET {{host}}/meterreading/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Delete legacy meter reading
+DELETE {{host}}/meterreading/1
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get legacy meter reading image (optimized, no auth required)
+GET {{host}}/meterreading/images/1/optimized
+Accept: image/*
+
+### Get legacy meter reading image (thumbnail, no auth required)
+GET {{host}}/meterreading/images/1/thumbnail
+Accept: image/*
 
 ### ============================================================================
 ### Export Endpoints
 ### ============================================================================
 
-###
-# Export meter readings (CSV)
-POST {{KomunalkaAPI_HostAddress}}/export/meter-readings
-Authorization: Bearer {{jwt_token}}
+### Export meter readings (CSV)
+# Fields: address_ids[], from_date, to_date, format (csv|pdf)
+# Response 200 OK: Binary CSV file download
+POST {{host}}/export/meter-readings
 Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "fromDate": "2023-01-01T00:00:00Z",
-  "toDate": "2023-12-31T23:59:59Z",
+  "address_ids": [1],
+  "from_date": "2025-01-01",
+  "to_date": "2025-02-28",
   "format": "csv"
 }
 
-
-# Response 200 OK:
-# Content-Type: text/csv
-# Content-Disposition: attachment; filename=meter_readings_20240210120000.csv
-# Body: CSV file content
-
-###
-# Export meter readings (PDF)
-POST {{KomunalkaAPI_HostAddress}}/export/meter-readings
-Authorization: Bearer {{jwt_token}}
+### Export meter readings (PDF)
+# Response 200 OK: Binary PDF file download
+POST {{host}}/export/meter-readings
 Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "fromDate": "2023-01-01T00:00:00Z",
-  "toDate": "2023-12-31T23:59:59Z",
+  "address_ids": [1, 2],
+  "from_date": "2025-01-01",
+  "to_date": "2025-02-28",
   "format": "pdf"
-}
-
-# Response 200 OK:
-# Content-Type: application/pdf
-# Content-Disposition: attachment; filename=meter_readings_20240210120000.pdf
-# Body: PDF file binary content
-
-###
-# Export meter readings for specific addresses
-POST {{KomunalkaAPI_HostAddress}}/export/meter-readings
-Authorization: Bearer {{jwt_token}}
-Content-Type: application/json
-
-{
-  "addressIds": [1, 2],
-  "fromDate": "2023-01-01T00:00:00Z",
-  "toDate": "2023-12-31T23:59:59Z",
-  "format": "csv"
 }

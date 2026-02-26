@@ -10,8 +10,6 @@ import { Star } from 'lucide-react'
 const mockRegion: Region = {
   id: 25,
   name: 'м. Київ',
-  createdAt: '2025-01-01T00:00:00Z',
-  updatedAt: '2025-01-01T00:00:00Z',
 }
 
 const mockAddressType: AddressType = {
@@ -19,23 +17,18 @@ const mockAddressType: AddressType = {
   name: 'Квартира',
   description: 'Багатоквартирний будинок у місті',
   icon: 'apartment',
-  createdAt: '2025-01-01T00:00:00Z',
-  updatedAt: '2025-01-01T00:00:00Z',
 }
 
 function createMockAddress(overrides: Partial<Address> = {}): Address {
   return {
     id: 1,
-    userId: 1,
-    regionId: 25,
     city: 'Київ',
     street: 'вул. Хрещатик',
     buildingNumber: '22',
     apartmentNumber: '15',
     zipCode: '01001',
-    notes: '',
+    notes: null,
     isPrimary: false,
-    addressTypeId: 1,
     region: overrides.region || mockRegion,
     addressType: overrides.addressType || mockAddressType,
     createdAt: '2024-01-01T00:00:00Z',
@@ -48,16 +41,20 @@ function createMockMeter(overrides: Partial<Meter> = {}): Meter {
   return {
     id: 1,
     addressId: 1,
-    utilityTypeId: 1,
     serialNumber: 'E-12345',
     name: 'Основний лічильник',
+    description: null,
+    modelName: null,
     location: 'Щитова',
     installationDate: '2023-01-01',
+    initialReading: null,
+    notes: null,
     isActive: true,
-    serviceProviderId: 1,
+    utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' },
+    serviceProvider: { id: 1, name: 'YASNO' },
+    photoUrl: null,
     createdAt: '2023-01-01T00:00:00Z',
     updatedAt: '2023-01-01T00:00:00Z',
-    utilityTypeName: 'Електроенергія',
     ...overrides,
   }
 }
@@ -164,9 +161,9 @@ describe('addressViewModels', () => {
     it('creates services from unique meter types', () => {
       const address = createMockAddress()
       const meters: Meter[] = [
-        createMockMeter({ id: 1, utilityTypeId: 1 }),
-        createMockMeter({ id: 2, utilityTypeId: 2 }),
-        createMockMeter({ id: 3, utilityTypeId: 1 }),
+        createMockMeter({ id: 1, utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' } }),
+        createMockMeter({ id: 2, utilityType: { id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³' } }),
+        createMockMeter({ id: 3, utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' } }),
       ]
 
       const result = toAddressCardViewModel(address, meters)
@@ -194,11 +191,11 @@ describe('addressViewModels', () => {
     it('includes all meter types with correct labels', () => {
       const address = createMockAddress()
       const meters: Meter[] = [
-        createMockMeter({ id: 1, utilityTypeId: 1 }),
-        createMockMeter({ id: 2, utilityTypeId: 2 }),
-        createMockMeter({ id: 3, utilityTypeId: 3 }),
-        createMockMeter({ id: 4, utilityTypeId: 4 }),
-        createMockMeter({ id: 5, utilityTypeId: 5 }),
+        createMockMeter({ id: 1, utilityType: { id: 2, slug: 'electricity', displayName: 'Електроенергія', unit: 'кВт·год' } }),
+        createMockMeter({ id: 2, utilityType: { id: 1, slug: 'gas', displayName: 'Газ', unit: 'м³' } }),
+        createMockMeter({ id: 3, utilityType: { id: 3, slug: 'coldWater', displayName: 'Холодна вода', unit: 'м³' } }),
+        createMockMeter({ id: 4, utilityType: { id: 4, slug: 'hotWater', displayName: 'Гаряча вода', unit: 'м³' } }),
+        createMockMeter({ id: 5, utilityType: { id: 5, slug: 'heat', displayName: 'Опалення', unit: 'Гкал' } }),
       ]
 
       const result = toAddressCardViewModel(address, meters)

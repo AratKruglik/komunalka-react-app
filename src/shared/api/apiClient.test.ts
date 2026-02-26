@@ -29,7 +29,15 @@ vi.mock('../constants', () => ({
   },
 }))
 
-const mockAxiosInstance = vi.fn()
+const mockRequestInterceptor = vi.fn()
+const mockResponseInterceptor = vi.fn()
+
+const mockAxiosInstance = Object.assign(vi.fn(), {
+  interceptors: {
+    request: { use: mockRequestInterceptor },
+    response: { use: mockResponseInterceptor },
+  },
+})
 
 vi.mock('axios', async () => {
   const actualAxios = await vi.importActual('axios')

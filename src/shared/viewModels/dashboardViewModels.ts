@@ -11,7 +11,7 @@ import type { LucideIcon } from 'lucide-react'
 import { getPrimaryTariff } from '../utils/providerTariffs'
 
 function getMeterType(meter: Meter): MeterType {
-  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityType.id] ?? 'electricity'
 }
 
 // =============================================================================
@@ -204,7 +204,7 @@ export function toChartDataViewModel(
   const monthsMap = new Map<string, Map<MeterType, number>>()
 
   readings.forEach((reading) => {
-    const meter = meters.find((m) => m.id === reading.meterId)
+    const meter = meters.find((m) => m.id === reading.meter.id)
     if (!meter) return
 
     const meterType = getMeterType(meter)
@@ -300,11 +300,11 @@ export function toExpenseDistributionViewModel(
   const expensesByType = new Map<MeterType, number>()
 
   filteredReadings.forEach((reading) => {
-    const meter = meters.find((m) => m.id === reading.meterId)
+    const meter = meters.find((m) => m.id === reading.meter.id)
     if (!meter) return
 
     const meterType = getMeterType(meter)
-    const provider = providers.find((p) => p.id === meter.serviceProviderId)
+    const provider = providers.find((p) => p.id === meter.serviceProvider?.id)
     if (!provider) return
 
     const primaryTariff = getPrimaryTariff(provider)

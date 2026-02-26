@@ -1,5 +1,6 @@
 import { AuthActionType } from '../actionTypes'
 import { authService, userService } from '@shared/api'
+import { resolveExpirationIso } from '@shared/api/authService'
 import { formatApiError } from '@shared/api/utils'
 import type { AuthDispatch, ScheduleTokenRefreshFn } from './types'
 import type { User } from '@shared/types/auth/user.types'
@@ -24,7 +25,7 @@ export interface RegisterParams {
   phoneNumber: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  passwordConfirmation: string;
   rememberMe?: boolean;
 }
 
@@ -52,6 +53,18 @@ export async function loginAction(
       id: response.userId,
       username: response.username,
       email: response.email,
+      role: response.role,
+      authProvider: response.authProvider,
+      emailVerified: response.emailVerified,
+      firstName: null,
+      lastName: null,
+      phoneNumber: null,
+      lastLoginAt: null,
+      avatarOptimizedUrl: null,
+      avatarThumbnailUrl: null,
+      addresses: [],
+      createdAt: '',
+      updatedAt: '',
     }
 
     dispatch({
@@ -60,11 +73,11 @@ export async function loginAction(
         user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
-        expiresAt: response.expiration,
+        expiresAt: resolveExpirationIso(response),
       },
     })
 
-    scheduleTokenRefresh(response.expiration)
+    scheduleTokenRefresh(resolveExpirationIso(response))
 
     try {
       const fullUser = await userService.getProfile()
@@ -107,6 +120,18 @@ export async function registerAction(
       id: response.userId,
       username: response.username,
       email: response.email,
+      role: response.role,
+      authProvider: response.authProvider,
+      emailVerified: response.emailVerified,
+      firstName: null,
+      lastName: null,
+      phoneNumber: null,
+      lastLoginAt: null,
+      avatarOptimizedUrl: null,
+      avatarThumbnailUrl: null,
+      addresses: [],
+      createdAt: '',
+      updatedAt: '',
     }
 
     dispatch({
@@ -115,11 +140,11 @@ export async function registerAction(
         user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
-        expiresAt: response.expiration,
+        expiresAt: resolveExpirationIso(response),
       },
     })
 
-    scheduleTokenRefresh(response.expiration)
+    scheduleTokenRefresh(resolveExpirationIso(response))
 
     try {
       const fullUser = await userService.getProfile()
@@ -160,6 +185,18 @@ export async function oauthCallbackAction(
       id: response.userId,
       username: response.username,
       email: response.email,
+      role: response.role,
+      authProvider: response.authProvider,
+      emailVerified: response.emailVerified,
+      firstName: null,
+      lastName: null,
+      phoneNumber: null,
+      lastLoginAt: null,
+      avatarOptimizedUrl: null,
+      avatarThumbnailUrl: null,
+      addresses: [],
+      createdAt: '',
+      updatedAt: '',
     }
 
     dispatch({
@@ -168,11 +205,11 @@ export async function oauthCallbackAction(
         user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
-        expiresAt: response.expiration,
+        expiresAt: resolveExpirationIso(response),
       },
     })
 
-    scheduleTokenRefresh(response.expiration)
+    scheduleTokenRefresh(resolveExpirationIso(response))
 
     try {
       const fullUser = await userService.getProfile()

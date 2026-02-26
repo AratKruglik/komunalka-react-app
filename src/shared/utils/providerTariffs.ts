@@ -20,9 +20,9 @@ export const getApiPrimaryTariff = (provider: ApiServiceProvider): ApiTariff | u
  * Format API tariff as display label (e.g., "2.64 ₴/кВт·год")
  */
 export const formatApiTariffLabel = (tariff: ApiTariff, unit?: string): string => {
-  const price = tariff.baseRate.toFixed(2)
-  const symbol = tariff.currencySymbol
-  const displayUnit = unit ?? getUnitByUtilityTypeId(tariff.utilityTypeId)
+  const price = Number(tariff.baseRate).toFixed(2)
+  const symbol = tariff.currency.symbol
+  const displayUnit = unit ?? getUnitByUtilityTypeId(tariff.utilityType.id)
   return `${price} ${symbol}/${displayUnit}`
 }
 
@@ -31,8 +31,8 @@ export const formatApiTariffLabel = (tariff: ApiTariff, unit?: string): string =
  */
 const getUnitByUtilityTypeId = (utilityTypeId: number): string => {
   const units: Record<number, string> = {
-    1: 'кВт·год',
-    2: 'м³',
+    1: 'м³',
+    2: 'кВт·год',
     3: 'м³',
     4: 'м³',
     5: 'Гкал',

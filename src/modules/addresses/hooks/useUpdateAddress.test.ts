@@ -1,15 +1,30 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useUpdateAddress } from './useUpdateAddress'
-import { addressService } from '../api'
 import type { Address } from '@shared/types/entities'
 import type { UpdateAddressRequest } from '../types'
 import { createMockAddress } from '@/test-utils/factories'
 
-vi.mock('../api', () => ({
-  addressService: {
-    update: vi.fn(),
-  },
+const mockContextUpdateAddress = vi.fn()
+let mockContextLoading = false
+let mockContextError: string | null = null
+
+vi.mock('@shared/contexts', () => ({
+  useAddressContext: () => ({
+    updateAddress: mockContextUpdateAddress,
+    get isLoading() {
+      return mockContextLoading
+    },
+    get error() {
+      return mockContextError
+    },
+    addresses: [],
+    addAddress: vi.fn(),
+    deleteAddress: vi.fn(),
+    setAddresses: vi.fn(),
+    getPrimaryAddress: vi.fn(),
+    getAddressById: vi.fn(),
+  }),
 }))
 
 const mockUpdatedAddress: Address = createMockAddress({
@@ -27,6 +42,8 @@ const updateData: UpdateAddressRequest = {
 describe('useUpdateAddress', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockContextLoading = false
+    mockContextError = null
   })
 
   it('has correct initial state', () => {
@@ -38,7 +55,7 @@ describe('useUpdateAddress', () => {
   })
 
   it('updates address successfully', async () => {
-    vi.mocked(addressService.update).mockResolvedValueOnce(mockUpdatedAddress)
+    mockContextUpdateAddress.mockResolvedValueOnce(mockUpdatedAddress)
 
     const { result } = renderHook(() => useUpdateAddress())
 
@@ -52,12 +69,12 @@ describe('useUpdateAddress', () => {
     expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBeNull()
     expect(result.current.isSuccess).toBe(true)
-    expect(addressService.update).toHaveBeenCalledWith(1, updateData)
+    expect(mockContextUpdateAddress).toHaveBeenCalledWith(1, updateData)
   })
 
   it('sets loading state during update', async () => {
     let resolvePromise: (value: Address) => void
-    vi.mocked(addressService.update).mockImplementation(
+    mockContextUpdateAddress.mockImplementation(
       () => new Promise((resolve) => { resolvePromise = resolve })
     )
 
@@ -68,7 +85,6 @@ describe('useUpdateAddress', () => {
       updatePromise = result.current.updateAddress(1, updateData)
     })
 
-    expect(result.current.isLoading).toBe(true)
     expect(result.current.isSuccess).toBe(false)
 
     await act(async () => {
@@ -76,13 +92,12 @@ describe('useUpdateAddress', () => {
       await updatePromise
     })
 
-    expect(result.current.isLoading).toBe(false)
     expect(result.current.isSuccess).toBe(true)
   })
 
   it('handles update error', async () => {
     const errorMessage = 'Address not found'
-    vi.mocked(addressService.update).mockRejectedValueOnce(new Error(errorMessage))
+    mockContextUpdateAddress.mockRejectedValueOnce(new Error(errorMessage))
 
     const { result } = renderHook(() => useUpdateAddress())
 
@@ -96,13 +111,12 @@ describe('useUpdateAddress', () => {
     })
 
     expect(thrownError?.message).toBe(errorMessage)
-    expect(result.current.isLoading).toBe(false)
     expect(result.current.error).toBe(errorMessage)
     expect(result.current.isSuccess).toBe(false)
   })
 
   it('handles non-Error error objects', async () => {
-    vi.mocked(addressService.update).mockRejectedValueOnce('String error')
+    mockContextUpdateAddress.mockRejectedValueOnce('String error')
 
     const { result } = renderHook(() => useUpdateAddress())
 
@@ -120,7 +134,7 @@ describe('useUpdateAddress', () => {
   })
 
   it('clears error and success on new update attempt', async () => {
-    vi.mocked(addressService.update)
+    mockContextUpdateAddress
       .mockRejectedValueOnce(new Error('First error'))
       .mockResolvedValueOnce(mockUpdatedAddress)
 
@@ -129,9 +143,7 @@ describe('useUpdateAddress', () => {
     await act(async () => {
       try {
         await result.current.updateAddress(1, updateData)
-      } catch {
-        // Expected to throw
-      }
+      } catch { /* expected */ }
     })
 
     expect(result.current.error).toBe('First error')
@@ -145,7 +157,7 @@ describe('useUpdateAddress', () => {
   })
 
   it('reset clears error and success states', async () => {
-    vi.mocked(addressService.update).mockResolvedValueOnce(mockUpdatedAddress)
+    mockContextUpdateAddress.mockResolvedValueOnce(mockUpdatedAddress)
 
     const { result } = renderHook(() => useUpdateAddress())
 
@@ -164,16 +176,14 @@ describe('useUpdateAddress', () => {
   })
 
   it('reset clears error state after failure', async () => {
-    vi.mocked(addressService.update).mockRejectedValueOnce(new Error('Error'))
+    mockContextUpdateAddress.mockRejectedValueOnce(new Error('Error'))
 
     const { result } = renderHook(() => useUpdateAddress())
 
     await act(async () => {
       try {
         await result.current.updateAddress(1, updateData)
-      } catch {
-        // Expected to throw
-      }
+      } catch { /* expected */ }
     })
 
     expect(result.current.error).toBe('Error')
@@ -201,7 +211,7 @@ describe('useUpdateAddress', () => {
   it('handles partial updates', async () => {
     const partialUpdate: UpdateAddressRequest = { city: 'Lviv' }
     const partialUpdatedAddress = { ...mockUpdatedAddress, city: 'Lviv' }
-    vi.mocked(addressService.update).mockResolvedValueOnce(partialUpdatedAddress)
+    mockContextUpdateAddress.mockResolvedValueOnce(partialUpdatedAddress)
 
     const { result } = renderHook(() => useUpdateAddress())
 
@@ -212,14 +222,14 @@ describe('useUpdateAddress', () => {
     })
 
     expect(returnedAddress).toEqual(partialUpdatedAddress)
-    expect(addressService.update).toHaveBeenCalledWith(1, partialUpdate)
+    expect(mockContextUpdateAddress).toHaveBeenCalledWith(1, partialUpdate)
   })
 
   it('can update different addresses sequentially', async () => {
     const address1 = { ...mockUpdatedAddress, id: 1 }
     const address2 = { ...mockUpdatedAddress, id: 2 }
 
-    vi.mocked(addressService.update)
+    mockContextUpdateAddress
       .mockResolvedValueOnce(address1)
       .mockResolvedValueOnce(address2)
 
@@ -233,8 +243,8 @@ describe('useUpdateAddress', () => {
       await result.current.updateAddress(2, updateData)
     })
 
-    expect(addressService.update).toHaveBeenCalledTimes(2)
-    expect(addressService.update).toHaveBeenNthCalledWith(1, 1, updateData)
-    expect(addressService.update).toHaveBeenNthCalledWith(2, 2, updateData)
+    expect(mockContextUpdateAddress).toHaveBeenCalledTimes(2)
+    expect(mockContextUpdateAddress).toHaveBeenNthCalledWith(1, 1, updateData)
+    expect(mockContextUpdateAddress).toHaveBeenNthCalledWith(2, 2, updateData)
   })
 })

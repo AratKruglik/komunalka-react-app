@@ -1,45 +1,36 @@
-/**
- * API types for Service Provider endpoints
- * Matches Komunalka.API.http documentation
- */
-
-// =============================================================================
-// Utility Type (Reference data, no auth)
-// =============================================================================
-
 export interface ApiUtilityType {
   id: number
   slug: string
   displayName: string
   unit: string
+  description: string | null
   isActive: boolean
+  createdAt: string
+  updatedAt: string
 }
 
-// =============================================================================
-// Tariff (nested in Service Provider response)
-// =============================================================================
+export interface ApiCurrency {
+  id: number
+  code: string
+  name: string
+  symbol: string
+  createdAt: string
+  updatedAt: string
+}
 
 export interface ApiTariff {
   id: number
-  serviceProviderId: number
-  utilityTypeId: number
-  currencyId: number
   name: string
-  baseRate: number
-  serviceFee: number
+  baseRate: string | number
+  serviceFee: string | number
   effectiveFrom: string
   effectiveTo: string | null
   notes: string | null
+  utilityType: ApiUtilityType
+  currency: ApiCurrency
   createdAt: string
   updatedAt: string
-  utilityTypeName: string
-  currencyCode: string
-  currencySymbol: string
 }
-
-// =============================================================================
-// Service Provider
-// =============================================================================
 
 export interface ApiServiceProvider {
   id: number
@@ -50,14 +41,11 @@ export interface ApiServiceProvider {
   email: string | null
   website: string | null
   isActive: boolean
+  utilityType: ApiUtilityType
+  tariffs: ApiTariff[]
   createdAt: string
   updatedAt: string
-  tariffs: ApiTariff[]
 }
-
-// =============================================================================
-// Request DTOs
-// =============================================================================
 
 export interface CreateTariffRequest {
   utilityTypeId: number
@@ -67,6 +55,7 @@ export interface CreateTariffRequest {
   serviceFee?: number
   effectiveFrom: string
   effectiveTo?: string | null
+  notes?: string | null
 }
 
 export interface UpdateTariffRequest {
@@ -97,10 +86,6 @@ export interface UpdateServiceProviderRequest {
   isActive?: boolean
   utilityTypeId?: number
 }
-
-// =============================================================================
-// API Response Wrappers
-// =============================================================================
 
 export interface ApiDataResponse<T> {
   data: T

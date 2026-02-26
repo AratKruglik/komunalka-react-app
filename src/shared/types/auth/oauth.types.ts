@@ -25,6 +25,10 @@ export interface OAuthLinkResponse {
   linkedProviders: ('Local' | 'Google' | 'GitHub')[]
 }
 
+export interface OAuthUnlinkRequest {
+  password: string
+}
+
 export interface OAuthUnlinkResponse {
   message: string
   linkedProviders: ('Local' | 'Google' | 'GitHub')[]

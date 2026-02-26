@@ -17,7 +17,7 @@ import type {
 } from '@shared/viewModels'
 
 function getMeterType(meter: Meter): MeterType {
-  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityTypeId] ?? 'electricity'
+  return UTILITY_TYPE_ID_TO_METER_TYPE[meter.utilityType.id] ?? 'electricity'
 }
 
 function getDefaultUnit(meter: Meter): string {
@@ -33,8 +33,8 @@ export function resolveCostSource(
   if (calculation) {
     return {
       type: 'api',
-      cost: calculation.totalCost,
-      rate: calculation.baseRate,
+      cost: Number(calculation.totalCost),
+      rate: Number(calculation.baseRate),
       unit: calculation.unit,
     }
   }
@@ -86,7 +86,7 @@ export function adaptReadingsToChartData(
   const monthsMap = new Map<string, Map<MeterType, number>>()
 
   readings.forEach((reading) => {
-    const meter = meters.find((m) => m.id === reading.meterId)
+    const meter = meters.find((m) => m.id === reading.meter.id)
     if (!meter) return
 
     const meterType = getMeterType(meter)
@@ -160,7 +160,7 @@ export function adaptToExpenseDistribution(
   const expensesByType = new Map<MeterType, number>()
 
   filteredReadings.forEach((reading) => {
-    const meter = meters.find((m) => m.id === reading.meterId)
+    const meter = meters.find((m) => m.id === reading.meter.id)
     if (!meter) return
 
     const meterType = getMeterType(meter)
