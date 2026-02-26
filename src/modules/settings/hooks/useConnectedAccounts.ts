@@ -74,11 +74,11 @@ export function useConnectedAccounts() {
   )
 
   const unlinkProvider = useCallback(
-    async (provider: OAuthProvider) => {
+    async (provider: OAuthProvider, password: string) => {
       setProviderLoading(provider, true)
 
       try {
-        await authService.unlinkProvider(provider)
+        await authService.unlinkProvider(provider, { password })
       } catch {
         setProviderError(provider, 'Не вдалося відʼєднати акаунт')
       } finally {

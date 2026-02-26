@@ -44,12 +44,12 @@ export function adaptApiTariffToLegacy(tariff: ApiTariff): ProviderTariff {
   return {
     id: String(tariff.id),
     name: tariff.name,
-    price: tariff.baseRate,
+    price: Number(tariff.baseRate),
   }
 }
 
 export function formatApiTariffLabel(tariff: ApiTariff): string {
-  const price = tariff.baseRate.toFixed(2)
+  const price = Number(tariff.baseRate).toFixed(2)
   const symbol = tariff.currency.symbol
   const unit = getUnitForUtilityType(tariff.utilityType.id)
   return `${price} ${symbol}/${unit}`
@@ -118,7 +118,7 @@ export function getActiveTariff(
 }
 
 export function calculateCost(consumption: number, tariff: ApiTariff): number {
-  const consumptionCost = consumption * tariff.baseRate
-  const serviceFee = tariff.serviceFee
+  const consumptionCost = consumption * Number(tariff.baseRate)
+  const serviceFee = Number(tariff.serviceFee)
   return consumptionCost + serviceFee
 }

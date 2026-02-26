@@ -1,5 +1,6 @@
 import { AuthActionType } from '../actionTypes'
 import { authService, userService } from '@shared/api'
+import { resolveExpirationIso } from '@shared/api/authService'
 import { formatApiError } from '@shared/api/utils'
 import type { AuthDispatch, ScheduleTokenRefreshFn } from './types'
 import type { User } from '@shared/types/auth/user.types'
@@ -72,11 +73,11 @@ export async function loginAction(
         user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
-        expiresAt: response.expiration,
+        expiresAt: resolveExpirationIso(response),
       },
     })
 
-    scheduleTokenRefresh(response.expiration)
+    scheduleTokenRefresh(resolveExpirationIso(response))
 
     try {
       const fullUser = await userService.getProfile()
@@ -139,11 +140,11 @@ export async function registerAction(
         user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
-        expiresAt: response.expiration,
+        expiresAt: resolveExpirationIso(response),
       },
     })
 
-    scheduleTokenRefresh(response.expiration)
+    scheduleTokenRefresh(resolveExpirationIso(response))
 
     try {
       const fullUser = await userService.getProfile()
@@ -204,11 +205,11 @@ export async function oauthCallbackAction(
         user: minimalUser,
         token: response.token,
         refreshToken: response.refreshToken,
-        expiresAt: response.expiration,
+        expiresAt: resolveExpirationIso(response),
       },
     })
 
-    scheduleTokenRefresh(response.expiration)
+    scheduleTokenRefresh(resolveExpirationIso(response))
 
     try {
       const fullUser = await userService.getProfile()

@@ -325,7 +325,7 @@ describe('authService', () => {
       await authService.revokeToken('test-refresh-token')
 
       expect(mockPost).toHaveBeenCalledWith('/auth/revoke-token', {
-        refreshToken: 'test-refresh-token',
+        refresh_token: 'test-refresh-token',
       })
     })
   })

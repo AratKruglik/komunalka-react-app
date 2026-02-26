@@ -237,7 +237,7 @@ export function EditMeterForm({ meter, onCancel, onSuccess }: EditMeterFormProps
                 {providerTariffs.map((tariff) => (
                   <p key={tariff.id} className="text-sm text-blue-700 dark:text-blue-300">
                     {tariff.name}: {formatApiTariffLabel(tariff)}
-                    {tariff.serviceFee > 0 && ` + абонплата ${tariff.serviceFee.toFixed(2)} ${tariff.currency.symbol}`}
+                    {Number(tariff.serviceFee) > 0 && ` + абонплата ${Number(tariff.serviceFee).toFixed(2)} ${tariff.currency.symbol}`}
                   </p>
                 ))}
                 <p className="text-xs text-blue-600 dark:text-blue-400">Джерело: {selectedProvider.name}</p>

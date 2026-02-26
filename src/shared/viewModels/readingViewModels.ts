@@ -98,7 +98,7 @@ const mapTariffs = (provider: ProviderInput): TariffOptionViewModel[] => {
     return provider.tariffs.map((tariff) => ({
       id: String(tariff.id),
       name: tariff.name,
-      price: tariff.baseRate,
+      price: Number(tariff.baseRate),
       label: `${tariff.name} · ${formatApiTariffLabel(tariff)}`,
     }))
   }

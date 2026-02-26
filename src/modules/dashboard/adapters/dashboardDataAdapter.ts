@@ -33,8 +33,8 @@ export function resolveCostSource(
   if (calculation) {
     return {
       type: 'api',
-      cost: calculation.totalCost,
-      rate: calculation.baseRate,
+      cost: Number(calculation.totalCost),
+      rate: Number(calculation.baseRate),
       unit: calculation.unit,
     }
   }

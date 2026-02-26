@@ -1,5 +1,6 @@
 import { AuthActionType } from '../actionTypes'
 import { authService, userService } from '@shared/api'
+import { resolveExpirationIso } from '@shared/api/authService'
 import type { AuthDispatch, IsRefreshingRef, ScheduleTokenRefreshFn, LogoutFn } from './types'
 import type { User } from '@shared/types/auth/user.types'
 
@@ -65,12 +66,12 @@ export async function refreshToken(
       payload: {
         token: response.token,
         refreshToken: response.refreshToken,
-        expiresAt: response.expiration,
+        expiresAt: resolveExpirationIso(response),
         user,
       },
     })
 
-    scheduleTokenRefresh(response.expiration)
+    scheduleTokenRefresh(resolveExpirationIso(response))
   } catch {
     dispatch({ type: AuthActionType.REFRESH_ERROR })
     authService.logout()

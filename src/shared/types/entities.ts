@@ -140,13 +140,13 @@ export interface Reading {
 export interface ConsumptionCalculation {
   meterId: number
   meterName: string
-  consumption: number
+  consumption: string | number
   unit: string
-  baseRate: number
-  serviceFee: number
+  baseRate: string | number
+  serviceFee: string | number
   currencyCode: string
   currencySymbol: string
-  totalCost: number
+  totalCost: string | number
 }
 
 export interface BatchReadingsResponse {

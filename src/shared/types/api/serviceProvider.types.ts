@@ -3,7 +3,7 @@ export interface ApiUtilityType {
   slug: string
   displayName: string
   unit: string
-  description: string
+  description: string | null
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -21,8 +21,8 @@ export interface ApiCurrency {
 export interface ApiTariff {
   id: number
   name: string
-  baseRate: number
-  serviceFee: number
+  baseRate: string | number
+  serviceFee: string | number
   effectiveFrom: string
   effectiveTo: string | null
   notes: string | null
